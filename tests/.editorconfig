@@ -1,3 +1,6 @@
 [*.cs]
 # Section 3 of the build spec requires test names in Method_Scenario_ExpectedResult form.
 dotnet_diagnostic.CA1707.severity = none
+
+# Section 14.4 test names, such as FM01_DuplicateOrderPost_ReplaysResponse, have no Async suffix.
+dotnet_naming_rule.async_methods_suffixed.severity = none

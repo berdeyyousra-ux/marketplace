@@ -1,1 +1,74 @@
-return;
+using Marketplace.Api.Middleware;
+using Marketplace.Infrastructure;
+using Marketplace.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpOverrides;
+using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Compact;
+
+const string CorsPolicyName = "Default";
+const string ReadinessTag = "ready";
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, logger) => logger
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.Console(new CompactJsonFormatter()));
+
+builder.Services.AddInfrastructure();
+
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<AppDbContext>(tags: [ReadinessTag]);
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+    var knownNetworks = builder.Configuration.GetSection("ForwardedHeaders:KnownNetworks").Get<string[]>() ?? [];
+    foreach (var network in knownNetworks)
+    {
+        options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse(network));
+    }
+});
+
+builder.Services.AddCors(options => options.AddPolicy(CorsPolicyName, policy => policy
+    .WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [])
+    .AllowAnyMethod()
+    .WithHeaders("Authorization", "Content-Type", "Idempotency-Key", "If-Match", "X-Correlation-Id")
+    .WithExposedHeaders("ETag", "Retry-After", "Location", "X-Correlation-Id", "Idempotent-Replayed")));
+
+var app = builder.Build();
+
+app.UseForwardedHeaders();
+app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate = "HTTP {RequestMethod} {RoutePattern} responded {StatusCode} in {Elapsed:0.0000} ms";
+    options.GetMessageTemplateProperties = (context, _, elapsedMilliseconds, statusCode) =>
+    [
+        new LogEventProperty("RequestMethod", new ScalarValue(context.Request.Method)),
+        new LogEventProperty("RoutePattern", new ScalarValue(GetRoutePattern(context))),
+        new LogEventProperty("StatusCode", new ScalarValue(statusCode)),
+        new LogEventProperty("Elapsed", new ScalarValue(elapsedMilliseconds)),
+    ];
+});
+app.UseMiddleware<SecurityHeadersMiddleware>();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
+app.UseCors(CorsPolicyName);
+
+app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
+app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains(ReadinessTag) });
+
+await app.RunAsync();
+
+static string GetRoutePattern(HttpContext context) =>
+    (context.GetEndpoint() as RouteEndpoint)?.RoutePattern.RawText ?? "unmatched";
+
+public partial class Program;
