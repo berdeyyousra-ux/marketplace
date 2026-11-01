@@ -26,7 +26,7 @@
 - [ ] New behavior has new tests (referencing FM or US IDs)
 - [ ] Architecture tests pass
 - [ ] OpenAPI snapshot is unchanged or explicitly updated
-- [ ] No secrets in the diff (`git diff --cached | grep -iE 'password|secret|key|token'` is clean)
+- [ ] No secrets in the diff (the `secret-scan` CI check passes)
 - [ ] PR description has: what, why, how tested, deviations (should be none), follow-ups
 - [ ] PR is under 400 changed lines (excluding migrations and generated files)
 - [ ] CI is green

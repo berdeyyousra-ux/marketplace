@@ -1,0 +1,15 @@
+title = "Marketplace gitleaks configuration"
+
+[extend]
+useDefault = true
+
+# Allows only these two local development values, and only in this one file. These values
+# in any other file still fail, and the normal rules still apply to the rest of this file.
+[[allowlists]]
+description = "Local-only values: the published Azurite emulator key and the development JWT signing key"
+condition = "AND"
+paths = ['''^docker-compose\.override\.yml$''']
+regexes = [
+  '''Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw''',
+  '''ZGV2ZWxvcG1lbnQtb25seS1zaWduaW5nLWtleS1kby1ub3QtdXNlLWVsc2V3aGVyZQ''',
+]
