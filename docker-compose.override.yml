@@ -1,0 +1,49 @@
+# Local development only. Every value here works only against the local containers.
+# Staging and production supply their own secrets, and startup validation rejects
+# the signing key below outside development.
+#
+# The api and worker services need the Dockerfiles added by T-060. After that task,
+# start them with: docker compose --profile app up -d
+
+x-app-environment: &app-environment
+  ASPNETCORE_ENVIRONMENT: Development
+  DOTNET_ENVIRONMENT: Development
+  ConnectionStrings__Database: Host=postgres;Port=5432;Database=marketplace;Username=marketplace;Password=devpassword
+  ConnectionStrings__BlobStorage: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;
+  Jwt__SigningKey: ZGV2ZWxvcG1lbnQtb25seS1zaWduaW5nLWtleS1kby1ub3QtdXNlLWVsc2V3aGVyZQ==
+  Payments__Provider: Fake
+  Email__SmtpHost: mailpit
+  Email__SmtpPort: "1025"
+  Seed__Admin__Email: admin@marketplace.dev
+  Seed__Admin__Password: Local-Dev-Admin-Only-1
+
+services:
+  api:
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: deploy/docker/Api.Dockerfile
+    ports: ["8080:8080"]
+    environment: *app-environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+      mailpit:
+        condition: service_started
+
+  worker:
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: deploy/docker/Worker.Dockerfile
+    ports: ["8081:8081"]
+    environment: *app-environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+      mailpit:
+        condition: service_started
