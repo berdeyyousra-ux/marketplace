@@ -1,17 +1,31 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Marketplace.Api\Marketplace.Api.csproj" />
-    <ProjectReference Include="..\..\src\Marketplace.Worker\Marketplace.Worker.csproj" />
-    <ProjectReference Include="..\..\src\Marketplace.Infrastructure\Marketplace.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\src\Marketplace.Application\Marketplace.Application.csproj" />
-    <ProjectReference Include="..\..\src\Marketplace.Domain\Marketplace.Domain.csproj" />
-  </ItemGroup>
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <Verify_SponsorshipExemption>OpenSource</Verify_SponsorshipExemption>
+    <Verify_SponsorshipExemptionUntil>2027-11</Verify_SponsorshipExemptionUntil>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Marketplace.Api/Marketplace.Api.csproj" />
+    <ProjectReference Include="../../src/Marketplace.Worker/Marketplace.Worker.csproj" />
+    <ProjectReference Include="../../src/Marketplace.Infrastructure/Marketplace.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/Marketplace.Application/Marketplace.Application.csproj" />
+    <ProjectReference Include="../../src/Marketplace.Domain/Marketplace.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="coverlet.collector" PrivateAssets="all" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="Bogus" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="Testcontainers.Azurite" />
+    <PackageReference Include="Verify.XunitV3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+  </ItemGroup>
 
 </Project>
