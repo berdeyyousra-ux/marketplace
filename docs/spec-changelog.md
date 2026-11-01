@@ -4,6 +4,12 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-01
 
+### T-005: minimal `AppDbContext` added ahead of T-012
+
+**Resolves:** a sequencing gap. T-005 needs `AddDbContext` and a database readiness check, but the backlog does not create `AppDbContext` until T-012.
+
+**Decision (repo owner):** T-005 adds a minimal `AppDbContext` with no tables. T-012 builds on it.
+
 ### Section 21.6: the implementing agent may merge its own PRs after T-006
 
 **Changes:** section 21.6, which says the agent "never merges its own PR" and that the human "reviews and merges PRs".
