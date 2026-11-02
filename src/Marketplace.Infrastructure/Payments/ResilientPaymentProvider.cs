@@ -2,7 +2,6 @@ using Marketplace.Application.Payments;
 using Marketplace.Domain.Common;
 using Polly;
 using Polly.CircuitBreaker;
-using Polly.Retry;
 using Polly.Timeout;
 
 namespace Marketplace.Infrastructure.Payments;
@@ -13,6 +12,7 @@ public sealed class ResilienceSettings
     public const string SectionName = "Resilience";
     public const string PaymentsApi = "PaymentsApi";
     public const string PaymentsWorker = "PaymentsWorker";
+    public const string Llm = "Llm";
 
     public TimeSpan AttemptTimeout { get; set; }
 
@@ -34,6 +34,9 @@ public sealed class ResilienceSettings
 
     public static ResilienceSettings ApiDefaults() =>
         new() { AttemptTimeout = TimeSpan.FromSeconds(5), MaxRetries = 2, TotalTimeout = TimeSpan.FromSeconds(12) };
+
+    public static ResilienceSettings LlmDefaults() =>
+        new() { AttemptTimeout = TimeSpan.FromSeconds(20), MaxRetries = 1, TotalTimeout = TimeSpan.FromSeconds(45) };
 
     public static ResilienceSettings WorkerDefaults() =>
         new() { AttemptTimeout = TimeSpan.FromSeconds(10), MaxRetries = 3, TotalTimeout = TimeSpan.FromSeconds(40) };
@@ -82,46 +85,12 @@ public sealed class ResilientPaymentProvider : IPaymentProvider
 
     public PaymentWebhookResult ReadStoredEvent(string rawPayload) => _inner.ReadStoredEvent(rawPayload);
 
-    // Order, outermost first: total timeout, retry, circuit breaker, per-attempt timeout.
-    public static ResiliencePipeline Build(ResilienceSettings settings, TimeProvider pipelineTime)
-    {
-        ArgumentNullException.ThrowIfNull(settings);
-
-        var transient = new PredicateBuilder()
-            .Handle<PaymentProviderUnavailableException>()
-            .Handle<TimeoutRejectedException>();
-
-        var builder = new ResiliencePipelineBuilder { TimeProvider = pipelineTime }.AddTimeout(settings.TotalTimeout);
-        if (settings.MaxRetries > 0)
-        {
-            builder.AddRetry(new RetryStrategyOptions
-            {
-                ShouldHandle = transient,
-                MaxRetryAttempts = settings.MaxRetries,
-                BackoffType = DelayBackoffType.Exponential,
-                UseJitter = true,
-                Delay = settings.BaseDelay,
-
-                // A 429 asks for a wait; honor it up to MaxRetryAfter.
-                DelayGenerator = arguments => ValueTask.FromResult(
-                    arguments.Outcome.Exception is PaymentProviderUnavailableException { RetryAfter: { } retryAfter }
-                        ? (TimeSpan?)(retryAfter < settings.MaxRetryAfter ? retryAfter : settings.MaxRetryAfter)
-                        : null),
-            });
-        }
-
-        return builder
-            .AddCircuitBreaker(new CircuitBreakerStrategyOptions
-            {
-                ShouldHandle = transient,
-                FailureRatio = settings.FailureRatio,
-                MinimumThroughput = settings.MinimumThroughput,
-                SamplingDuration = settings.SamplingDuration,
-                BreakDuration = settings.BreakDuration,
-            })
-            .AddTimeout(settings.AttemptTimeout)
-            .Build();
-    }
+    public static ResiliencePipeline Build(ResilienceSettings settings, TimeProvider pipelineTime) =>
+        ResiliencePipelines.Build(
+            settings,
+            pipelineTime,
+            exception => exception is PaymentProviderUnavailableException,
+            exception => (exception as PaymentProviderUnavailableException)?.RetryAfter);
 
     private static async Task<T> RunAsync<T>(ResiliencePipeline pipeline, Func<CancellationToken, Task<T>> call, CancellationToken cancellationToken)
     {

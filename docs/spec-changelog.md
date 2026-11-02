@@ -4,6 +4,18 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### Sections 12.3 and 12.5: no temperature, and a higher output-token default for the LLM call (T-070)
+
+**Spec:** temperature 0, and `Ai:MaxOutputTokens` default 500.
+
+**Changes:**
+- `AnthropicLlmClient` sends `anthropic-version: 2026-10-21` and no `temperature`. On that API version, a Messages request that sends `temperature`, `top_p` or `top_k` returns a 400 on every model, and current models accept only the default sampling anyway. Consistency comes from the strict validator and the single retry (section 12.4), not from sampling.
+- `Ai:MaxOutputTokens` defaults to 2000. Current models think before answering, and thinking counts toward the limit, so 500 could cut the JSON off.
+- `Ai:Effort` (default `low`) is sent as `output_config.effort` to keep the classification fast and cheap.
+- The model still comes only from `Ai:Model`.
+
+**Why:** the spec's values predate the current API. Both changes keep its intent: a short, deterministic-as-possible JSON answer.
+
 ### Section 15.2 Dockerfiles and section 15.7 Worker health (T-060)
 
 **Spec:** the section 15.2 Dockerfile template creates its user with `addgroup` and `adduser`, and checks health with `curl`. The Worker serves health on port 8081 (section 15.7).
