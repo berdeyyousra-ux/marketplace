@@ -4,6 +4,10 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### Section 15.1: Azurite runs with --skipApiVersionCheck
+
+Azurite rejects requests that use a storage API version newer than it knows, and the Azure SDK pinned in T-003 uses a newer one than current Azurite releases. Local Compose and the test container (pinned to Azurite 3.37.0) therefore pass `--skipApiVersionCheck`. This only affects the local emulator; real Azure Storage is unaffected.
+
 ### Section 4.5: the rate limiter runs after authentication
 
 **Resolves:** a contradiction. Section 4.5 places the rate limiter (step 7) before authentication (step 8), but section 11.4 limits the `download` and `global` policies per user, and the user is only known after authentication.

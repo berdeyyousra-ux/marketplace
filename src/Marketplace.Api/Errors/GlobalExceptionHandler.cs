@@ -26,7 +26,7 @@ public sealed partial class GlobalExceptionHandler(
             LogHandled(logger, exception.GetType().Name, error.Code);
         }
 
-        var problem = ApiProblems.Create(httpContext, error);
+        var problem = ApiProblems.Create(httpContext, error, error == _payloadTooLarge ? StatusCodes.Status413PayloadTooLarge : null);
         httpContext.Response.StatusCode = problem.Status!.Value;
         return await problemDetails.TryWriteAsync(new ProblemDetailsContext
         {
@@ -39,12 +39,15 @@ public sealed partial class GlobalExceptionHandler(
     private Error Classify(Exception exception) => exception switch
     {
         DbUpdateException update when translator.Translate(update) is { } translated => translated,
+        BadHttpRequestException { StatusCode: StatusCodes.Status413PayloadTooLarge } => _payloadTooLarge,
         BadHttpRequestException => ApiProblems.InvalidRequest,
         // D-42: transient database failures are not retried and surface as 503.
         NpgsqlException { IsTransient: true } or TimeoutException => ApiProblems.ServiceUnavailable,
         DbUpdateException { InnerException: NpgsqlException { IsTransient: true } } => ApiProblems.ServiceUnavailable,
         _ => ApiProblems.InternalError,
     };
+
+    private static readonly Error _payloadTooLarge = new("file_too_large", "The request body is too large.", ErrorType.Validation);
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Unhandled exception for {Method} request")]
     private static partial void LogUnhandled(ILogger logger, Exception exception, string method);
