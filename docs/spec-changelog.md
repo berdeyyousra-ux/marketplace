@@ -4,6 +4,24 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### Section 5.4: InvariantGlobalization is turned off
+
+**Resolves:** a conflict. Section 5.4 sets `InvariantGlobalization` to `true`, and in that mode .NET's `string.Normalize` returns text unchanged, so section 11.2's NFC normalization could not work. An integration test showed the normalization silently doing nothing.
+
+**Decision (repo owner):** `InvariantGlobalization` is `false`. Code continues to pass `CultureInfo.InvariantCulture` explicitly wherever formatting matters. The Docker images (T-060) must include the ICU library, which the standard .NET images do and chiseled images do not.
+
+### Section 11.2: passwords and tokens are normalized but not trimmed
+
+**Changes:** section 11.2, which says all request strings are trimmed and normalized to NFC.
+
+**Decision (repo owner):** request string properties whose names contain "password" or "token" are NFC-normalized but never trimmed, so leading or trailing spaces in a password are kept rather than silently removed. Every other string is trimmed and NFC-normalized.
+
+### Section 11.1: the common-password list is SecLists' 10k list
+
+**Resolves:** section 11.1 requires an embedded list of the 10,000 most common passwords but names no source.
+
+**Decision (repo owner):** use `10k-most-common.txt` from the SecLists project (MIT license), embedded as a resource with its source and license noted. Added with the T-021 registration flow.
+
 ### Section 5.3: the Worker references Serilog.Sinks.Console
 
 **Resolves:** a gap. D-30 requires Serilog JSON logging to the console in both processes, but section 5.3's Worker package list has no console sink. The Api gets one only indirectly, through `Serilog.AspNetCore`.

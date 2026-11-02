@@ -1,7 +1,9 @@
 using Marketplace.Api.Auth;
 using Marketplace.Api.Errors;
+using Marketplace.Api.Infrastructure;
 using Marketplace.Api.Logging;
 using Marketplace.Api.Middleware;
+using Marketplace.Application;
 using Marketplace.Infrastructure;
 using Marketplace.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -22,7 +24,9 @@ builder.Host.UseSerilog((context, services, logger) => logger
     .Enrich.With<SensitivePropertyMasker>()
     .WriteTo.Console(new CompactJsonFormatter()));
 
+builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
+builder.Services.AddMarketplaceControllers();
 builder.Services.AddMarketplaceAuthentication(builder.Environment);
 
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
@@ -82,6 +86,7 @@ app.UseCors(CorsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapControllers();
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains(ReadinessTag) });
 
