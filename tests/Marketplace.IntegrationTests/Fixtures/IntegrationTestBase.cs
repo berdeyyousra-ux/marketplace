@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using Marketplace.Infrastructure.Identity;
 using Marketplace.Infrastructure.Outbox;
 using Marketplace.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -71,6 +72,9 @@ public abstract class IntegrationTestBase(MarketplaceWebFactory factory) : IAsyn
         return client;
     }
 
+    protected async Task<HttpClient> AsAdminAsync() =>
+        WithToken((await SignInAsync(MarketplaceWebFactory.AdminEmail, MarketplaceWebFactory.AdminPassword)).AccessToken);
+
     // A verified, signed-in user with no roles.
     protected async Task<HttpClient> AsBuyerAsync(string email)
     {
@@ -109,6 +113,9 @@ public abstract class IntegrationTestBase(MarketplaceWebFactory factory) : IAsyn
     {
         await using var scope = Factory.Services.CreateAsyncScope();
         await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.ExecuteSqlRawAsync(_resetSql, CancellationToken);
+
+        // Section 14.2: the reset removes users, so the admin is seeded again.
+        await Factory.Services.SeedAdminAsync(Factory.Services.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>(), CancellationToken);
     }
 
     protected async Task<T> WithDbAsync<T>(Func<AppDbContext, Task<T>> action)

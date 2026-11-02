@@ -23,7 +23,7 @@ public sealed class RegisterTests(MarketplaceWebFactory factory) : IntegrationTe
         var response = await RegisterAsync(client, "new.buyer@example.test", _password);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Accepted);
-        var user = await WithDbAsync(db => db.Users.SingleAsync(CancellationToken));
+        var user = await WithDbAsync(db => db.Users.Where(user => user.Email != MarketplaceWebFactory.AdminEmail).SingleAsync(CancellationToken));
         user.EmailConfirmed.ShouldBeFalse();
         user.DisplayName.ShouldBe("Buyer");
         user.CreatedAt.ShouldBe(Time.GetUtcNow());
@@ -42,7 +42,7 @@ public sealed class RegisterTests(MarketplaceWebFactory factory) : IntegrationTe
         var response = await RegisterAsync(client, "EXISTING@Example.test", "a different passphrase");
 
         response.StatusCode.ShouldBe(HttpStatusCode.Accepted);
-        (await WithDbAsync(db => db.Users.CountAsync(CancellationToken))).ShouldBe(1);
+        (await WithDbAsync(db => db.Users.Where(user => user.Email != MarketplaceWebFactory.AdminEmail).CountAsync(CancellationToken))).ShouldBe(1);
         var types = await WithDbAsync(db => db.OutboxMessages.OrderBy(message => message.CreatedAt).Select(message => message.Type).ToListAsync(CancellationToken));
         types.ShouldBe([OutboxMessageTypes.EmailVerificationRequested, OutboxMessageTypes.AccountExistsNotice]);
     }
@@ -73,7 +73,7 @@ public sealed class RegisterTests(MarketplaceWebFactory factory) : IntegrationTe
             "/api/v1/auth/register", new { email = "x@example.test", password, displayName }, CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
-        (await WithDbAsync(db => db.Users.CountAsync(CancellationToken))).ShouldBe(0);
+        (await WithDbAsync(db => db.Users.Where(user => user.Email != MarketplaceWebFactory.AdminEmail).CountAsync(CancellationToken))).ShouldBe(0);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public sealed class RegisterTests(MarketplaceWebFactory factory) : IntegrationTe
         using var client = AsAnonymous();
         await RegisterAsync(client, "hash@example.test", _password);
 
-        var hash = Convert.FromBase64String(await WithDbAsync(db => db.Users.Select(user => user.PasswordHash!).SingleAsync(CancellationToken)));
+        var hash = Convert.FromBase64String(await WithDbAsync(db => db.Users.Where(user => user.Email != MarketplaceWebFactory.AdminEmail).Select(user => user.PasswordHash!).SingleAsync(CancellationToken)));
 
         hash[0].ShouldBe((byte)0x01);
         BinaryPrimitives.ReadUInt32BigEndian(hash.AsSpan(1, 4)).ShouldBe(2u);
@@ -99,7 +99,7 @@ public sealed class RegisterTests(MarketplaceWebFactory factory) : IntegrationTe
             RegisterAsync(client, "race@example.test", _password));
 
         responses.ShouldAllBe(response => response.StatusCode == HttpStatusCode.Accepted);
-        (await WithDbAsync(db => db.Users.CountAsync(CancellationToken))).ShouldBe(1);
+        (await WithDbAsync(db => db.Users.Where(user => user.Email != MarketplaceWebFactory.AdminEmail).CountAsync(CancellationToken))).ShouldBe(1);
     }
 
     [Fact]

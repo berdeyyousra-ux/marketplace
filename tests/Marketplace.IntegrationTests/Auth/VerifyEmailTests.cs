@@ -23,7 +23,7 @@ public sealed class VerifyEmailTests(MarketplaceWebFactory factory) : Integratio
         var response = await VerifyAsync(client, token);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
-        (await WithDbAsync(db => db.Users.Select(user => user.EmailConfirmed).SingleAsync(CancellationToken))).ShouldBeTrue();
+        (await WithDbAsync(db => db.Users.Where(user => user.Email != MarketplaceWebFactory.AdminEmail).Select(user => user.EmailConfirmed).SingleAsync(CancellationToken))).ShouldBeTrue();
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public sealed class VerifyEmailTests(MarketplaceWebFactory factory) : Integratio
         var response = await VerifyAsync(client, token);
 
         await ShouldBeInvalidTokenAsync(response);
-        (await WithDbAsync(db => db.Users.Select(user => user.EmailConfirmed).SingleAsync(CancellationToken))).ShouldBeFalse();
+        (await WithDbAsync(db => db.Users.Where(user => user.Email != MarketplaceWebFactory.AdminEmail).Select(user => user.EmailConfirmed).SingleAsync(CancellationToken))).ShouldBeFalse();
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public sealed class VerifyEmailTests(MarketplaceWebFactory factory) : Integratio
     {
         using var client = AsAnonymous();
         var first = await RegisterAndGetTokenAsync(client, "twice@example.test");
-        var userId = await WithDbAsync(db => db.Users.Select(user => user.Id).SingleAsync(CancellationToken));
+        var userId = await WithDbAsync(db => db.Users.Where(user => user.Email != MarketplaceWebFactory.AdminEmail).Select(user => user.Id).SingleAsync(CancellationToken));
         await WithDbAsync(async db =>
         {
             db.OutboxMessages.Add(new Marketplace.Application.Ops.OutboxMessage

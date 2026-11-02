@@ -14,6 +14,8 @@ No backlog task lists EP-09, EP-28, EP-61, EP-65 or EP-99. They are built with t
 - EP-65 (refund retry): with T-073.
 - EP-99 (development fake-payment trigger): with T-034 or T-035.
 
+The section 7.6 admin bootstrap also has no task. It is built with T-027, whose role matrix needs an admin.
+
 On EP-28, a sale is an order item that is still Active in an order with a `paid_at`. Refunded items are not counted.
 
 ### Section 15.1: Azurite runs with --skipApiVersionCheck
