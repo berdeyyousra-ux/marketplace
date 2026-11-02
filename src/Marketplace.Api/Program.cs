@@ -1,4 +1,5 @@
 using Marketplace.Api.Auth;
+using Marketplace.Api.Logging;
 using Marketplace.Api.Middleware;
 using Marketplace.Infrastructure;
 using Marketplace.Infrastructure.Persistence;
@@ -17,6 +18,7 @@ builder.Host.UseSerilog((context, services, logger) => logger
     .ReadFrom.Configuration(context.Configuration)
     .ReadFrom.Services(services)
     .Enrich.FromLogContext()
+    .Enrich.With<SensitivePropertyMasker>()
     .WriteTo.Console(new CompactJsonFormatter()));
 
 builder.Services.AddInfrastructure();
