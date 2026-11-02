@@ -36,6 +36,9 @@ public sealed class SqlReports(AppDbContext db) : IReports
     public Task<List<OrderFunnelRow>> OrderFunnelAsync(DateTimeOffset periodStart, DateTimeOffset periodEnd, CancellationToken cancellationToken) =>
         QueryAsync<OrderFunnelRow>("R05-order-funnel", cancellationToken, Time("from", periodStart), Time("to", periodEnd));
 
+    public async Task<PlatformTotalsRow> PlatformTotalsAsync(DateTimeOffset periodStart, DateTimeOffset periodEnd, CancellationToken cancellationToken) =>
+        (await QueryAsync<PlatformTotalsRow>("R05-overview-totals", cancellationToken, Time("from", periodStart), Time("to", periodEnd))).Single();
+
     public async Task<OrderValuePercentilesRow> OrderValuePercentilesAsync(DateTimeOffset periodStart, DateTimeOffset periodEnd, CancellationToken cancellationToken) =>
         (await QueryAsync<OrderValuePercentilesRow>("R06-order-value-percentiles", cancellationToken, Time("from", periodStart), Time("to", periodEnd))).Single();
 
