@@ -36,6 +36,8 @@ public sealed class MarketplaceWebFactory : WebApplicationFactory<Program>, IAsy
 
     public string DatabaseConnectionString => _postgres.GetConnectionString();
 
+    public string BlobConnectionString => _azurite.GetConnectionString();
+
     public async ValueTask InitializeAsync()
     {
         await Task.WhenAll(_postgres.StartAsync(), _azurite.StartAsync());
