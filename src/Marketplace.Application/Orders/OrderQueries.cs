@@ -73,7 +73,7 @@ public sealed class MyOrdersQueryHandler(IAppDbContext db, ICurrentUser currentU
 }
 
 // The buyer or an admin. Anyone else gets 404 (section 8.1).
-public sealed class OrderQueryHandler(IAppDbContext db, ICurrentUser currentUser) : IQueryHandler<OrderQuery, OrderDetail>
+public sealed class OrderQueryHandler(IAppDbContext db, ICurrentUser currentUser, IPublicImageStorage images) : IQueryHandler<OrderQuery, OrderDetail>
 {
     public async Task<Result<OrderDetail>> HandleAsync(OrderQuery query, CancellationToken cancellationToken)
     {
@@ -92,7 +92,7 @@ public sealed class OrderQueryHandler(IAppDbContext db, ICurrentUser currentUser
             .Select(candidate => new { candidate.Id, candidate.Provider, candidate.Status, candidate.Amount, candidate.CreatedAt })
             .FirstOrDefaultAsync(cancellationToken);
 
-        var response = OrderMapping.ToResponse(order);
+        var response = OrderMapping.ToResponse(order, await Catalog.CoverUrls.ForProductsAsync(db, images, order.Items.Select(item => item.ProductId), cancellationToken));
         return new OrderDetail(
             response.Id, response.Status, response.Total, response.CreatedAt, response.ExpiresAt, response.PaidAt, response.Items,
             payment is null ? null : new PaymentSummary(payment.Id, payment.Provider, payment.Status.ToString(), MoneyDto.From(payment.Amount), payment.CreatedAt));

@@ -21,7 +21,7 @@ public sealed class MarketplaceOptions
 // EP-30 and US-22.
 public sealed record CreateOrderCommand(IReadOnlyList<Guid> ProductIds);
 
-public sealed record OrderItemResponse(Guid Id, Guid ProductId, string Title, MoneyDto UnitPrice, string Status);
+public sealed record OrderItemResponse(Guid Id, Guid ProductId, string Title, MoneyDto UnitPrice, string Status, Uri? CoverImageUrl);
 
 public sealed record OrderResponse(
     Guid Id, string Status, MoneyDto Total, DateTimeOffset CreatedAt, DateTimeOffset ExpiresAt, DateTimeOffset? PaidAt, IReadOnlyList<OrderItemResponse> Items);
@@ -49,20 +49,22 @@ public sealed class CreateOrderCommandValidator : AbstractValidator<CreateOrderC
 
 public static class OrderMapping
 {
-    public static OrderResponse ToResponse(Order order) => new(
+    // Covers are the products' current ones, looked up by CoverUrls.ForProductsAsync.
+    public static OrderResponse ToResponse(Order order, IReadOnlyDictionary<Guid, Uri?> covers) => new(
         order.Id,
         order.Status.ToString(),
         MoneyDto.From(order.Total),
         order.CreatedAt,
         order.ExpiresAt,
         order.PaidAt,
-        order.Items.Select(item => new OrderItemResponse(item.Id, item.ProductId, item.ProductTitle, MoneyDto.From(item.UnitPrice), item.Status.ToString())).ToList());
+        order.Items.Select(item => new OrderItemResponse(
+            item.Id, item.ProductId, item.ProductTitle, MoneyDto.From(item.UnitPrice), item.Status.ToString(), covers.GetValueOrDefault(item.ProductId))).ToList());
 }
 
 // Section 9.3. A buyer may hold several Pending orders for one product; ownership is enforced at payment
 // time by the grant's unique index (changelog 2026-11-02).
 public sealed class CreateOrderCommandHandler(
-    IAppDbContext db, ICurrentUser currentUser, AuditTrail audit, IOptions<MarketplaceOptions> options, TimeProvider timeProvider)
+    IAppDbContext db, ICurrentUser currentUser, AuditTrail audit, IOptions<MarketplaceOptions> options, TimeProvider timeProvider, IPublicImageStorage images)
     : ICommandHandler<CreateOrderCommand, OrderResponse>
 {
     public const int ExpiryMinutes = 30;
@@ -117,6 +119,6 @@ public sealed class CreateOrderCommandHandler(
         db.Orders.Add(created.Value);
         audit.Record("order.created", AuditActorType.User, buyerId, "Order", created.Value.Id, new { items = lines.Count, total = created.Value.Total.Amount });
         await db.SaveChangesAsync(cancellationToken);
-        return OrderMapping.ToResponse(created.Value);
+        return OrderMapping.ToResponse(created.Value, await Catalog.CoverUrls.ForProductsAsync(db, images, command.ProductIds, cancellationToken));
     }
 }

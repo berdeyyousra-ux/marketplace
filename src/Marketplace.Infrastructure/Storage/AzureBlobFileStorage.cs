@@ -16,6 +16,13 @@ public sealed class StorageOptions
     public string ContainerName { get; set; } = "product-files";
 
     public int DownloadUrlMinutes { get; set; } = 5;
+
+    // T-085: product covers live in their own public-read container, never in ContainerName, which is private.
+    public string CoverContainerName { get; set; } = "product-covers";
+
+    // Optional public address for covers (a CDN, or a host the browser can reach when the API sees storage under a
+    // container-network name). By default the blob endpoint itself.
+    public Uri? CoverPublicBaseUrl { get; set; }
 }
 
 // D-26. Uploads stream in blocks, so no file is held in memory. The SDK's default exponential retry applies
@@ -105,4 +112,63 @@ public sealed class AzureBlobFileStorage : IFileStorage
 public sealed class NoopFileScanner : IFileScanner
 {
     public Task<bool> IsCleanAsync(string key, CancellationToken cancellationToken) => Task.FromResult(true);
+}
+
+// T-085: cover images. The container allows anonymous reads of blobs (not listing), and every blob is immutable:
+// a replaced cover gets a new key, and the URL carries the update time as a version for good measure.
+public sealed class AzureBlobPublicImageStorage : IPublicImageStorage
+{
+    private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(30);
+
+    private readonly BlobContainerClient _container;
+    private readonly Uri? _publicBase;
+    private readonly Lazy<Task> _ensureContainer;
+
+    public AzureBlobPublicImageStorage(IConfiguration configuration, IOptions<StorageOptions> options)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(options);
+
+        if (string.Equals(options.Value.CoverContainerName, options.Value.ContainerName, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Storage:CoverContainerName must differ from the private Storage:ContainerName.");
+        }
+
+        var connectionString = configuration.GetConnectionString("BlobStorage")
+            ?? throw new InvalidOperationException("ConnectionStrings:BlobStorage is not configured.");
+        _container = new BlobServiceClient(connectionString).GetBlobContainerClient(options.Value.CoverContainerName);
+        _publicBase = options.Value.CoverPublicBaseUrl;
+        _ensureContainer = new Lazy<Task>(() => _container.CreateIfNotExistsAsync(PublicAccessType.Blob));
+    }
+
+    public BlobContainerClient Container => _container;
+
+    public async Task UploadAsync(string key, ReadOnlyMemory<byte> content, string contentType, CancellationToken cancellationToken)
+    {
+        await _ensureContainer.Value;
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(_timeout);
+        await _container.GetBlobClient(key).UploadAsync(
+            BinaryData.FromBytes(content),
+            new BlobUploadOptions
+            {
+                HttpHeaders = new BlobHttpHeaders { ContentType = contentType, CacheControl = "public, max-age=31536000, immutable" },
+                Conditions = new BlobRequestConditions { IfNoneMatch = Azure.ETag.All },
+            },
+            timeout.Token);
+    }
+
+    public async Task DeleteAsync(string key, CancellationToken cancellationToken)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(_timeout);
+        await _container.GetBlobClient(key).DeleteIfExistsAsync(cancellationToken: timeout.Token);
+    }
+
+    public Uri PublicUrl(string key, DateTimeOffset version)
+    {
+        var blob = _container.GetBlobClient(key).Uri;
+        var location = _publicBase is null ? blob : new Uri(_publicBase, $"{_container.Name}/{key}");
+        return new UriBuilder(location) { Query = $"v={version.ToUnixTimeMilliseconds()}" }.Uri;
+    }
 }

@@ -23,7 +23,7 @@ public sealed record SearchProductsQuery(
     int Limit = Paging.DefaultLimit,
     string? Cursor = null);
 
-public sealed record ProductSummary(Guid Id, string Title, MoneyDto Price, int CategoryId, Guid SellerId, DateTimeOffset PublishedAt);
+public sealed record ProductSummary(Guid Id, string Title, MoneyDto Price, int CategoryId, Guid SellerId, DateTimeOffset PublishedAt, Uri? CoverImageUrl);
 
 // One cursor shape for every keyset sort; the sort is stored so a cursor cannot be replayed under another sort.
 public sealed record SearchCursor(ProductSort Sort, DateTimeOffset? PublishedAt, decimal? Price, Guid Id);
@@ -31,7 +31,9 @@ public sealed record SearchCursor(ProductSort Sort, DateTimeOffset? PublishedAt,
 public sealed record ProductSearchCriteria(
     string? Q, string? CategorySlug, decimal? MinPrice, decimal? MaxPrice, ProductSort Sort, SearchCursor? After, int Take);
 
-public sealed record ProductSearchRow(Guid Id, string Title, decimal Price, string Currency, int CategoryId, Guid SellerId, DateTimeOffset PublishedAt);
+public sealed record ProductSearchRow(
+    Guid Id, string Title, decimal Price, string Currency, int CategoryId, Guid SellerId, DateTimeOffset PublishedAt, string? CoverImageKey,
+    DateTimeOffset? CoverImageUpdatedAt);
 
 // Full-text search uses PostgreSQL functions, which Application must not reference (section 4.3), so the query
 // itself lives in Infrastructure.
@@ -59,7 +61,7 @@ public sealed class SearchProductsQueryValidator : AbstractValidator<SearchProdu
     }
 }
 
-public sealed class SearchProductsQueryHandler(IProductSearch search) : IQueryHandler<SearchProductsQuery, Page<ProductSummary>>
+public sealed class SearchProductsQueryHandler(IProductSearch search, IPublicImageStorage images) : IQueryHandler<SearchProductsQuery, Page<ProductSummary>>
 {
     // Section 13.3: relevance is not a safe keyset, so it returns at most 100 rows and no cursor.
     public const int RelevanceMaxRows = 100;
@@ -91,6 +93,7 @@ public sealed class SearchProductsQueryHandler(IProductSearch search) : IQueryHa
             summary.Id));
     }
 
-    private static ProductSummary ToSummary(ProductSearchRow row) =>
-        new(row.Id, row.Title, MoneyDto.From(new Money(row.Price, row.Currency)), row.CategoryId, row.SellerId, row.PublishedAt);
+    private ProductSummary ToSummary(ProductSearchRow row) =>
+        new(row.Id, row.Title, MoneyDto.From(new Money(row.Price, row.Currency)), row.CategoryId, row.SellerId, row.PublishedAt,
+            CoverUrls.For(images, row.CoverImageKey, row.CoverImageUpdatedAt));
 }
