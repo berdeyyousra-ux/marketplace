@@ -215,6 +215,253 @@
         ]
       }
     },
+    /api/v1/admin/refund-requests: {
+      get: {
+        tags: [
+          Admin
+        ],
+        summary: Refund requests, oldest first, with the policy verdict and the AI suggestion's summary or its absence. Keyset paginated (US-30).,
+        parameters: [
+          {
+            name: Status,
+            in: query,
+            schema: {
+              type: string
+            }
+          },
+          {
+            name: Limit,
+            in: query,
+            schema: {
+              pattern: ^-?(?:0|[1-9]\d*)$,
+              type: [
+                integer,
+                string
+              ],
+              format: int32
+            }
+          },
+          {
+            name: Cursor,
+            in: query,
+            schema: {
+              type: string
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/PageOfAdminRefundSummary
+                }
+              }
+            }
+          },
+          400: {
+            description: Bad Request,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          422: {
+            description: Unprocessable Entity,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
+    /api/v1/admin/refund-requests/{id}: {
+      get: {
+        tags: [
+          Admin
+        ],
+        summary: One refund request in full: buyer text, the facts sent to the model, the policy verdict, the AI suggestion and the history (US-30).,
+        parameters: [
+          {
+            name: id,
+            in: path,
+            required: true,
+            schema: {
+              type: string,
+              format: uuid
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/AdminRefundDetail
+                }
+              }
+            }
+          },
+          404: {
+            description: Not Found,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
+    /api/v1/admin/refund-requests/{id}/decision: {
+      post: {
+        tags: [
+          Admin
+        ],
+        summary: Approves or rejects a refund with a note. Approving an out-of-window request needs an override reason. Needs an Idempotency-Key (US-31).,
+        parameters: [
+          {
+            name: id,
+            in: path,
+            required: true,
+            schema: {
+              type: string,
+              format: uuid
+            }
+          }
+        ],
+        requestBody: {
+          content: {
+            application/json: {
+              schema: {
+                $ref: #/components/schemas/RefundDecisionRequest
+              }
+            },
+            text/json: {
+              schema: {
+                $ref: #/components/schemas/RefundDecisionRequest
+              }
+            },
+            application/*+json: {
+              schema: {
+                $ref: #/components/schemas/RefundDecisionRequest
+              }
+            }
+          },
+          required: true
+        },
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/RefundDecisionResponse
+                }
+              }
+            }
+          },
+          404: {
+            description: Not Found,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          409: {
+            description: Conflict,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          422: {
+            description: Unprocessable Entity,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
+    /api/v1/admin/refund-requests/{id}/retry: {
+      post: {
+        tags: [
+          Admin
+        ],
+        summary: Retries a Failed refund: it returns to Executing and is processed again (FM-12).,
+        parameters: [
+          {
+            name: id,
+            in: path,
+            required: true,
+            schema: {
+              type: string,
+              format: uuid
+            }
+          }
+        ],
+        responses: {
+          202: {
+            description: Accepted,
+            content: {}
+          },
+          404: {
+            description: Not Found,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          409: {
+            description: Conflict,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
     /api/v1/admin/products/{id}/remove: {
       post: {
         tags: [
@@ -2259,6 +2506,278 @@
   },
   components: {
     schemas: {
+      AdminRefundDetail: {
+        required: [
+          id,
+          orderItemId,
+          orderId,
+          productId,
+          productTitle,
+          unitPrice,
+          buyerMessage,
+          status,
+          policyVerdict,
+          downloadCountAtRequest,
+          createdAt,
+          decision,
+          decisionNote,
+          overrideReason,
+          decidedAt,
+          executedAt,
+          failureReason,
+          aiSuggestion,
+          history
+        ],
+        type: object,
+        properties: {
+          id: {
+            type: string,
+            format: uuid
+          },
+          orderItemId: {
+            type: string,
+            format: uuid
+          },
+          orderId: {
+            type: string,
+            format: uuid
+          },
+          productId: {
+            type: string,
+            format: uuid
+          },
+          productTitle: {
+            type: string
+          },
+          unitPrice: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          buyerMessage: {
+            type: string
+          },
+          status: {
+            type: string
+          },
+          policyVerdict: {
+            type: string
+          },
+          downloadCountAtRequest: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int32
+          },
+          createdAt: {
+            type: string,
+            format: date-time
+          },
+          decision: {
+            type: [
+              null,
+              string
+            ]
+          },
+          decisionNote: {
+            type: [
+              null,
+              string
+            ]
+          },
+          overrideReason: {
+            type: [
+              null,
+              string
+            ]
+          },
+          decidedAt: {
+            type: [
+              null,
+              string
+            ],
+            format: date-time
+          },
+          executedAt: {
+            type: [
+              null,
+              string
+            ],
+            format: date-time
+          },
+          failureReason: {
+            type: [
+              null,
+              string
+            ]
+          },
+          aiSuggestion: {
+            oneOf: [
+              {
+                type: null
+              },
+              {
+                $ref: #/components/schemas/AiSuggestionDetail
+              }
+            ]
+          },
+          history: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/RefundHistoryEntry
+            }
+          }
+        }
+      },
+      AdminRefundSummary: {
+        required: [
+          id,
+          orderItemId,
+          productTitle,
+          status,
+          policyVerdict,
+          downloadCount,
+          createdAt,
+          ai
+        ],
+        type: object,
+        properties: {
+          id: {
+            type: string,
+            format: uuid
+          },
+          orderItemId: {
+            type: string,
+            format: uuid
+          },
+          productTitle: {
+            type: string
+          },
+          status: {
+            type: string
+          },
+          policyVerdict: {
+            type: string
+          },
+          downloadCount: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int32
+          },
+          createdAt: {
+            type: string,
+            format: date-time
+          },
+          ai: {
+            oneOf: [
+              {
+                type: null
+              },
+              {
+                $ref: #/components/schemas/AiSummary
+              }
+            ]
+          }
+        }
+      },
+      AiSuggestionDetail: {
+        required: [
+          status,
+          model,
+          promptVersion,
+          facts,
+          suggestion,
+          error,
+          latencyMs,
+          createdAt
+        ],
+        type: object,
+        properties: {
+          status: {
+            type: string
+          },
+          model: {
+            type: string
+          },
+          promptVersion: {
+            type: string
+          },
+          facts: {
+            $ref: #/components/schemas/JsonElement
+          },
+          suggestion: {
+            oneOf: [
+              {
+                type: null
+              },
+              {
+                $ref: #/components/schemas/JsonElement
+              }
+            ]
+          },
+          error: {
+            type: [
+              null,
+              string
+            ]
+          },
+          latencyMs: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              null,
+              integer,
+              string
+            ],
+            format: int32
+          },
+          createdAt: {
+            type: string,
+            format: date-time
+          }
+        }
+      },
+      AiSummary: {
+        required: [
+          status,
+          category,
+          recommendedAction,
+          summary,
+          flags
+        ],
+        type: object,
+        properties: {
+          status: {
+            type: string
+          },
+          category: {
+            type: [
+              null,
+              string
+            ]
+          },
+          recommendedAction: {
+            type: [
+              null,
+              string
+            ]
+          },
+          summary: {
+            type: [
+              null,
+              string
+            ]
+          },
+          flags: {
+            type: array,
+            items: {
+              type: string
+            }
+          }
+        }
+      },
       AuditLogItem: {
         required: [
           id,
@@ -3103,6 +3622,27 @@
           }
         }
       },
+      PageOfAdminRefundSummary: {
+        required: [
+          items,
+          nextCursor
+        ],
+        type: object,
+        properties: {
+          items: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/AdminRefundSummary
+            }
+          },
+          nextCursor: {
+            type: [
+              null,
+              string
+            ]
+          }
+        }
+      },
       PageOfAuditLogItem: {
         required: [
           items,
@@ -3631,6 +4171,73 @@
         properties: {
           refreshToken: {
             type: string
+          }
+        }
+      },
+      RefundDecisionRequest: {
+        required: [
+          decision,
+          note,
+          overrideReason
+        ],
+        type: object,
+        properties: {
+          decision: {
+            type: string
+          },
+          note: {
+            type: string
+          },
+          overrideReason: {
+            type: [
+              null,
+              string
+            ]
+          }
+        }
+      },
+      RefundDecisionResponse: {
+        required: [
+          id,
+          status,
+          decision,
+          decidedAt
+        ],
+        type: object,
+        properties: {
+          id: {
+            type: string,
+            format: uuid
+          },
+          status: {
+            type: string
+          },
+          decision: {
+            type: string
+          },
+          decidedAt: {
+            type: string,
+            format: date-time
+          }
+        }
+      },
+      RefundHistoryEntry: {
+        required: [
+          action,
+          actorType,
+          occurredAt
+        ],
+        type: object,
+        properties: {
+          action: {
+            type: string
+          },
+          actorType: {
+            type: string
+          },
+          occurredAt: {
+            type: string,
+            format: date-time
           }
         }
       },

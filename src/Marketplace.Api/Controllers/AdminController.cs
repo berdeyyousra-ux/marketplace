@@ -4,6 +4,7 @@ using Marketplace.Application.Abstractions;
 using Marketplace.Application.Catalog;
 using Marketplace.Application.Common;
 using Marketplace.Application.Ops;
+using Marketplace.Application.Refunds;
 using Marketplace.Application.Reporting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -59,6 +60,59 @@ public sealed class AdminController : ControllerBase
     {
         ArgumentNullException.ThrowIfNull(handler);
         return this.ToActionResult(await handler.HandleAsync(query, cancellationToken), cohorts => Ok(cohorts));
+    }
+
+    /// <summary>Refund requests, oldest first, with the policy verdict and the AI suggestion's summary or its absence. Keyset paginated (US-30).</summary>
+    [HttpGet("refund-requests")]
+    [ProducesResponseType(typeof(Page<AdminRefundSummary>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> RefundRequestsAsync(
+        [FromQuery] AdminRefundRequestsQuery query, [FromServices] IQueryHandler<AdminRefundRequestsQuery, Page<AdminRefundSummary>> handler,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return this.ToActionResult(await handler.HandleAsync(query, cancellationToken), page => Ok(page));
+    }
+
+    /// <summary>One refund request in full: buyer text, the facts sent to the model, the policy verdict, the AI suggestion and the history (US-30).</summary>
+    [HttpGet("refund-requests/{id:guid}")]
+    [ProducesResponseType(typeof(AdminRefundDetail), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> RefundRequestAsync(
+        Guid id, [FromServices] IQueryHandler<AdminRefundRequestQuery, AdminRefundDetail> handler, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return this.ToActionResult(await handler.HandleAsync(new AdminRefundRequestQuery(id), cancellationToken), detail => Ok(detail));
+    }
+
+    /// <summary>Approves or rejects a refund with a note. Approving an out-of-window request needs an override reason. Needs an Idempotency-Key (US-31).</summary>
+    [HttpPost("refund-requests/{id:guid}/decision")]
+    [Idempotent]
+    [ProducesResponseType(typeof(RefundDecisionResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> DecideRefundAsync(
+        Guid id, RefundDecisionRequest request, [FromServices] ICommandHandler<DecideRefundCommand, RefundDecisionResponse> handler,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(handler);
+        var command = new DecideRefundCommand(id, request.Decision, request.Note, request.OverrideReason);
+        return this.ToActionResult(await handler.HandleAsync(command, cancellationToken), decision => Ok(decision));
+    }
+
+    /// <summary>Retries a Failed refund: it returns to Executing and is processed again (FM-12).</summary>
+    [HttpPost("refund-requests/{id:guid}/retry")]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> RetryRefundAsync(
+        Guid id, [FromServices] ICommandHandler<RetryRefundCommand, Unit> handler, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return this.ToActionResult(await handler.HandleAsync(new RetryRefundCommand(id), cancellationToken), _ => Accepted());
     }
 
     /// <summary>Removes a product with a reason. It leaves public lists; buyers keep their downloads (US-32).</summary>
