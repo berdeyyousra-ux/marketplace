@@ -4,6 +4,18 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### Section 19 backlog order: the frontend (T-083) moves ahead of the Azure, deploy and polish tasks
+
+**Spec:** T-083 (thin Next.js frontend, an optional phase 7 stretch) comes after T-064, and its acceptance is "deployed alongside the API".
+
+**Change (repo owner's decision):**
+- T-083 is built now, against the local API, before T-061 to T-066 and before phase 7's deploy and polish tasks.
+- Its scope is unchanged: register, login, browse, product detail, checkout, library, seller dashboard and admin refund queue.
+- Deploying it alongside the API waits for the Azure work (T-061 to T-064).
+- T-073 (admin refund review and decision) is built first, because the admin refund queue screen needs its endpoints.
+
+**Why:** the owner wants a working client against the local stack before the cloud tasks, which need an Azure subscription and Stripe keys.
+
 ### Sections 12.3 and 16: OpenAI as a second LLM provider
 
 **Spec:** v1 ships `AnthropicLlmClient` and `FakeLlmClient`, and `Ai:Provider` selects between them.
