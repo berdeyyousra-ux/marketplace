@@ -9,6 +9,9 @@ public interface IFileStorage
     Task DeleteAsync(string key, CancellationToken cancellationToken);
 
     Task<bool> ExistsAsync(string key, CancellationToken cancellationToken);
+
+    // Section 9.7: a read-only signed URL that downloads as an attachment named fileName.
+    Task<Uri> CreateDownloadUrlAsync(string key, string fileName, DateTimeOffset expiresAt, CancellationToken cancellationToken);
 }
 
 // Section 9.2: every upload is scanned. v1 binds a no-op scanner.

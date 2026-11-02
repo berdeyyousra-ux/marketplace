@@ -37,6 +37,11 @@ public static class ApiProblems
             problem.Extensions["errors"] = error.Fields;
         }
 
+        foreach (var (name, value) in error.Extensions ?? new Dictionary<string, string>())
+        {
+            problem.Extensions[name] = value;
+        }
+
         return problem;
     }
 
