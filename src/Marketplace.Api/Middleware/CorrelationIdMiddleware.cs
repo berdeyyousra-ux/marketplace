@@ -1,3 +1,4 @@
+using Marketplace.Infrastructure.Outbox;
 using Serilog.Context;
 
 namespace Marketplace.Api.Middleware;
@@ -15,6 +16,7 @@ public sealed class CorrelationIdMiddleware(RequestDelegate next)
         context.Response.Headers[_headerName] = correlationId;
 
         using (LogContext.PushProperty("CorrelationId", correlationId))
+        using (AmbientCorrelationContext.Begin(correlationId))
         {
             await next(context);
         }

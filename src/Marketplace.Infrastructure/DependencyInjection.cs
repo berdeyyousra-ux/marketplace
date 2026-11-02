@@ -1,4 +1,5 @@
 using Marketplace.Application.Abstractions;
+using Marketplace.Infrastructure.Outbox;
 using Marketplace.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +24,9 @@ public static class DependencyInjection
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
         services.AddSingleton<IDbExceptionTranslator, DbExceptionTranslator>();
+        services.AddSingleton<ICorrelationContext, AmbientCorrelationContext>();
+        services.AddScoped<IOutbox, Outbox.Outbox>();
+        services.AddSingleton<OutboxProcessor>();
 
         return services;
     }

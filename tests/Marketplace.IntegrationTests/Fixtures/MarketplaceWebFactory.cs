@@ -1,3 +1,4 @@
+using Marketplace.Application.Abstractions;
 using Marketplace.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -52,6 +53,8 @@ public sealed class MarketplaceWebFactory : WebApplicationFactory<Program>, IAsy
         {
             services.RemoveAll<TimeProvider>();
             services.AddSingleton<TimeProvider>(Time);
+            services.AddSingleton<TestOutboxHandler>();
+            services.AddSingleton<IOutboxHandler>(provider => provider.GetRequiredService<TestOutboxHandler>());
         });
     }
 }
