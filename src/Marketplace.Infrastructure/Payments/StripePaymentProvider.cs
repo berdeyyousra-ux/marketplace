@@ -89,6 +89,14 @@ public sealed class StripePaymentProvider(IOptions<PaymentOptions> options, IStr
             throw new WebhookSignatureException("The Stripe webhook signature did not verify.", exception);
         }
 
+        return Map(stripeEvent, json);
+    }
+
+    public PaymentWebhookResult ReadStoredEvent(string rawPayload) =>
+        Map(EventUtility.ParseEvent(rawPayload, throwOnApiVersionMismatch: false), rawPayload);
+
+    private static PaymentWebhookResult Map(Event stripeEvent, string json)
+    {
         var (type, paymentId, amount) = stripeEvent.Data.Object switch
         {
             PaymentIntent intent when stripeEvent.Type == EventTypes.PaymentIntentSucceeded =>

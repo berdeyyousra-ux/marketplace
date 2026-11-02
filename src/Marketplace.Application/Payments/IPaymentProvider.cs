@@ -17,6 +17,10 @@ public interface IPaymentProvider
 
     // Throws WebhookSignatureException when the signature or timestamp does not verify.
     PaymentWebhookResult ParseWebhook(IReadOnlyDictionary<string, string> headers, byte[] rawBody);
+
+    // Reads a payload that ParseWebhook already verified and the inbox stored. The Worker uses it, because the
+    // original headers are gone and the signature tolerance may have passed (changelog: section 9.11 extension).
+    PaymentWebhookResult ReadStoredEvent(string rawPayload);
 }
 
 public enum ProviderPaymentStatus

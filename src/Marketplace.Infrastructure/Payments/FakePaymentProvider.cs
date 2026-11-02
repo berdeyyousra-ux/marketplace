@@ -136,7 +136,12 @@ public sealed class FakePaymentProvider(IOptions<PaymentOptions> options, TimePr
             throw new WebhookSignatureException("The webhook timestamp is outside the tolerance.");
         }
 
-        var payload = Encoding.UTF8.GetString(rawBody);
+        return ReadStoredEvent(Encoding.UTF8.GetString(rawBody));
+    }
+
+    public PaymentWebhookResult ReadStoredEvent(string rawPayload)
+    {
+        var payload = rawPayload;
         var webhook = JsonSerializer.Deserialize<FakeWebhook>(payload, _json) ?? throw new WebhookSignatureException("The webhook body is empty.");
         return new PaymentWebhookResult(
             webhook.EventId,

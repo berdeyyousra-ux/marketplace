@@ -4,6 +4,10 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### Section 9.11: IPaymentProvider gains ReadStoredEvent
+
+The Worker processes webhook events after they are stored, but `ParseWebhook` needs the original signature headers, which are not stored, and rejects payloads older than the 5-minute tolerance. `ReadStoredEvent(rawPayload)` parses a payload that `ParseWebhook` already verified at receive time. It is used only on rows from the `payment_events` inbox, which hold only verified events.
+
 ### Unassigned endpoints get a task
 
 No backlog task lists EP-09, EP-28, EP-61, EP-65 or EP-99. They are built with the task whose story needs them:
