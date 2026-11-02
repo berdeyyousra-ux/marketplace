@@ -1,11 +1,11 @@
 {
   "caseId": "approve-08",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
   "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "recordedAt": "2026-11-02T20:54:03.985475+00:00",
   "outputs": [
-    "{\"category\":\"accidental_purchase\",\"summary\":\"Fixture answer for approve-08: I bought this a minute ago by accident instead of the bundle. Not downloaded.\",\"recommendedAction\":\"approve\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022accidental_purchase\u0022,\u0022summary\u0022:\u0022The buyer accidentally purchased the product instead of the intended bundle and has not downloaded it yet.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The purchase was made within the last minute.\u0022,\u0022The buyer stated it was an accidental purchase.\u0022,\u0022The product has not been downloaded yet.\u0022,\u0022The refund policy states the purchase is eligible for a refund.\u0022],\u0022flags\u0022:[]}"
   ]
 }

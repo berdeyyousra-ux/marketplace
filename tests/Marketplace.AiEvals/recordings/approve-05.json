@@ -1,11 +1,12 @@
 {
   "caseId": "approve-05",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
   "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "recordedAt": "2026-11-02T20:53:59.093303+00:00",
   "outputs": [
-    "{\"category\":\"file_defective\",\"summary\":\"Fixture answer for approve-05: The PDF opens to blank pages after page 2. The rest of the book is missing.\",\"recommendedAction\":\"approve\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022file_defective\u0022,\u0022summary\u0022:\u0022The buyer reports that the PDF opens to blank pages after page 2, indicating that the file may be defective and incomplete.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.85,\u0022reason\u0022:[\u0022The buyer states that the PDF is incomplete and opens to blank pages.\u0022,\u0022The claim of missing content suggests a potential issue with the file.\u0022,\u0022The product falls within the refund window, allowing for consideration of the request.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}",
+    "{\u0022category\u0022:\u0022file_defective\u0022,\u0022summary\u0022:\u0022The buyer reports that the PDF opens to blank pages after page 2, indicating the book is incomplete and unusable.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.9,\u0022reason\u0022:[\u0022Buyer states the PDF is malfunctioning by displaying blank pages.\u0022,\u0022The product appears to be defective as it does not function as intended.\u0022,\u0022The issue reported affects the usability of the product.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}"
   ]
 }

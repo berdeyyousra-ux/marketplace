@@ -1,11 +1,11 @@
 {
   "caseId": "reject-07",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
   "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "recordedAt": "2026-11-02T20:54:44.661981+00:00",
   "outputs": [
-    "{\"category\":\"changed_mind\",\"summary\":\"Fixture answer for reject-07: I already printed all 200 pages and used them in class. Refund please.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\n  \u0022category\u0022: \u0022changed_mind\u0022,\n  \u0022summary\u0022: \u0022The buyer printed and used all 200 pages in their class, indicating they no longer need the product. They are requesting a refund despite having utilized the product.\u0022,\n  \u0022recommendedAction\u0022: \u0022reject\u0022,\n  \u0022confidence\u0022: 0.9,\n  \u0022reasons\u0022: [\n    \u0022The product has been fully utilized as intended by the buyer.\u0022,\n    \u0022The buyer\u0027s request for a refund comes after substantial use of the product.\u0022,\n    \u0022The policy verdict indicates that the product is not eligible for refunds after use.\u0022\n  ],\n  \u0022flags\u0022: []\n}"
   ]
 }

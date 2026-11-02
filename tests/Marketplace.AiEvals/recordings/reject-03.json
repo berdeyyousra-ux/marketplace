@@ -1,11 +1,11 @@
 {
   "caseId": "reject-03",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
   "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "recordedAt": "2026-11-02T20:54:38.150145+00:00",
   "outputs": [
-    "{\"category\":\"changed_mind\",\"summary\":\"Fixture answer for reject-03: The book is fine, I just read it all already and don't need it.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer has indicated that they have finished reading the ebook and no longer need it, suggesting a change of mind about the purchase.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.8,\u0022reasons\u0022:[\u0022The buyer has completed reading the ebook.\u0022,\u0022The reason for the refund is based on personal preference rather than product issues.\u0022,\u0022The product is within the download limit set by policy.\u0022],\u0022flags\u0022:[\u0022prompt_injection_suspected\u0022]}"
   ]
 }

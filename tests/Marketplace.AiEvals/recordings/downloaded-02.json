@@ -1,11 +1,11 @@
 {
   "caseId": "downloaded-02",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
   "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "recordedAt": "2026-11-02T20:54:07.493274+00:00",
   "outputs": [
-    "{\"category\":\"not_as_described\",\"summary\":\"Fixture answer for downloaded-02: I opened it once and realised it's for Keynote only; I use PowerPoint. The page didn't say.\",\"recommendedAction\":\"approve\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022does_not_work_for_me\u0022,\u0022summary\u0022:\u0022The buyer opened the Pitch Deck template and found it only compatible with Keynote, while they use PowerPoint, leading to a request for a refund due to incompatibility.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.85,\u0022reasons\u0022:[\u0022The product was downloaded and opened, indicating acceptance of the product\u0027s features.\u0022,\u0022The compatibility issue is a common concern, but it falls under the user\u0027s responsibility to check before purchasing.\u0022,\u0022The refund request is made within 14 days but the product has been opened, leading to eligibility concerns.\u0022],\u0022flags\u0022:[\u0022prompt_injection_suspected\u0022,\u0022policy_conflict\u0022]}"
   ]
 }

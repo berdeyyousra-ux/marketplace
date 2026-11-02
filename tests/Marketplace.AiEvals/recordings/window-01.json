@@ -1,11 +1,11 @@
 {
   "caseId": "window-01",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
   "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "recordedAt": "2026-11-02T20:54:47.773421+00:00",
   "outputs": [
-    "{\"category\":\"does_not_work_for_me\",\"summary\":\"Fixture answer for window-01: The file stopped opening after a software update. I bought it three months ago.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\n  \u0022category\u0022: \u0022does_not_work_for_me\u0022,\n  \u0022summary\u0022: \u0022The buyer reports that the software stopped opening after a software update, although the purchase was made three months ago.\u0022,\n  \u0022recommendedAction\u0022: \u0022reject\u0022,\n  \u0022confidence\u0022: 0.8,\n  \u0022reasons\u0022: [\n    \u0022The refund request is outside the 14-day window for refunds.\u0022,\n    \u0022The product has been downloaded 5 times, indicating potential use.\u0022,\n    \u0022The buyer has not requested refunds in the past 180 days.\u0022\n  ],\n  \u0022flags\u0022: [\n    \u0022outside_window\u0022\n  ]\n}"
   ]
 }

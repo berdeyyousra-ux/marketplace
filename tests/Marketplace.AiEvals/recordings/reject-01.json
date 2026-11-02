@@ -1,11 +1,11 @@
 {
   "caseId": "reject-01",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
   "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "recordedAt": "2026-11-02T20:54:34.94683+00:00",
   "outputs": [
-    "{\"category\":\"changed_mind\",\"summary\":\"Fixture answer for reject-01: I downloaded everything, used the templates for my client project, and now I don't need them anymore.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\n  \u0022category\u0022: \u0022changed_mind\u0022,\n  \u0022summary\u0022: \u0022The buyer downloaded the product and used the templates for a client project but no longer needs them.\u0022,\n  \u0022recommendedAction\u0022: \u0022reject\u0022,\n  \u0022confidence\u0022: 0.85,\n  \u0022reasons\u0022: [\n    \u0022The buyer indicated they have used the product.\u0022,\n    \u0022Refund requests after use typically fall under changed mind.\u0022,\n    \u0022The purchase is within the refund window but usage affects refund eligibility.\u0022\n  ],\n  \u0022flags\u0022: [\n    \u0022policy_conflict\u0022,\n    \u0022prompt_injection_suspected\u0022\n  ]\n}"
   ]
 }

@@ -1,11 +1,11 @@
 {
   "caseId": "reject-06",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
   "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "recordedAt": "2026-11-02T20:54:42.717956+00:00",
   "outputs": [
-    "{\"category\":\"changed_mind\",\"summary\":\"Fixture answer for reject-06: I don't like the colours. The files work fine and I downloaded them all.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022does_not_work_for_me\u0022,\u0022summary\u0022:\u0022The buyer is dissatisfied with the colors of the product but confirms that the files work fine and were successfully downloaded.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.8,\u0022reasons\u0022:[\u0022The buyer explicitly states the files work fine.\u0022,\u0022The issue is related to personal preference regarding colors, not product functionality.\u0022,\u0022The refund request is within the return window, but does not meet eligibility due to the product being downloaded and functional.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}"
   ]
 }

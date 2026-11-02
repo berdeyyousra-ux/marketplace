@@ -1,11 +1,11 @@
 {
   "caseId": "reject-02",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
   "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "recordedAt": "2026-11-02T20:54:36.716204+00:00",
   "outputs": [
-    "{\"category\":\"changed_mind\",\"summary\":\"Fixture answer for reject-02: Changed my mind. I have used it a lot but want my money back.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer has stated they changed their mind about the product after using it extensively. They are requesting a refund despite having downloaded it multiple times.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.85,\u0022reasons\u0022:[\u0022The buyer has used the product a lot, indicating a personal preference change rather than a defect.\u0022,\u0022The refund request is due to a change of mind, which is not typically eligible for a refund once the product has been downloaded.\u0022,\u0022The product is within the refund window, but extensive usage weakens the case for a refund.\u0022],\u0022flags\u0022:[\u0022policy_conflict\u0022]}"
   ]
 }

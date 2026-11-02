@@ -1,11 +1,11 @@
 {
   "caseId": "downloaded-06",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
   "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "recordedAt": "2026-11-02T20:54:13.887512+00:00",
   "outputs": [
-    "{\"category\":\"not_as_described\",\"summary\":\"Fixture answer for downloaded-06: Downloaded; half the sound effects are duplicates of each other with different names.\",\"recommendedAction\":\"approve\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\n  \u0022category\u0022: \u0022not_as_described\u0022,\n  \u0022summary\u0022: \u0022The buyer claims that half of the sound effects are duplicates with different names, indicating an issue with the product\u0027s description.\u0022,\n  \u0022recommendedAction\u0022: \u0022reject\u0022,\n  \u0022confidence\u0022: 0.8,\n  \u0022reasons\u0022: [\n    \u0022The buyer states that the sound effects are duplicates, which implies a product quality issue.\u0022,\n    \u0022The product has been downloaded.\u0022,\n    \u0022The refund request is made within the policy window.\u0022\n  ],\n  \u0022flags\u0022: [\u0022downloaded\u0022, \u0022prompt_injection_suspected\u0022]\n}"
   ]
 }

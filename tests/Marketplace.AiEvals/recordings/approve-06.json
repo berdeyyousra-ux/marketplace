@@ -1,11 +1,11 @@
 {
   "caseId": "approve-06",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
   "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "recordedAt": "2026-11-02T20:54:01.039298+00:00",
   "outputs": [
-    "{\"category\":\"not_as_described\",\"summary\":\"Fixture answer for approve-06: The description promised Notion and Google Sheets versions, but only an Excel file is included.\",\"recommendedAction\":\"approve\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022not_as_described\u0022,\u0022summary\u0022:\u0022The buyer claims the product description stated that both Notion and Google Sheets versions would be included, but only an Excel file was provided.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.8,\u0022reasons\u0022:[\u0022The product description was likely met as only the file format was different.\u0022,\u0022The buyer has downloaded the product, which may indicate acceptance of its form upon use.\u0022,\u0022The claim about missing versions is a subjective interpretation of the product\u0027s offerings.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022,\u0022policy_conflict\u0022]}"
   ]
 }

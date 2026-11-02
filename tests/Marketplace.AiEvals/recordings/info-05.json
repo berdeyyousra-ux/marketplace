@@ -1,11 +1,11 @@
 {
   "caseId": "info-05",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
   "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "recordedAt": "2026-11-02T20:54:21.314651+00:00",
   "outputs": [
-    "{\"category\":\"other\",\"summary\":\"Fixture answer for info-05: I want a refund for this one please.\",\"recommendedAction\":\"needs_more_info\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022other\u0022,\u0022summary\u0022:\u0022The buyer has requested a refund for the Travel Journal ebook.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The refund request is made within the allowable window of 14 days.\u0022,\u0022There have been no previous refunds by the buyer in the last 180 days.\u0022,\u0022The product has not been downloaded yet.\u0022],\u0022flags\u0022:[\u0022prompt_injection_suspected\u0022]}"
   ]
 }

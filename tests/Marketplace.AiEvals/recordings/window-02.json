@@ -1,11 +1,11 @@
 {
   "caseId": "window-02",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
   "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "recordedAt": "2026-11-02T20:54:49.885513+00:00",
   "outputs": [
-    "{\"category\":\"accidental_purchase\",\"summary\":\"Fixture answer for window-02: I forgot I bought this, never downloaded it. Can I get a refund?\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer is requesting a refund, stating they forgot they purchased the product and have not downloaded it. However, the request is outside the refund window.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The buyer did not download the product which indicates no usage.\u0022,\u0022The refund request is made 40 days after purchase, which is outside the 14-day refund window.\u0022,\u0022Policy states that refunds are ineligible outside of the window.\u0022,\u0022The buyer does not have a history of refunds in the last 180 days.\u0022],\u0022flags\u0022:[\u0022outside_window\u0022]}"
   ]
 }

@@ -1,11 +1,11 @@
 {
   "caseId": "reject-08",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
   "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "recordedAt": "2026-11-02T20:54:46.21823+00:00",
   "outputs": [
-    "{\"category\":\"changed_mind\",\"summary\":\"Fixture answer for reject-08: Bought, downloaded ten times, shared with my team, now refund.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\n  \u0022category\u0022: \u0022changed_mind\u0022,\n  \u0022summary\u0022: \u0022The buyer requests a refund for a product that has been downloaded multiple times and shared with their team. The policy indicates that the product is eligible for refund despite the downloads.\u0022,\n  \u0022recommendedAction\u0022: \u0022reject\u0022,\n  \u0022confidence\u0022: 0.8,\n  \u0022reasons\u0022: [\n    \u0022The buyer has downloaded the product ten times.\u0022,\n    \u0022The buyer has shared the product with their team.\u0022,\n    \u0022The product falls under the \u0027EligibleDownloaded\u0027 policy verdict.\u0022\n  ],\n  \u0022flags\u0022: []\n}"
   ]
 }

@@ -1,12 +1,11 @@
 {
   "caseId": "window-03",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
   "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "recordedAt": "2026-11-02T20:54:51.216624+00:00",
   "outputs": [
-    "```json\n{\"category\":\"changed_mind\",\"summary\":\"Fixture answer for window-03: Changed my mind after a month of use.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}\n```",
-    "{\"category\":\"changed_mind\",\"summary\":\"Fixture answer for window-03: Changed my mind after a month of use.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer has indicated they no longer want the product after using it for a month. However, the refund request is outside of the allowed window for refunds.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The refund request is outside the 14-day window for refunds.\u0022,\u0022The buyer mentioned changing their mind after a month of use.\u0022,\u0022The product has been downloaded multiple times.\u0022],\u0022flags\u0022:[\u0022outside_window\u0022,\u0022prompt_injection_suspected\u0022]}"
   ]
 }

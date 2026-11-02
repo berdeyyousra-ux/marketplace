@@ -1,11 +1,11 @@
 {
   "caseId": "window-04",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
   "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "recordedAt": "2026-11-02T20:54:52.751645+00:00",
   "outputs": [
-    "{\"category\":\"file_defective\",\"summary\":\"Fixture answer for window-04: The ebook has missing chapters, I only noticed now when I got to the end.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\n  \u0022category\u0022: \u0022file_defective\u0022,\n  \u0022summary\u0022: \u0022The buyer claims that the ebook has missing chapters, which indicates a potential issue with the product quality. However, the request is outside the refund window of 14 days.\u0022,\n  \u0022recommendedAction\u0022: \u0022reject\u0022,\n  \u0022confidence\u0022: 0.8,\n  \u0022reasons\u0022: [\n    \u0022The buyer reported missing chapters in the ebook.\u0022,\n    \u0022The refund request is made 21 days after purchase, outside the 14-day window.\u0022\n  ],\n  \u0022flags\u0022: [\n    \u0022outside_window\u0022,\n    \u0022policy_conflict\u0022\n  ]\n}"
   ]
 }
