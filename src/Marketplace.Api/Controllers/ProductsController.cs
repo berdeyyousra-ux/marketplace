@@ -2,6 +2,7 @@ using Marketplace.Api.Auth;
 using Marketplace.Api.Infrastructure;
 using Marketplace.Application.Abstractions;
 using Marketplace.Application.Catalog;
+using Marketplace.Application.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,6 +13,19 @@ namespace Marketplace.Api.Controllers;
 [Produces("application/json")]
 public sealed class ProductsController : ControllerBase
 {
+    /// <summary>Searches and browses published products, with keyset pagination (US-20).</summary>
+    [HttpGet]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(Page<ProductSummary>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> SearchAsync(
+        [FromQuery] SearchProductsQuery query, [FromServices] IQueryHandler<SearchProductsQuery, Page<ProductSummary>> handler, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return this.ToActionResult(await handler.HandleAsync(query, cancellationToken), page => Ok(page));
+    }
+
     /// <summary>Returns a product. Non-published products are visible only to the owner, buyers and admins (US-21).</summary>
     [HttpGet("{id:guid}")]
     [AllowAnonymous]
