@@ -59,6 +59,7 @@ jobs:
       - name: Build migration bundle
         run: |
           dotnet tool restore
+          dotnet restore src/Marketplace.Infrastructure/Marketplace.Infrastructure.csproj --runtime linux-x64
           dotnet ef migrations bundle --project src/Marketplace.Infrastructure --startup-project src/Marketplace.Infrastructure \
             --configuration Release --self-contained --runtime linux-x64 --output efbundle --force
 
