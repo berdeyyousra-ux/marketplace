@@ -40,7 +40,8 @@ public sealed class SeedGenerator(SeedOptions options)
 
     public SeedDataset Generate()
     {
-        var start = options.Now - SeedOptions.History;
+        // Whole milliseconds, which PostgreSQL stores exactly, so reports can be checked against this data.
+        var start = Trim(options.Now - SeedOptions.History);
         var admin = User("admin", 0, "Seed Admin", start - TimeSpan.FromDays(90));
         var sellerUsers = new SeedUser[options.Sellers];
         var sellers = new SeedSeller[options.Sellers];
@@ -62,7 +63,7 @@ public sealed class SeedGenerator(SeedOptions options)
         var buyers = new SeedUser[options.Buyers];
         for (var i = 0; i < options.Buyers; i++)
         {
-            var created = start - TimeSpan.FromDays(30) + TimeSpan.FromMinutes(_random.NextDouble() * SeedOptions.History.TotalMinutes * 0.5);
+            var created = Trim(start - TimeSpan.FromDays(30) + TimeSpan.FromMinutes(_random.NextDouble() * SeedOptions.History.TotalMinutes * 0.5));
             buyers[i] = User("buyer", i + 1, $"Buyer {i + 1}", created);
         }
 
@@ -142,7 +143,7 @@ public sealed class SeedGenerator(SeedOptions options)
 
         for (var i = 0; i < orders.Length; i++)
         {
-            var created = start + TimeSpan.FromMinutes(times[i]);
+            var created = Trim(start + TimeSpan.FromMinutes(times[i]));
             var buyer = Skewed(buyers.Length, 1.6);
             var age = options.Now - created;
             var roll = _random.NextDouble();
@@ -253,6 +254,8 @@ public sealed class SeedGenerator(SeedOptions options)
         DisplayName = displayName,
         CreatedAt = created,
     };
+
+    private static DateTimeOffset Trim(DateTimeOffset time) => new(time.UtcTicks - (time.UtcTicks % TimeSpan.TicksPerMillisecond), TimeSpan.Zero);
 
     // Index in [0, count) with low indexes more likely; a higher power is more skewed.
     private int Skewed(int count, double power) => Math.Min(count - 1, (int)(Math.Pow(_random.NextDouble(), power) * count));

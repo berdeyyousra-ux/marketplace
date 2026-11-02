@@ -61,6 +61,7 @@ public static class DependencyInjection
         services.AddSingleton<StripePaymentProvider>();
         services.AddScoped<IPaymentEventInbox, PaymentEventInbox>();
         services.AddScoped<IRowLocks, RowLocks>();
+        services.AddScoped<Application.Reporting.IReports, Reporting.SqlReports>();
         services.AddScoped<Jobs.OrderExpiryJob>();
         services.AddScoped<Jobs.PaymentReconciliationJob>();
         services.AddScoped<Jobs.CleanupJob>();

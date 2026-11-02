@@ -22,4 +22,9 @@
     <PackageReference Include="MailKit" />
   </ItemGroup>
 
+  <!-- Section 13.2: the report SQL is kept once, in docs/sql, and embedded here. -->
+  <ItemGroup>
+    <EmbeddedResource Include="../../docs/sql/R*.sql" LogicalName="Marketplace.Sql.%(Filename).sql" />
+  </ItemGroup>
+
 </Project>
