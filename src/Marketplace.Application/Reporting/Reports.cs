@@ -17,6 +17,8 @@ public sealed record OrderFunnelRow(string Day, long Created, long PaymentStarte
 
 public sealed record OrderValuePercentilesRow(long Orders, decimal? P50, decimal? P90, decimal? P99);
 
+public sealed record PlatformTotalsRow(decimal NetSales, decimal PlatformFees, long PaidOrders, decimal? RefundRate);
+
 public sealed record SellerSummaryRow(decimal Balance, decimal Revenue, long Orders, long Refunds, long ActiveProducts);
 
 public sealed record TopSellerRow(Guid SellerId, string DisplayName, decimal NetSales, decimal PlatformFees, long Units);
@@ -48,6 +50,9 @@ public interface IReports
 
     // R-05. Days in [periodStart, periodEnd), one row per UTC day.
     Task<List<OrderFunnelRow>> OrderFunnelAsync(DateTimeOffset periodStart, DateTimeOffset periodEnd, CancellationToken cancellationToken);
+
+    // EP-74 totals.
+    Task<PlatformTotalsRow> PlatformTotalsAsync(DateTimeOffset periodStart, DateTimeOffset periodEnd, CancellationToken cancellationToken);
 
     // R-06.
     Task<OrderValuePercentilesRow> OrderValuePercentilesAsync(DateTimeOffset periodStart, DateTimeOffset periodEnd, CancellationToken cancellationToken);

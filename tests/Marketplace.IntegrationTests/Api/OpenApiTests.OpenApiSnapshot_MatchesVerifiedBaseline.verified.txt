@@ -11,6 +11,489 @@
     }
   ],
   paths: {
+    /api/v1/admin/reports/overview: {
+      get: {
+        tags: [
+          Admin
+        ],
+        summary: Net sales, fees, paid orders, refund rate, order value percentiles and the daily order funnel for a period (US-33).,
+        parameters: [
+          {
+            name: From,
+            in: query,
+            schema: {
+              type: string,
+              format: date-time
+            }
+          },
+          {
+            name: To,
+            in: query,
+            schema: {
+              type: string,
+              format: date-time
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/OverviewResponse
+                }
+              }
+            }
+          },
+          422: {
+            description: Unprocessable Entity,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
+    /api/v1/admin/reports/top-sellers: {
+      get: {
+        tags: [
+          Admin
+        ],
+        summary: Sellers ranked by net sales over the last N days (US-33, R-08).,
+        parameters: [
+          {
+            name: Days,
+            in: query,
+            schema: {
+              pattern: ^-?(?:0|[1-9]\d*)$,
+              type: [
+                integer,
+                string
+              ],
+              format: int32
+            }
+          },
+          {
+            name: Limit,
+            in: query,
+            schema: {
+              pattern: ^-?(?:0|[1-9]\d*)$,
+              type: [
+                integer,
+                string
+              ],
+              format: int32
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ItemListOfTopSeller
+                }
+              }
+            }
+          },
+          422: {
+            description: Unprocessable Entity,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
+    /api/v1/admin/reports/refund-rates: {
+      get: {
+        tags: [
+          Admin
+        ],
+        summary: Refund rates per seller and for the most refunded products over the last N days (US-33, R-04).,
+        parameters: [
+          {
+            name: Days,
+            in: query,
+            schema: {
+              pattern: ^-?(?:0|[1-9]\d*)$,
+              type: [
+                integer,
+                string
+              ],
+              format: int32
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/RefundRatesResponse
+                }
+              }
+            }
+          },
+          422: {
+            description: Unprocessable Entity,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
+    /api/v1/admin/reports/repeat-buyers: {
+      get: {
+        tags: [
+          Admin
+        ],
+        summary: Repeat-buyer cohorts by month of first purchase (US-33, R-03).,
+        parameters: [
+          {
+            name: Months,
+            in: query,
+            schema: {
+              pattern: ^-?(?:0|[1-9]\d*)$,
+              type: [
+                integer,
+                string
+              ],
+              format: int32
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ItemListOfRepeatBuyerCohort
+                }
+              }
+            }
+          },
+          422: {
+            description: Unprocessable Entity,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
+    /api/v1/admin/products/{id}/remove: {
+      post: {
+        tags: [
+          Admin
+        ],
+        summary: Removes a product with a reason. It leaves public lists; buyers keep their downloads (US-32).,
+        parameters: [
+          {
+            name: id,
+            in: path,
+            required: true,
+            schema: {
+              type: string,
+              format: uuid
+            }
+          }
+        ],
+        requestBody: {
+          content: {
+            application/json: {
+              schema: {
+                $ref: #/components/schemas/RemoveProductRequest
+              }
+            },
+            text/json: {
+              schema: {
+                $ref: #/components/schemas/RemoveProductRequest
+              }
+            },
+            application/*+json: {
+              schema: {
+                $ref: #/components/schemas/RemoveProductRequest
+              }
+            }
+          },
+          required: true
+        },
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProductResponse
+                }
+              }
+            }
+          },
+          404: {
+            description: Not Found,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          409: {
+            description: Conflict,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          422: {
+            description: Unprocessable Entity,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
+    /api/v1/admin/audit-log: {
+      get: {
+        tags: [
+          Admin
+        ],
+        summary: Audit entries, newest first, filtered by entity, actor and time. Keyset paginated (US-34).,
+        parameters: [
+          {
+            name: EntityType,
+            in: query,
+            schema: {
+              type: string
+            }
+          },
+          {
+            name: EntityId,
+            in: query,
+            schema: {
+              type: string,
+              format: uuid
+            }
+          },
+          {
+            name: ActorUserId,
+            in: query,
+            schema: {
+              type: string,
+              format: uuid
+            }
+          },
+          {
+            name: From,
+            in: query,
+            schema: {
+              type: string,
+              format: date-time
+            }
+          },
+          {
+            name: To,
+            in: query,
+            schema: {
+              type: string,
+              format: date-time
+            }
+          },
+          {
+            name: Limit,
+            in: query,
+            schema: {
+              pattern: ^-?(?:0|[1-9]\d*)$,
+              type: [
+                integer,
+                string
+              ],
+              format: int32
+            }
+          },
+          {
+            name: Cursor,
+            in: query,
+            schema: {
+              type: string
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/PageOfAuditLogItem
+                }
+              }
+            }
+          },
+          400: {
+            description: Bad Request,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
+    /api/v1/admin/outbox/dead-letters: {
+      get: {
+        tags: [
+          Admin
+        ],
+        summary: Dead-lettered outbox messages, most recent first. Keyset paginated (US-34).,
+        parameters: [
+          {
+            name: Limit,
+            in: query,
+            schema: {
+              pattern: ^-?(?:0|[1-9]\d*)$,
+              type: [
+                integer,
+                string
+              ],
+              format: int32
+            }
+          },
+          {
+            name: Cursor,
+            in: query,
+            schema: {
+              type: string
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/PageOfDeadLetter
+                }
+              }
+            }
+          },
+          400: {
+            description: Bad Request,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
+    /api/v1/admin/outbox/{id}/retry: {
+      post: {
+        tags: [
+          Admin
+        ],
+        summary: Clears a dead-lettered message and resets its attempts, so the Worker processes it again (US-34).,
+        parameters: [
+          {
+            name: id,
+            in: path,
+            required: true,
+            schema: {
+              type: string,
+              format: uuid
+            }
+          }
+        ],
+        responses: {
+          202: {
+            description: Accepted,
+            content: {}
+          },
+          404: {
+            description: Not Found,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          409: {
+            description: Conflict,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
     /api/v1/auth/register: {
       post: {
         tags: [
@@ -1649,6 +2132,76 @@
   },
   components: {
     schemas: {
+      AuditLogItem: {
+        required: [
+          id,
+          occurredAt,
+          actorType,
+          actorUserId,
+          action,
+          entityType,
+          entityId,
+          details,
+          correlationId
+        ],
+        type: object,
+        properties: {
+          id: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          },
+          occurredAt: {
+            type: string,
+            format: date-time
+          },
+          actorType: {
+            type: string
+          },
+          actorUserId: {
+            type: [
+              null,
+              string
+            ],
+            format: uuid
+          },
+          action: {
+            type: string
+          },
+          entityType: {
+            type: [
+              null,
+              string
+            ]
+          },
+          entityId: {
+            type: [
+              null,
+              string
+            ],
+            format: uuid
+          },
+          details: {
+            oneOf: [
+              {
+                type: null
+              },
+              {
+                $ref: #/components/schemas/JsonElement
+              }
+            ]
+          },
+          correlationId: {
+            type: [
+              null,
+              string
+            ]
+          }
+        }
+      },
       BecomeSellerCommand: {
         required: [
           displayName,
@@ -1725,6 +2278,55 @@
           }
         }
       },
+      DeadLetter: {
+        required: [
+          id,
+          type,
+          attempts,
+          lastError,
+          createdAt,
+          deadLetteredAt,
+          correlationId
+        ],
+        type: object,
+        properties: {
+          id: {
+            type: string,
+            format: uuid
+          },
+          type: {
+            type: string
+          },
+          attempts: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int32
+          },
+          lastError: {
+            type: [
+              null,
+              string
+            ]
+          },
+          createdAt: {
+            type: string,
+            format: date-time
+          },
+          deadLetteredAt: {
+            type: string,
+            format: date-time
+          },
+          correlationId: {
+            type: [
+              null,
+              string
+            ]
+          }
+        }
+      },
       DownloadLink: {
         required: [
           url,
@@ -1753,6 +2355,53 @@
           }
         }
       },
+      FunnelDay: {
+        required: [
+          day,
+          created,
+          paymentStarted,
+          paid,
+          refunded
+        ],
+        type: object,
+        properties: {
+          day: {
+            type: string
+          },
+          created: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          },
+          paymentStarted: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          },
+          paid: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          },
+          refunded: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          }
+        }
+      },
       ItemListOfMonthlyRevenue: {
         required: [
           items
@@ -1767,6 +2416,20 @@
           }
         }
       },
+      ItemListOfRepeatBuyerCohort: {
+        required: [
+          items
+        ],
+        type: object,
+        properties: {
+          items: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/RepeatBuyerCohort
+            }
+          }
+        }
+      },
       ItemListOfTopProduct: {
         required: [
           items
@@ -1777,6 +2440,20 @@
             type: array,
             items: {
               $ref: #/components/schemas/TopProduct
+            }
+          }
+        }
+      },
+      ItemListOfTopSeller: {
+        required: [
+          items
+        ],
+        type: object,
+        properties: {
+          items: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/TopSeller
             }
           }
         }
@@ -2119,6 +2796,152 @@
           }
         }
       },
+      OrderValue: {
+        required: [
+          orders,
+          p50,
+          p90,
+          p99
+        ],
+        type: object,
+        properties: {
+          orders: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          },
+          p50: {
+            oneOf: [
+              {
+                type: null
+              },
+              {
+                $ref: #/components/schemas/MoneyDto
+              }
+            ]
+          },
+          p90: {
+            oneOf: [
+              {
+                type: null
+              },
+              {
+                $ref: #/components/schemas/MoneyDto
+              }
+            ]
+          },
+          p99: {
+            oneOf: [
+              {
+                type: null
+              },
+              {
+                $ref: #/components/schemas/MoneyDto
+              }
+            ]
+          }
+        }
+      },
+      OverviewResponse: {
+        required: [
+          from,
+          to,
+          netSales,
+          platformFees,
+          paidOrders,
+          refundRate,
+          orderValue,
+          funnel
+        ],
+        type: object,
+        properties: {
+          from: {
+            type: string,
+            format: date-time
+          },
+          to: {
+            type: string,
+            format: date-time
+          },
+          netSales: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          platformFees: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          paidOrders: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          },
+          refundRate: {
+            pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$,
+            type: [
+              null,
+              number,
+              string
+            ],
+            format: double
+          },
+          orderValue: {
+            $ref: #/components/schemas/OrderValue
+          },
+          funnel: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/FunnelDay
+            }
+          }
+        }
+      },
+      PageOfAuditLogItem: {
+        required: [
+          items,
+          nextCursor
+        ],
+        type: object,
+        properties: {
+          items: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/AuditLogItem
+            }
+          },
+          nextCursor: {
+            type: [
+              null,
+              string
+            ]
+          }
+        }
+      },
+      PageOfDeadLetter: {
+        required: [
+          items,
+          nextCursor
+        ],
+        type: object,
+        properties: {
+          items: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/DeadLetter
+            }
+          },
+          nextCursor: {
+            type: [
+              null,
+              string
+            ]
+          }
+        }
+      },
       PageOfLibraryItem: {
         required: [
           items,
@@ -2371,6 +3194,55 @@
           }
         }
       },
+      ProductRefundRate: {
+        required: [
+          productId,
+          title,
+          sellerId,
+          unitsSold,
+          unitsRefunded,
+          refundRate
+        ],
+        type: object,
+        properties: {
+          productId: {
+            type: string,
+            format: uuid
+          },
+          title: {
+            type: string
+          },
+          sellerId: {
+            type: string,
+            format: uuid
+          },
+          unitsSold: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          },
+          unitsRefunded: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          },
+          refundRate: {
+            pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$,
+            type: [
+              null,
+              number,
+              string
+            ],
+            format: double
+          }
+        }
+      },
       ProductResponse: {
         required: [
           id,
@@ -2538,6 +3410,27 @@
           }
         }
       },
+      RefundRatesResponse: {
+        required: [
+          sellers,
+          products
+        ],
+        type: object,
+        properties: {
+          sellers: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/SellerRefundRate
+            }
+          },
+          products: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/ProductRefundRate
+            }
+          }
+        }
+      },
       RegisterCommand: {
         required: [
           email,
@@ -2554,6 +3447,64 @@
           },
           displayName: {
             type: string
+          }
+        }
+      },
+      RemoveProductRequest: {
+        required: [
+          reason
+        ],
+        type: object,
+        properties: {
+          reason: {
+            type: string
+          }
+        }
+      },
+      RepeatBuyerCohort: {
+        required: [
+          cohort,
+          buyers,
+          thirtyDayRepeatShare,
+          sixtyDayRepeatShare,
+          ninetyDayRepeatShare
+        ],
+        type: object,
+        properties: {
+          cohort: {
+            type: string
+          },
+          buyers: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          },
+          thirtyDayRepeatShare: {
+            pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$,
+            type: [
+              number,
+              string
+            ],
+            format: double
+          },
+          sixtyDayRepeatShare: {
+            pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$,
+            type: [
+              number,
+              string
+            ],
+            format: double
+          },
+          ninetyDayRepeatShare: {
+            pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$,
+            type: [
+              number,
+              string
+            ],
+            format: double
           }
         }
       },
@@ -2679,6 +3630,50 @@
           }
         }
       },
+      SellerRefundRate: {
+        required: [
+          sellerId,
+          displayName,
+          unitsSold,
+          unitsRefunded,
+          refundRate
+        ],
+        type: object,
+        properties: {
+          sellerId: {
+            type: string,
+            format: uuid
+          },
+          displayName: {
+            type: string
+          },
+          unitsSold: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          },
+          unitsRefunded: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          },
+          refundRate: {
+            pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$,
+            type: [
+              null,
+              number,
+              string
+            ],
+            format: double
+          }
+        }
+      },
       SellerSummaryResponse: {
         required: [
           balance,
@@ -2778,6 +3773,39 @@
           }
         }
       },
+      TopSeller: {
+        required: [
+          sellerId,
+          displayName,
+          netSales,
+          platformFees,
+          units
+        ],
+        type: object,
+        properties: {
+          sellerId: {
+            type: string,
+            format: uuid
+          },
+          displayName: {
+            type: string
+          },
+          netSales: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          platformFees: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          units: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          }
+        }
+      },
       VerifyEmailCommand: {
         required: [
           token
@@ -2800,6 +3828,9 @@
     }
   },
   tags: [
+    {
+      name: Admin
+    },
     {
       name: Auth
     },

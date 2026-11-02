@@ -48,6 +48,14 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
         { "POST", "/api/v1/orders/{order}/cancel", [401, 204, 404, 404, 404, 404] },
         { "POST", "/api/v1/downloads/{item}/link", [401, 200, 404, 404, 404, 404] },
         { "GET", "/api/v1/library", [401, 200, 200, 200, 200, 200] },
+        { "GET", "/api/v1/admin/reports/overview", [401, 403, 403, 403, 200, 403] },
+        { "GET", "/api/v1/admin/reports/top-sellers", [401, 403, 403, 403, 200, 403] },
+        { "GET", "/api/v1/admin/reports/refund-rates", [401, 403, 403, 403, 200, 403] },
+        { "GET", "/api/v1/admin/reports/repeat-buyers", [401, 403, 403, 403, 200, 403] },
+        { "GET", "/api/v1/admin/audit-log", [401, 403, 403, 403, 200, 403] },
+        { "GET", "/api/v1/admin/outbox/dead-letters", [401, 403, 403, 403, 200, 403] },
+        { "POST", "/api/v1/admin/products/{draft}/remove", [401, 403, 403, 403, 200, 403] },
+        { "POST", "/api/v1/admin/outbox/{order}/retry", [401, 403, 403, 403, 404, 403] },
         { "GET", "/api/v1/products", [200, 200, 200, 200, 200, 200] },
         { "GET", "/api/v1/categories", [200, 200, 200, 200, 200, 200] },
     };
@@ -137,6 +145,7 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
             ("POST", "/api/v1/products") or ("PUT", _) => JsonContent.Create(ProductBody()),
             ("POST", "/api/v1/orders") => JsonContent.Create(new { productIds = new[] { publishedId } }),
             ("POST", "/api/v1/auth/change-password") => JsonContent.Create(new { currentPassword = "not the current one", newPassword = "a brand new passphrase" }),
+            ("POST", _) when path.EndsWith("/remove", StringComparison.Ordinal) => JsonContent.Create(new { reason = "Matrix removal." }),
             _ => null,
         };
         return request;
