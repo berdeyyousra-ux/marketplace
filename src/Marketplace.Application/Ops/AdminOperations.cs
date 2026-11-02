@@ -60,7 +60,7 @@ public sealed class DeadLettersQueryValidator : AbstractValidator<DeadLettersQue
 }
 
 // US-32: the product leaves every public list. Download grants are untouched, so buyers keep access.
-public sealed class RemoveProductCommandHandler(IAppDbContext db, ICurrentUser currentUser, AuditTrail audit, TimeProvider timeProvider)
+public sealed class RemoveProductCommandHandler(IAppDbContext db, ICurrentUser currentUser, AuditTrail audit, TimeProvider timeProvider, IPublicImageStorage images)
     : ICommandHandler<RemoveProductCommand, ProductResponse>
 {
     public async Task<Result<ProductResponse>> HandleAsync(RemoveProductCommand command, CancellationToken cancellationToken)
@@ -89,7 +89,7 @@ public sealed class RemoveProductCommandHandler(IAppDbContext db, ICurrentUser c
             return DomainErrors.InvalidState("The product changed while it was being removed. Try again.");
         }
 
-        return ProductMapping.ToResponse(product, isOwner: false, showFile: true);
+        return ProductMapping.ToResponse(product, isOwner: false, showFile: true, images);
     }
 }
 

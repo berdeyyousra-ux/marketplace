@@ -16,6 +16,7 @@ public sealed partial class ProductFilesController(IFileStorage storage, IFileSc
 {
     // The 100 MB file plus room for the multipart framing. The global request limit is 1 MB (section 9.2).
     private const long _requestLimit = FileRules.MaxBytes + (64 * 1024);
+    private const long _coverRequestLimit = CoverImageRules.MaxBytes + (64 * 1024);
 
     /// <summary>Uploads the product's file as multipart field "file". Streamed to storage, at most 100 MB (US-12).</summary>
     [HttpPost("{id:guid}/file")]
@@ -99,6 +100,115 @@ public sealed partial class ProductFilesController(IFileStorage storage, IFileSc
             // Best effort: rare orphaned blobs are accepted (section 9.2).
             await DeleteQuietlyAsync(key);
             throw;
+        }
+    }
+
+    /// <summary>Sets the product's cover image from multipart field "file": JPEG, PNG or WebP, at most 5 MB. Metadata such as EXIF is
+    /// removed before the image is stored, because covers are public (T-085).</summary>
+    [HttpPut("{id:guid}/cover")]
+    [Authorize(Policy = AuthenticationSetup.RequireSeller)]
+    [RequestSizeLimit(_coverRequestLimit)]
+    [DisableFormValueModelBinding]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(CoverImageResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status413PayloadTooLarge, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> UploadCoverAsync(
+        Guid id,
+        [FromServices] IQueryHandler<UploadTargetQuery, Guid> target,
+        [FromServices] ICommandHandler<SetCoverImageCommand, CoverImageResponse> setCover,
+        [FromServices] IPublicImageStorage images,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(setCover);
+        ArgumentNullException.ThrowIfNull(images);
+
+        var allowed = await target.HandleAsync(new UploadTargetQuery(id), cancellationToken);
+        if (allowed.IsFailure)
+        {
+            return this.Problem(allowed.Error);
+        }
+
+        var section = await FindFileSectionAsync(cancellationToken);
+        if (section is null)
+        {
+            return this.Problem(Errors.ApiProblems.InvalidRequest);
+        }
+
+        var declared = CoverImageRules.DeclaredType(section.Value.Disposition.FileName.Value ?? string.Empty);
+        if (declared is null)
+        {
+            return ProblemWithStatus(CoverImageRules.UnsupportedType, StatusCodes.Status415UnsupportedMediaType);
+        }
+
+        // At most 5 MB is ever held: reading stops one byte past the limit.
+        var bytes = await ReadAtMostAsync(section.Value.Section.Body, CoverImageRules.MaxBytes + 1, cancellationToken);
+        if (bytes.Length > CoverImageRules.MaxBytes)
+        {
+            return ProblemWithStatus(CoverImageRules.TooLarge, StatusCodes.Status413PayloadTooLarge);
+        }
+
+        var actual = CoverImageRules.Sniff(bytes);
+        if (actual is null)
+        {
+            return ProblemWithStatus(CoverImageRules.UnsupportedType, StatusCodes.Status415UnsupportedMediaType);
+        }
+
+        if (actual != declared)
+        {
+            return this.Problem(CoverImageRules.ContentMismatch);
+        }
+
+        var stripped = ImageMetadata.Strip(bytes, actual);
+        if (stripped is null)
+        {
+            return this.Problem(CoverImageRules.Malformed);
+        }
+
+        var key = $"covers/{id}/{Guid.CreateVersion7()}.{CoverImageRules.Extension(actual)}";
+        await images.UploadAsync(key, stripped, actual, cancellationToken);
+        try
+        {
+            var result = await setCover.HandleAsync(new SetCoverImageCommand(id, key, stripped.Length, actual), cancellationToken);
+            if (result.IsFailure)
+            {
+                await DeleteCoverQuietlyAsync(images, key);
+            }
+
+            return this.ToActionResult(result, cover => Ok(cover));
+        }
+        catch
+        {
+            await DeleteCoverQuietlyAsync(images, key);
+            throw;
+        }
+    }
+
+    private static async Task<byte[]> ReadAtMostAsync(Stream body, int limit, CancellationToken cancellationToken)
+    {
+        using var buffer = new MemoryStream();
+        var chunk = new byte[81920];
+        int read;
+        while (buffer.Length < limit && (read = await body.ReadAsync(chunk.AsMemory(0, (int)Math.Min(chunk.Length, limit - buffer.Length)), cancellationToken)) > 0)
+        {
+            buffer.Write(chunk, 0, read);
+        }
+
+        return buffer.ToArray();
+    }
+
+    private async Task DeleteCoverQuietlyAsync(IPublicImageStorage images, string key)
+    {
+        try
+        {
+            await images.DeleteAsync(key, CancellationToken.None);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            LogOrphanedBlob(logger, exception, key);
         }
     }
 

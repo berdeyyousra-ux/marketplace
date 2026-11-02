@@ -104,6 +104,8 @@ payments.provider_payment_id character varying(100) NOT NULL
 payments.status text NOT NULL
 payments.updated_at timestamp with time zone NOT NULL
 products.category_id integer(32,0) NOT NULL
+products.cover_image_key text
+products.cover_image_updated_at timestamp with time zone
 products.created_at timestamp with time zone NOT NULL
 products.currency character(3) NOT NULL DEFAULT 'EUR'::bpchar
 products.description character varying(5000) NOT NULL

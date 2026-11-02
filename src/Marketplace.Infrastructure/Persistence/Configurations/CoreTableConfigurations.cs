@@ -30,6 +30,7 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.Description).HasMaxLength(Product.DescriptionMaxLength);
         builder.Property(p => p.Status).AsText();
         builder.Property(p => p.RemovedReason).HasMaxLength(Product.RemovedReasonMaxLength);
+        builder.Property(p => p.CoverImageKey).HasColumnType("text");
         builder.MapMoney(p => p.Price, "price");
         builder.OwnsOne(p => p.File, file =>
         {

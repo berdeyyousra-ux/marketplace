@@ -256,6 +256,14 @@ namespace Marketplace.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("category_id");
 
+                    b.Property<string>("CoverImageKey")
+                        .HasColumnType("text")
+                        .HasColumnName("cover_image_key");
+
+                    b.Property<DateTimeOffset?>("CoverImageUpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cover_image_updated_at");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");

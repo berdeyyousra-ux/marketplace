@@ -12,7 +12,8 @@ namespace Marketplace.Application.Catalog;
 public sealed record SellerProductsQuery(string? Status = null, int Limit = Paging.DefaultLimit, string? Cursor = null);
 
 public sealed record SellerProductSummary(
-    Guid Id, string Title, string Status, MoneyDto Price, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, DateTimeOffset? PublishedAt, int SalesCount);
+    Guid Id, string Title, string Status, MoneyDto Price, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, DateTimeOffset? PublishedAt, int SalesCount,
+    Uri? CoverImageUrl);
 
 public sealed record CreatedCursor(DateTimeOffset CreatedAt, Guid Id);
 
@@ -27,7 +28,7 @@ public sealed class SellerProductsQueryValidator : AbstractValidator<SellerProdu
 }
 
 // Newest first, keyset on (created_at, id). Sales are paid, not refunded order items.
-public sealed class SellerProductsQueryHandler(IAppDbContext db, ProductOwnership ownership)
+public sealed class SellerProductsQueryHandler(IAppDbContext db, ProductOwnership ownership, IPublicImageStorage images)
     : IQueryHandler<SellerProductsQuery, Page<SellerProductSummary>>
 {
     public async Task<Result<Page<SellerProductSummary>>> HandleAsync(SellerProductsQuery query, CancellationToken cancellationToken)
@@ -67,6 +68,8 @@ public sealed class SellerProductsQueryHandler(IAppDbContext db, ProductOwnershi
                 product.CreatedAt,
                 product.UpdatedAt,
                 product.PublishedAt,
+                product.CoverImageKey,
+                product.CoverImageUpdatedAt,
                 SalesCount = db.OrderItems.Count(item => item.ProductId == product.Id
                     && item.Status == OrderItemStatus.Active
                     && db.Orders.Any(order => order.Id == item.OrderId && order.PaidAt != null)),
@@ -74,7 +77,8 @@ public sealed class SellerProductsQueryHandler(IAppDbContext db, ProductOwnershi
             .ToListAsync(cancellationToken);
 
         var summaries = rows.ConvertAll(row => new SellerProductSummary(
-            row.Id, row.Title, row.Status.ToString(), MoneyDto.From(row.Price), row.CreatedAt, row.UpdatedAt, row.PublishedAt, row.SalesCount));
+            row.Id, row.Title, row.Status.ToString(), MoneyDto.From(row.Price), row.CreatedAt, row.UpdatedAt, row.PublishedAt, row.SalesCount,
+            CoverUrls.For(images, row.CoverImageKey, row.CoverImageUpdatedAt)));
         return Paging.ToPage(summaries, query.Limit, summary => new CreatedCursor(summary.CreatedAt, summary.Id));
     }
 }

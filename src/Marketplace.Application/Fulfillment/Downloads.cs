@@ -19,7 +19,7 @@ public sealed record LibraryQuery(int Limit = Paging.DefaultLimit, string? Curso
 // Status is Active, or the reason the grant can no longer be used: Revoked, Expired or Limit.
 public sealed record LibraryItem(
     Guid OrderItemId, Guid ProductId, string Title, string? FileName, DateTimeOffset PurchasedAt, DateTimeOffset ExpiresAt,
-    int DownloadCount, int MaxDownloads, string Status);
+    int DownloadCount, int MaxDownloads, string Status, Uri? CoverImageUrl);
 
 public static class DownloadErrors
 {
@@ -80,7 +80,7 @@ public sealed class CreateDownloadLinkCommandHandler(
 }
 
 // Every grant the caller holds, newest purchase first, keyset on (created_at, order_item_id).
-public sealed class LibraryQueryHandler(IAppDbContext db, ICurrentUser currentUser, TimeProvider timeProvider)
+public sealed class LibraryQueryHandler(IAppDbContext db, ICurrentUser currentUser, TimeProvider timeProvider, IPublicImageStorage images)
     : IQueryHandler<LibraryQuery, Page<LibraryItem>>
 {
     public async Task<Result<Page<LibraryItem>>> HandleAsync(LibraryQuery query, CancellationToken cancellationToken)
@@ -102,7 +102,7 @@ public sealed class LibraryQueryHandler(IAppDbContext db, ICurrentUser currentUs
         var rows = await grants
             .OrderByDescending(grant => grant.CreatedAt).ThenByDescending(grant => grant.OrderItemId)
             .Take(query.Limit + 1)
-            .Join(db.Products, grant => grant.ProductId, product => product.Id, (grant, product) => new { Grant = grant, product.Title, product.File })
+            .Join(db.Products, grant => grant.ProductId, product => product.Id, (grant, product) => new { Grant = grant, product.Title, product.File, product.CoverImageKey, product.CoverImageUpdatedAt })
             .ToListAsync(cancellationToken);
 
         // The join does not keep the order, so sort again before paging.
@@ -110,7 +110,8 @@ public sealed class LibraryQueryHandler(IAppDbContext db, ICurrentUser currentUs
         var now = timeProvider.GetUtcNow();
         var items = rows.ConvertAll(row => new LibraryItem(
             row.Grant.OrderItemId, row.Grant.ProductId, row.Title, row.File?.Name, row.Grant.CreatedAt, row.Grant.ExpiresAt,
-            row.Grant.DownloadCount, row.Grant.MaxDownloads, row.Grant.GetUnavailableReason(now)?.ToString() ?? "Active"));
+            row.Grant.DownloadCount, row.Grant.MaxDownloads, row.Grant.GetUnavailableReason(now)?.ToString() ?? "Active",
+            CoverUrls.For(images, row.CoverImageKey, row.CoverImageUpdatedAt)));
         return Paging.ToPage(items, query.Limit, item => new CreatedCursor(item.PurchasedAt, item.OrderItemId));
     }
 }
