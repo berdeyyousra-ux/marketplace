@@ -1,5 +1,6 @@
 using Marketplace.Application;
 using Marketplace.Infrastructure;
+using Marketplace.Infrastructure.Logging;
 using Marketplace.Worker.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -14,6 +15,7 @@ builder.Services.AddSerilog((services, logger) => logger
     .ReadFrom.Configuration(builder.Configuration)
     .ReadFrom.Services(services)
     .Enrich.FromLogContext()
+    .Enrich.With<SensitivePropertyMasker>()
     .WriteTo.Console(new CompactJsonFormatter()));
 
 builder.Services.AddApplication();
