@@ -22,6 +22,7 @@ public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand
 
 // Section 11.1: 10 to 128 characters, no composition rules, not a common password. These run before any
 // account lookup, so a weak password gets the same answer whether or not the email is registered.
+[ComponentValidator]
 public sealed class PasswordRules : AbstractValidator<string>
 {
     public PasswordRules(ICommonPasswords commonPasswords)

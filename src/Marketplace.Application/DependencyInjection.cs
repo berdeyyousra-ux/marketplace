@@ -30,7 +30,12 @@ public static class DependencyInjection
         services.AddScoped<Identity.OneTimeTokenService>();
         services.AddScoped<Identity.SessionIssuer>();
         services.AddScoped<Ops.AuditTrail>();
-        services.AddValidatorsFromAssembly(assembly, ServiceLifetime.Singleton, includeInternalTypes: true);
+        services.AddScoped<Catalog.ProductOwnership>();
+        services.AddValidatorsFromAssembly(
+            assembly,
+            ServiceLifetime.Singleton,
+            filter: scan => scan.ValidatorType.GetCustomAttributes(typeof(Common.ComponentValidatorAttribute), inherit: false).Length == 0,
+            includeInternalTypes: true);
         return services;
     }
 }
