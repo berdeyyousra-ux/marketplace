@@ -36,6 +36,7 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
         { "POST", "/api/v1/products/{draft}/file", [401, 403, 403, 404, 403, 200] },
         { "POST", "/api/v1/auth/change-password", [401, 422, 422, 422, 422, 422] },
         { "POST", "/api/v1/orders", [401, 201, 201, 201, 201, 409] },
+        { "POST", "/api/v1/orders/{order}/payment", [401, 200, 404, 404, 404, 404] },
         { "GET", "/api/v1/products", [200, 200, 200, 200, 200, 200] },
         { "GET", "/api/v1/categories", [200, 200, 200, 200, 200, 200] },
     };
@@ -55,7 +56,8 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
         };
         var (draftId, etag) = await CreateDraftAsync(clients[_seller]);
         var publishedId = await CreatePublishedProductAsync(clients[_seller], "Matrix published");
-        var path = pathTemplate.Replace("{draft}", draftId, StringComparison.Ordinal);
+        var orderId = (await (await CreateOrderAsync(clients[_buyer], [publishedId])).Content.ReadFromJsonAsync<JsonElement>(CancellationToken)).GetProperty("id").GetString()!;
+        var path = pathTemplate.Replace("{draft}", draftId, StringComparison.Ordinal).Replace("{order}", orderId, StringComparison.Ordinal);
 
         var actual = new int[clients.Length];
         foreach (var role in new[] { _anonymous, _buyer, _otherBuyer, _otherSeller, _admin, _seller })
@@ -79,7 +81,7 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
     [Fact]
     public async Task AuthorizationMatrix_CoversEveryProtectedOperation()
     {
-        var covered = Matrix().Select(row => $"{row.Data.Item1} {row.Data.Item2.Replace("{draft}", "{id}", StringComparison.Ordinal)}").ToHashSet();
+        var covered = Matrix().Select(row => $"{row.Data.Item1} {row.Data.Item2.Replace("{draft}", "{id}", StringComparison.Ordinal).Replace("{order}", "{id}", StringComparison.Ordinal)}").ToHashSet();
         using var document = JsonDocument.Parse(await AsAnonymous().GetStringAsync("/openapi/v1.json", CancellationToken));
 
         var protectedOperations = document.RootElement.GetProperty("paths").EnumerateObject()

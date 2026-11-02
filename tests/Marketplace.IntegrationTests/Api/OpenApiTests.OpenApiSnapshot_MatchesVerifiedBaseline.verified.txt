@@ -504,6 +504,70 @@
         ]
       }
     },
+    /api/v1/orders/{id}/payment: {
+      post: {
+        tags: [
+          Orders
+        ],
+        summary: Starts paying for a Pending order and returns the provider's client secret. Needs an Idempotency-Key (US-23).,
+        parameters: [
+          {
+            name: id,
+            in: path,
+            required: true,
+            schema: {
+              type: string,
+              format: uuid
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/PaymentResponse
+                }
+              }
+            }
+          },
+          404: {
+            description: Not Found,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          409: {
+            description: Conflict,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          503: {
+            description: Service Unavailable,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
     /api/v1/products/{id}/file: {
       post: {
         tags: [
@@ -1378,6 +1442,30 @@
               null,
               string
             ]
+          }
+        }
+      },
+      PaymentResponse: {
+        required: [
+          paymentId,
+          provider,
+          clientSecret,
+          amount
+        ],
+        type: object,
+        properties: {
+          paymentId: {
+            type: string,
+            format: uuid
+          },
+          provider: {
+            type: string
+          },
+          clientSecret: {
+            type: string
+          },
+          amount: {
+            $ref: #/components/schemas/MoneyDto
           }
         }
       },
