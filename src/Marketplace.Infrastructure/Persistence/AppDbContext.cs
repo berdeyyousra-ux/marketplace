@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Marketplace.Infrastructure.Persistence;
 
@@ -50,6 +51,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     public DbSet<AuditLogEntry> AuditLog => Set<AuditLogEntry>();
+
+    public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken) =>
+        Database.BeginTransactionAsync(cancellationToken);
 
     // Section 7.2 lists every index explicitly, so EF's automatic foreign key indexes are turned off.
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)

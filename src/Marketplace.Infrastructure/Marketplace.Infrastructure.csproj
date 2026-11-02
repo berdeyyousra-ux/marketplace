@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <EmbeddedResource Include="Identity/Resources/common-passwords.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../Marketplace.Application/Marketplace.Application.csproj" />
     <ProjectReference Include="../Marketplace.Domain/Marketplace.Domain.csproj" />
   </ItemGroup>
