@@ -1,0 +1,26 @@
+{
+  "id": "approve-05",
+  "facts": {
+    "buyerMessage": "The PDF opens to blank pages after page 2. The rest of the book is missing.",
+    "productTitle": "Field Guide to Budgeting",
+    "categorySlug": "ebooks",
+    "price": "12.99 EUR",
+    "daysSincePurchase": 4,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 1,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "file_defective",
+    "acceptableActions": [
+      "approve"
+    ]
+  },
+  "tags": [
+    "approve",
+    "defect"
+  ]
+}

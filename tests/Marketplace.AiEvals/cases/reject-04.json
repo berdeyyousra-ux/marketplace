@@ -1,0 +1,26 @@
+{
+  "id": "reject-04",
+  "facts": {
+    "buyerMessage": "I found a cheaper one elsewhere after downloading and using this one.",
+    "productTitle": "Mockup Bundle",
+    "categorySlug": "graphics",
+    "price": "24.99 EUR",
+    "daysSincePurchase": 7,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 7,
+    "buyerRefundsLast180Days": 3,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "changed_mind",
+    "acceptableActions": [
+      "reject"
+    ]
+  },
+  "tags": [
+    "reject",
+    "abuse"
+  ]
+}

@@ -1,9 +1,11 @@
 using System.Globalization;
+using Marketplace.Tools.Evals;
 using Marketplace.Tools.Seeding;
 
 // Marketplace.Tools (section 5.2): development and benchmarking commands.
 //   seed-load [--orders N] [--sellers N] [--buyers N] [--products N] [--seed N] [--now ISO-8601] [--connection CS]
 //   seed-demo [--now ISO-8601] [--connection CS] [--blob CS]
+//   eval-refunds [--mode recorded|live] [--cases DIR] [--recordings DIR] [--report FILE]
 // Connection strings default to the ConnectionStrings__Database and ConnectionStrings__BlobStorage environment
 // variables. Seeded users sign in with the password in SeedOptions.Password.
 using var cancellation = new CancellationTokenSource();
@@ -13,10 +15,23 @@ Console.CancelKeyPress += (_, eventArgs) =>
     cancellation.Cancel();
 };
 
-if (args.Length == 0 || args[0] is not ("seed-load" or "seed-demo"))
+if (args.Length == 0 || args[0] is not ("seed-load" or "seed-demo" or "eval-refunds"))
 {
-    await Console.Error.WriteLineAsync("Usage: Marketplace.Tools seed-load|seed-demo [options]. See Program.cs for the options.");
+    await Console.Error.WriteLineAsync("Usage: Marketplace.Tools seed-load|seed-demo|eval-refunds [options]. See Program.cs for the options.");
     return 2;
+}
+
+if (args[0] == "eval-refunds")
+{
+    try
+    {
+        return await EvalCommand.RunAsync(ToolArguments.Parse(args.AsSpan(1)), Console.Out, cancellation.Token);
+    }
+    catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or IOException or System.Text.Json.JsonException)
+    {
+        await Console.Error.WriteLineAsync(exception.Message);
+        return 1;
+    }
 }
 
 try

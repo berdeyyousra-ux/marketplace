@@ -1,0 +1,26 @@
+{
+  "id": "info-03",
+  "facts": {
+    "buyerMessage": "There's a problem with the file.",
+    "productTitle": "Synth Presets",
+    "categorySlug": "audio",
+    "price": "17.99 EUR",
+    "daysSincePurchase": 1,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 1,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "file_defective",
+    "acceptableActions": [
+      "needs_more_info"
+    ]
+  },
+  "tags": [
+    "info",
+    "vague"
+  ]
+}

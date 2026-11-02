@@ -1,0 +1,25 @@
+{
+  "id": "reject-03",
+  "facts": {
+    "buyerMessage": "The book is fine, I just read it all already and don't need it.",
+    "productTitle": "Cookbook 9",
+    "categorySlug": "ebooks",
+    "price": "8.99 EUR",
+    "daysSincePurchase": 9,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 6,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "changed_mind",
+    "acceptableActions": [
+      "reject"
+    ]
+  },
+  "tags": [
+    "reject"
+  ]
+}

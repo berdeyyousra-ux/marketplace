@@ -1,0 +1,26 @@
+{
+  "id": "info-06",
+  "facts": {
+    "buyerMessage": "Something is off with the template, it looks weird.",
+    "productTitle": "Resume Template",
+    "categorySlug": "templates",
+    "price": "6.99 EUR",
+    "daysSincePurchase": 5,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 1,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "not_as_described",
+    "acceptableActions": [
+      "needs_more_info"
+    ]
+  },
+  "tags": [
+    "info",
+    "vague"
+  ]
+}

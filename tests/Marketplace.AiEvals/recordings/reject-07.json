@@ -1,0 +1,11 @@
+{
+  "caseId": "reject-07",
+  "source": "fixture",
+  "provider": "fixture",
+  "model": "none",
+  "promptVersion": "refund-advisor.v1",
+  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "outputs": [
+    "{\"category\":\"changed_mind\",\"summary\":\"Fixture answer for reject-07: I already printed all 200 pages and used them in class. Refund please.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+  ]
+}

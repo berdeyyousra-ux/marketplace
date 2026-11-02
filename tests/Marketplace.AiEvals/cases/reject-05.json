@@ -1,0 +1,26 @@
+{
+  "id": "reject-05",
+  "facts": {
+    "buyerMessage": "Works perfectly but I want a refund anyway since I finished my project.",
+    "productTitle": "Spreadsheet Toolkit",
+    "categorySlug": "software",
+    "price": "34.99 EUR",
+    "daysSincePurchase": 11,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 10,
+    "buyerRefundsLast180Days": 6,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "changed_mind",
+    "acceptableActions": [
+      "reject"
+    ]
+  },
+  "tags": [
+    "reject",
+    "abuse"
+  ]
+}

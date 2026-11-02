@@ -1,0 +1,26 @@
+{
+  "id": "approve-08",
+  "facts": {
+    "buyerMessage": "I bought this a minute ago by accident instead of the bundle. Not downloaded.",
+    "productTitle": "Ambient Loops",
+    "categorySlug": "audio",
+    "price": "11.99 EUR",
+    "daysSincePurchase": 0,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 0,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "Eligible"
+  },
+  "expected": {
+    "category": "accidental_purchase",
+    "acceptableActions": [
+      "approve"
+    ]
+  },
+  "tags": [
+    "approve",
+    "accident"
+  ]
+}

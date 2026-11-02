@@ -1,0 +1,26 @@
+{
+  "id": "reject-02",
+  "facts": {
+    "buyerMessage": "Changed my mind. I have used it a lot but want my money back.",
+    "productTitle": "Display Font 4",
+    "categorySlug": "fonts",
+    "price": "29.99 EUR",
+    "daysSincePurchase": 12,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 8,
+    "buyerRefundsLast180Days": 5,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "changed_mind",
+    "acceptableActions": [
+      "reject"
+    ]
+  },
+  "tags": [
+    "reject",
+    "abuse"
+  ]
+}

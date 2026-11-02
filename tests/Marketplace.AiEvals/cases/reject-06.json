@@ -1,0 +1,25 @@
+{
+  "id": "reject-06",
+  "facts": {
+    "buyerMessage": "I don't like the colours. The files work fine and I downloaded them all.",
+    "productTitle": "Pattern Library",
+    "categorySlug": "graphics",
+    "price": "15.99 EUR",
+    "daysSincePurchase": 6,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 5,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "changed_mind",
+    "acceptableActions": [
+      "reject"
+    ]
+  },
+  "tags": [
+    "reject"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "caseId": "reject-01",
+  "source": "fixture",
+  "provider": "fixture",
+  "model": "none",
+  "promptVersion": "refund-advisor.v1",
+  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "outputs": [
+    "{\"category\":\"changed_mind\",\"summary\":\"Fixture answer for reject-01: I downloaded everything, used the templates for my client project, and now I don't need them anymore.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "window-04",
+  "facts": {
+    "buyerMessage": "The ebook has missing chapters, I only noticed now when I got to the end.",
+    "productTitle": "Handbook 3",
+    "categorySlug": "ebooks",
+    "price": "14.99 EUR",
+    "daysSincePurchase": 21,
+    "windowDays": 14,
+    "withinWindow": false,
+    "downloadCount": 1,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "IneligibleOutsideWindow"
+  },
+  "expected": {
+    "category": "file_defective",
+    "acceptableActions": [
+      "reject",
+      "needs_more_info",
+      "approve"
+    ]
+  },
+  "tags": [
+    "window",
+    "outside_window"
+  ]
+}

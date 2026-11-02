@@ -1,0 +1,26 @@
+{
+  "id": "approve-01",
+  "facts": {
+    "buyerMessage": "The ZIP file is corrupted. Windows and macOS both say the archive is invalid, and I re-downloaded once with the same result.",
+    "productTitle": "Icon Pack 12",
+    "categorySlug": "graphics",
+    "price": "14.99 EUR",
+    "daysSincePurchase": 2,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 1,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "file_defective",
+    "acceptableActions": [
+      "approve"
+    ]
+  },
+  "tags": [
+    "approve",
+    "defect"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "reject-08",
+  "facts": {
+    "buyerMessage": "Bought, downloaded ten times, shared with my team, now refund.",
+    "productTitle": "Shell Scripts",
+    "categorySlug": "software",
+    "price": "19.99 EUR",
+    "daysSincePurchase": 8,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 10,
+    "buyerRefundsLast180Days": 7,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "changed_mind",
+    "acceptableActions": [
+      "reject"
+    ]
+  },
+  "tags": [
+    "reject",
+    "abuse"
+  ]
+}

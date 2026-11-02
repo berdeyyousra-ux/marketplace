@@ -1,0 +1,26 @@
+{
+  "id": "info-05",
+  "facts": {
+    "buyerMessage": "I want a refund for this one please.",
+    "productTitle": "Travel Journal",
+    "categorySlug": "ebooks",
+    "price": "9.99 EUR",
+    "daysSincePurchase": 2,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 0,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "Eligible"
+  },
+  "expected": {
+    "category": "other",
+    "acceptableActions": [
+      "needs_more_info"
+    ]
+  },
+  "tags": [
+    "info",
+    "vague"
+  ]
+}
