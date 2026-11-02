@@ -16,7 +16,7 @@ public sealed class StartupValidationTests
     {
         await using var factory = new KeyFactory(signingKey);
 
-        Should.Throw<OptionsValidationException>(() => factory.CreateClient());
+        Should.Throw<OptionsValidationException>(() => factory.CreateClient()).Message.ShouldContain("SigningKey");
     }
 
     private sealed class KeyFactory(string signingKey) : WebApplicationFactory<Program>
@@ -24,6 +24,7 @@ public sealed class StartupValidationTests
         protected override void ConfigureWebHost(IWebHostBuilder builder) =>
             builder
                 .UseEnvironment("Staging")
+                .UseSetting("Ai:Provider", "Fake")
                 .UseSetting("ConnectionStrings:Database", "Host=localhost;Port=1;Database=none;Username=none;Password=none")
                 .UseSetting("Jwt:SigningKey", signingKey);
     }

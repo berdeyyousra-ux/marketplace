@@ -25,6 +25,8 @@
   <!-- Section 13.2: the report SQL is kept once, in docs/sql, and embedded here. -->
   <ItemGroup>
     <EmbeddedResource Include="../../docs/sql/R*.sql" LogicalName="Marketplace.Sql.%(Filename).sql" />
+    <!-- Section 12.5: versioned prompts, embedded so the deployed text is exactly the reviewed file. -->
+    <EmbeddedResource Include="Ai/Prompts/*.txt" LogicalName="Marketplace.Prompts.%(Filename).txt" />
   </ItemGroup>
 
 </Project>

@@ -143,7 +143,10 @@ public sealed class ApiHostTests : IAsyncLifetime
     private sealed class ApiFactory(string connectionString) : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder) =>
+            // Testing, not the default Development, so a developer's user secrets cannot change the result.
             builder
+                .UseEnvironment("Testing")
+                .UseSetting("Ai:Provider", "Fake")
                 .UseSetting("ConnectionStrings:Database", connectionString)
                 .UseSetting("Jwt:SigningKey", Marketplace.IntegrationTests.Fixtures.MarketplaceWebFactory.TestSigningKey);
     }

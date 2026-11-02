@@ -1732,6 +1732,133 @@
         ]
       }
     },
+    /api/v1/refund-requests: {
+      post: {
+        tags: [
+          RefundRequests
+        ],
+        summary: Requests a refund for a purchased item. The policy decides at once; AI analysis runs afterwards. Needs an Idempotency-Key (US-28).,
+        requestBody: {
+          content: {
+            application/json: {
+              schema: {
+                $ref: #/components/schemas/CreateRefundRequestCommand
+              }
+            },
+            text/json: {
+              schema: {
+                $ref: #/components/schemas/CreateRefundRequestCommand
+              }
+            },
+            application/*+json: {
+              schema: {
+                $ref: #/components/schemas/CreateRefundRequestCommand
+              }
+            }
+          },
+          required: true
+        },
+        responses: {
+          201: {
+            description: Created,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/RefundRequestResponse
+                }
+              }
+            }
+          },
+          404: {
+            description: Not Found,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          409: {
+            description: Conflict,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          422: {
+            description: Unprocessable Entity,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
+    /api/v1/refund-requests/mine: {
+      get: {
+        tags: [
+          RefundRequests
+        ],
+        summary: Lists the caller's refund requests and their status, newest first. Keyset paginated (US-28).,
+        parameters: [
+          {
+            name: Limit,
+            in: query,
+            schema: {
+              pattern: ^-?(?:0|[1-9]\d*)$,
+              type: [
+                integer,
+                string
+              ],
+              format: int32
+            }
+          },
+          {
+            name: Cursor,
+            in: query,
+            schema: {
+              type: string
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/PageOfMyRefundRequest
+                }
+              }
+            }
+          },
+          400: {
+            description: Bad Request,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
     /api/v1/sellers: {
       post: {
         tags: [
@@ -2278,6 +2405,22 @@
           }
         }
       },
+      CreateRefundRequestCommand: {
+        required: [
+          orderItemId,
+          reason
+        ],
+        type: object,
+        properties: {
+          orderItemId: {
+            type: string,
+            format: uuid
+          },
+          reason: {
+            type: string
+          }
+        }
+      },
       DeadLetter: {
         required: [
           id,
@@ -2624,6 +2767,66 @@
           }
         }
       },
+      MyRefundRequest: {
+        required: [
+          id,
+          orderItemId,
+          productTitle,
+          status,
+          decision,
+          decisionNote,
+          createdAt,
+          decidedAt,
+          executedAt
+        ],
+        type: object,
+        properties: {
+          id: {
+            type: string,
+            format: uuid
+          },
+          orderItemId: {
+            type: string,
+            format: uuid
+          },
+          productTitle: {
+            type: string
+          },
+          status: {
+            type: string
+          },
+          decision: {
+            type: [
+              null,
+              string
+            ]
+          },
+          decisionNote: {
+            type: [
+              null,
+              string
+            ]
+          },
+          createdAt: {
+            type: string,
+            format: date-time
+          },
+          decidedAt: {
+            type: [
+              null,
+              string
+            ],
+            format: date-time
+          },
+          executedAt: {
+            type: [
+              null,
+              string
+            ],
+            format: date-time
+          }
+        }
+      },
       OrderDetail: {
         required: [
           id,
@@ -2953,6 +3156,27 @@
             type: array,
             items: {
               $ref: #/components/schemas/LibraryItem
+            }
+          },
+          nextCursor: {
+            type: [
+              null,
+              string
+            ]
+          }
+        }
+      },
+      PageOfMyRefundRequest: {
+        required: [
+          items,
+          nextCursor
+        ],
+        type: object,
+        properties: {
+          items: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/MyRefundRequest
             }
           },
           nextCursor: {
@@ -3431,6 +3655,36 @@
           }
         }
       },
+      RefundRequestResponse: {
+        required: [
+          id,
+          orderItemId,
+          status,
+          policyVerdict,
+          createdAt
+        ],
+        type: object,
+        properties: {
+          id: {
+            type: string,
+            format: uuid
+          },
+          orderItemId: {
+            type: string,
+            format: uuid
+          },
+          status: {
+            type: string
+          },
+          policyVerdict: {
+            type: string
+          },
+          createdAt: {
+            type: string,
+            format: date-time
+          }
+        }
+      },
       RegisterCommand: {
         required: [
           email,
@@ -3848,6 +4102,9 @@
     },
     {
       name: Products
+    },
+    {
+      name: RefundRequests
     },
     {
       name: Sellers

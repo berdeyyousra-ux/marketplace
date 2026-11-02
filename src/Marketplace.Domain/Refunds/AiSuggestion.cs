@@ -56,4 +56,16 @@ public sealed class AiSuggestion : Entity
 
         return new AiSuggestion(refundRequestId, model, promptVersion, inputFacts, status, now);
     }
+
+    // The call's outcome, stored for every status including failures (section 12.6).
+    public AiSuggestion WithOutcome(string? rawOutput, string? parsedOutput, int? inputTokens, int? outputTokens, int? latencyMs, string? error)
+    {
+        RawOutput = rawOutput;
+        ParsedOutput = parsedOutput;
+        InputTokens = inputTokens;
+        OutputTokens = outputTokens;
+        LatencyMs = latencyMs;
+        Error = error is { Length: > 1000 } ? error[..1000] : error;
+        return this;
+    }
 }
