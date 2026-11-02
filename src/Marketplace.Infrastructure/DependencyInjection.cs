@@ -80,6 +80,7 @@ public static class DependencyInjection
             .Validate(ai => ai.MaxOutputTokens > 0 && ai.DailyRequestCap >= 0, "Ai:MaxOutputTokens must be positive and Ai:DailyRequestCap not negative.")
             .ValidateOnStart();
         services.AddSingleton<Ai.FakeLlmClient>();
+        services.AddScoped<Application.Refunds.IRefundAdvisor, Ai.LlmRefundAdvisor>();
 
         // The resilience pipeline owns timeouts, so the HttpClient's own timeout is off.
         services.AddHttpClient(Ai.AiOptions.AnthropicName, client => client.Timeout = Timeout.InfiniteTimeSpan);
