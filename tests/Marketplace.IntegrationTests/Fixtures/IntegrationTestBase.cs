@@ -46,6 +46,52 @@ public abstract class IntegrationTestBase(MarketplaceWebFactory factory) : IAsyn
 
     protected HttpClient AsAnonymous() => Factory.CreateClient();
 
+    protected async Task<(string AccessToken, string RefreshToken)> SignInAsync(string email, string password = DefaultPassword)
+    {
+        using var client = AsAnonymous();
+        var response = await client.PostAsJsonAsync("/api/v1/auth/login", new { email, password }, CancellationToken);
+        response.EnsureSuccessStatusCode();
+        var body = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(CancellationToken);
+        return (body.GetProperty("accessToken").GetString()!, body.GetProperty("refreshToken").GetString()!);
+    }
+
+    protected async Task<(string AccessToken, string RefreshToken)> RefreshTokensAsync(string refreshToken)
+    {
+        using var client = AsAnonymous();
+        var response = await client.PostAsJsonAsync("/api/v1/auth/refresh", new { refreshToken }, CancellationToken);
+        response.EnsureSuccessStatusCode();
+        var body = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(CancellationToken);
+        return (body.GetProperty("accessToken").GetString()!, body.GetProperty("refreshToken").GetString()!);
+    }
+
+    protected HttpClient WithToken(string accessToken)
+    {
+        var client = Factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+        return client;
+    }
+
+    // A verified, signed-in user with no roles.
+    protected async Task<HttpClient> AsBuyerAsync(string email)
+    {
+        await CreateVerifiedUserAsync(email);
+        return WithToken((await SignInAsync(email)).AccessToken);
+    }
+
+    // A verified user who became a seller, with a refreshed token that carries the Seller role.
+    protected async Task<HttpClient> AsSellerAsync(string email, string displayName = "Studio Test")
+    {
+        await CreateVerifiedUserAsync(email);
+        var tokens = await SignInAsync(email);
+        using (var buyer = WithToken(tokens.AccessToken))
+        {
+            var created = await buyer.PostAsJsonAsync("/api/v1/sellers", new { displayName, bio = (string?)null, country = "ES" }, CancellationToken);
+            created.EnsureSuccessStatusCode();
+        }
+
+        return WithToken((await RefreshTokensAsync(tokens.RefreshToken)).AccessToken);
+    }
+
     // Creates a user through the real register and verify-email flow, then returns its ID.
     protected async Task<Guid> CreateVerifiedUserAsync(string email, string password = DefaultPassword, string displayName = "Test User")
     {
