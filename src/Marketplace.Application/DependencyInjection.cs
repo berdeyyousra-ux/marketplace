@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<Identity.SessionIssuer>();
         services.AddScoped<Ops.AuditTrail>();
         services.AddScoped<Catalog.ProductOwnership>();
+        services.AddScoped<Payments.OrderPaymentService>();
         services.AddValidatorsFromAssembly(
             assembly,
             ServiceLifetime.Singleton,
