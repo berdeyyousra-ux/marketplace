@@ -1,0 +1,22 @@
+title = "Marketplace gitleaks configuration"
+
+[extend]
+useDefault = true
+
+# Allows only these two local development values, only in this one file, and only for the
+# rule that flags them. These values in any other file still fail, and the normal rules
+# still apply to the rest of this file.
+#
+# Keep this under the rule. In gitleaks 8.30.1 a top-level [[allowlists]] entry with the same
+# settings exempted the whole file, including a Stripe token planted there to test it.
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "Local-only values: the published Azurite emulator key and the development JWT signing key"
+condition = "AND"
+paths = ['''^docker-compose\.override\.yml$''']
+regexes = [
+  '''Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw''',
+  '''ZGV2ZWxvcG1lbnQtb25seS1zaWduaW5nLWtleS1kby1ub3QtdXNlLWVsc2V3aGVyZQ''',
+]
