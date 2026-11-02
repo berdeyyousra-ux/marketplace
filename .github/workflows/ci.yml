@@ -70,6 +70,12 @@ jobs:
           ./efbundle --connection "$CONN" --no-color
           ./efbundle --connection "$CONN" --no-color
 
+      # Section 15.3 step 12: both production images build. Publishing them is the CD pipeline's job (T-062).
+      - name: Build Docker images
+        run: |
+          docker build --file deploy/docker/Api.Dockerfile --tag marketplace-api:${{ github.sha }} .
+          docker build --file deploy/docker/Worker.Dockerfile --tag marketplace-worker:${{ github.sha }} .
+
   secret-scan:
     runs-on: ubuntu-latest
     timeout-minutes: 5
