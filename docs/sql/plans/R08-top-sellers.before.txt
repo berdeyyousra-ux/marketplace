@@ -1,0 +1,42 @@
+Limit  (cost=105214.18..105214.23 rows=20 width=111) (actual time=135.029..135.071 rows=20 loops=1)
+  Buffers: shared hit=15422 read=21434, temp read=1672 written=1675
+  ->  Sort  (cost=105214.18..105730.46 rows=206513 width=111) (actual time=129.663..129.704 rows=20 loops=1)
+        Sort Key: (sum(l.amount) FILTER (WHERE (l.entry_type = ANY ('{Sale,Refund}'::text[])))) DESC, l.seller_id
+        Sort Method: top-N heapsort  Memory: 29kB
+        Buffers: shared hit=15422 read=21434, temp read=1672 written=1675
+        ->  Finalize GroupAggregate  (cost=70002.64..99718.94 rows=206513 width=111) (actual time=115.320..129.632 rows=500 loops=1)
+              Group Key: l.seller_id, sp.display_name
+              Buffers: shared hit=15419 read=21434, temp read=1672 written=1675
+              ->  Gather Merge  (cost=70002.64..93093.32 rows=172094 width=111) (actual time=115.295..129.186 rows=1500 loops=1)
+                    Workers Planned: 2
+                    Workers Launched: 2
+                    Buffers: shared hit=15419 read=21434, temp read=1672 written=1675
+                    ->  Partial GroupAggregate  (cost=69002.62..72229.38 rows=86047 width=111) (actual time=106.744..119.859 rows=500 loops=3)
+                          Group Key: l.seller_id, sp.display_name
+                          Buffers: shared hit=15419 read=21434, temp read=1672 written=1675
+                          ->  Sort  (cost=69002.62..69217.74 rows=86047 width=53) (actual time=106.705..110.121 rows=70532 loops=3)
+                                Sort Key: l.seller_id, sp.display_name
+                                Sort Method: external merge  Disk: 4504kB
+                                Buffers: shared hit=15419 read=21434, temp read=1672 written=1675
+                                Worker 0:  Sort Method: external merge  Disk: 4528kB
+                                Worker 1:  Sort Method: external merge  Disk: 4344kB
+                                ->  Hash Join  (cost=19.25..59006.35 rows=86047 width=53) (actual time=76.869..94.525 rows=70532 loops=3)
+                                      Hash Cond: (l.seller_id = sp.id)
+                                      Buffers: shared hit=15331 read=21434
+                                      ->  Parallel Seq Scan on seller_ledger_entries l  (cost=0.00..58759.31 rows=86047 width=30) (actual time=76.775..87.840 rows=70532 loops=3)
+                                            Filter: ((entry_type <> 'Payout'::text) AND (created_at >= (now() - '30 days'::interval)))
+                                            Rows Removed by Filter: 810845
+                                            Buffers: shared hit=15291 read=21434
+                                      ->  Hash  (cost=13.00..13.00 rows=500 width=39) (actual time=0.066..0.066 rows=500 loops=3)
+                                            Buckets: 1024  Batches: 1  Memory Usage: 43kB
+                                            Buffers: shared hit=24
+                                            ->  Seq Scan on seller_profiles sp  (cost=0.00..13.00 rows=500 width=39) (actual time=0.016..0.037 rows=500 loops=3)
+                                                  Buffers: shared hit=24
+Planning:
+  Buffers: shared hit=276
+Planning Time: 0.363 ms
+JIT:
+  Functions: 58
+  Options: Inlining false, Optimization false, Expressions true, Deforming true
+  Timing: Generation 1.264 ms (Deform 0.478 ms), Inlining 0.000 ms, Optimization 0.592 ms, Emission 14.322 ms, Total 16.177 ms
+Execution Time: 143.367 ms

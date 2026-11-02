@@ -21,6 +21,8 @@ Setup:
 | Median (4,491) | 12 | 2.7 ms | 0.22 ms | 12x |
 | Median (4,491) | 24 | 3.6 ms | 0.23 ms | 16x |
 
+After the covering ledger index from ADR-0003, R-01 became an index-only scan. For the busiest seller it now takes 5.8 ms over 12 months and 12.1 ms over 24, and for the median seller 0.9 and 1.2 ms. R-10 stays at 0.2 to 0.35 ms, so it still wins by 4 to 35 times and EP-71 keeps using it.
+
 With a cold cache, R-01 took 125 ms for the busiest seller over 24 months. R-01's cost grows with the seller's sales, because it is a bitmap heap scan over `ix_ledger_seller_id_created_at` that touches about 15,000 heap pages for the busiest seller. R-10 reads at most 24 view rows through the unique index, plus the current month's entries.
 
 A full refresh of the view (12,466 rows) took 0.76 s, and readers are not blocked while it runs.

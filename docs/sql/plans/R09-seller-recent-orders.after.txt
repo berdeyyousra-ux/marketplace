@@ -1,0 +1,21 @@
+Limit  (cost=10.90..207.30 rows=20 width=118) (actual time=0.109..0.110 rows=20 loops=1)
+  Buffers: shared hit=119
+  ->  Incremental Sort  (cost=10.90..207057.28 rows=21084 width=118) (actual time=0.108..0.109 rows=20 loops=1)
+        Sort Key: l.created_at DESC, l.id DESC
+        Presorted Key: l.created_at
+        Full-sort Groups: 1  Sort Method: quicksort  Average Memory: 30kB  Peak Memory: 30kB
+        Buffers: shared hit=119
+        ->  Nested Loop  (cost=0.98..206118.23 rows=21084 width=118) (actual time=0.017..0.086 rows=21 loops=1)
+              Buffers: shared hit=110
+              ->  Index Scan Backward using ix_ledger_seller_id_created_at on seller_ledger_entries l  (cost=0.56..111371.85 rows=21084 width=40) (actual time=0.011..0.043 rows=21 loops=1)
+                    Index Cond: ((seller_id = '0191b36c-f3d1-7054-aa1f-e63381bb12b8'::uuid) AND (created_at <= '9999-12-31 00:00:00+00'::timestamp with time zone))
+                    Filter: ((entry_type = 'Sale'::text) AND (ROW(created_at, id) < ROW('9999-12-31 00:00:00+00'::timestamp with time zone, 'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid)))
+                    Rows Removed by Filter: 23
+                    Buffers: shared hit=26
+              ->  Index Scan using pk_order_items on order_items oi  (cost=0.43..4.49 rows=1 width=94) (actual time=0.002..0.002 rows=1 loops=21)
+                    Index Cond: (id = l.order_item_id)
+                    Buffers: shared hit=84
+Planning:
+  Buffers: shared hit=331
+Planning Time: 0.422 ms
+Execution Time: 0.135 ms

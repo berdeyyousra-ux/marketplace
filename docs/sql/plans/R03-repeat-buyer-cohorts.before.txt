@@ -1,0 +1,43 @@
+GroupAggregate  (cost=66780.80..66788.00 rows=93 width=136) (actual time=266.848..266.851 rows=2 loops=1)
+  Group Key: (to_char(date_trunc('month'::text, (cohort.first_paid_at AT TIME ZONE 'UTC'::text)), 'YYYY-MM'::text))
+  Buffers: shared hit=1467 read=13933, temp read=3570 written=3570
+  CTE paid
+    ->  Seq Scan on orders  (cost=0.00..25391.00 rows=861200 width=24) (actual time=0.009..54.778 rows=860054 loops=1)
+          Filter: (paid_at IS NOT NULL)
+          Rows Removed by Filter: 139946
+          Buffers: shared hit=1458 read=13933
+  ->  Sort  (cost=41389.80..41390.03 rows=93 width=48) (actual time=266.840..266.841 rows=2 loops=1)
+        Sort Key: (to_char(date_trunc('month'::text, (cohort.first_paid_at AT TIME ZONE 'UTC'::text)), 'YYYY-MM'::text))
+        Sort Method: quicksort  Memory: 25kB
+        Buffers: shared hit=1467 read=13933, temp read=3570 written=3570
+        ->  Subquery Scan on cohort  (cost=41369.81..41386.76 rows=93 width=48) (actual time=266.826..266.831 rows=2 loops=1)
+              Buffers: shared hit=1464 read=13933, temp read=3570 written=3570
+              ->  GroupAggregate  (cost=41369.81..41385.13 rows=93 width=32) (actual time=266.774..266.777 rows=2 loops=1)
+                    Group Key: paid.buyer_id, (min(paid.paid_at))
+                    Buffers: shared hit=1464 read=13933, temp read=3570 written=3570
+                    ->  Sort  (cost=41369.81..41373.41 rows=1439 width=32) (actual time=266.769..266.771 rows=54 loops=1)
+                          Sort Key: paid.buyer_id, (min(paid.paid_at))
+                          Sort Method: quicksort  Memory: 27kB
+                          Buffers: shared hit=1464 read=13933, temp read=3570 written=3570
+                          ->  Hash Right Join  (cost=21809.47..41294.33 rows=1439 width=32) (actual time=224.816..266.753 rows=54 loops=1)
+                                Hash Cond: (p.buyer_id = paid.buyer_id)
+                                Join Filter: (p.paid_at > (min(paid.paid_at)))
+                                Rows Removed by Join Filter: 2
+                                Buffers: shared hit=1458 read=13933, temp read=3570 written=3570
+                                ->  CTE Scan on paid p  (cost=0.00..17224.00 rows=861200 width=24) (actual time=0.010..33.433 rows=860054 loops=1)
+                                      Buffers: temp read=3570 written=1
+                                ->  Hash  (cost=21808.31..21808.31 rows=93 width=24) (actual time=205.305..205.306 rows=2 loops=1)
+                                      Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                      Buffers: shared hit=1458 read=13933, temp written=3569
+                                      ->  HashAggregate  (cost=21530.00..21808.31 rows=93 width=24) (actual time=204.885..205.303 rows=2 loops=1)
+                                            Group Key: paid.buyer_id
+                                            Filter: ((min(paid.paid_at) >= '2025-12-01 00:00:00+00'::timestamp with time zone) AND (min(paid.paid_at) < '2026-12-01 00:00:00+00'::timestamp with time zone))
+                                            Batches: 1  Memory Usage: 2065kB
+                                            Rows Removed by Filter: 19998
+                                            Buffers: shared hit=1458 read=13933, temp written=3569
+                                            ->  CTE Scan on paid  (cost=0.00..17224.00 rows=861200 width=24) (actual time=0.010..131.170 rows=860054 loops=1)
+                                                  Buffers: shared hit=1458 read=13933, temp written=3569
+Planning:
+  Buffers: shared hit=184
+Planning Time: 0.276 ms
+Execution Time: 269.248 ms

@@ -78,6 +78,9 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
             .IsDescending(false, true, true);
         builder.HasIndex(o => o.ExpiresAt).HasDatabaseName("ix_orders_pending_expires_at").HasFilter("status = 'Pending'");
         builder.HasIndex(o => o.PaidAt).HasDatabaseName("ix_orders_paid_at").HasFilter("paid_at IS NOT NULL");
+
+        // R-05 funnel (ADR-0003): an index-only scan of the orders created in a period.
+        builder.HasIndex(o => o.CreatedAt).HasDatabaseName("ix_orders_created_at").IncludeProperties(o => new { o.Id, o.Status, o.PaidAt });
     }
 }
 
@@ -200,12 +203,18 @@ internal sealed class LedgerEntryConfiguration : IEntityTypeConfiguration<Ledger
         builder.Property(e => e.Id).ValueGeneratedNever();
         builder.Property(e => e.EntryType).AsText();
         builder.MapMoney(e => e.Amount, "amount");
+
+        // Get-only, so it is mapped explicitly rather than through an index.
+        builder.Property(e => e.CreatedAt);
         builder.HasOne<SellerProfile>().WithMany().HasForeignKey(e => e.SellerId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<OrderItem>().WithMany().HasForeignKey(e => e.OrderItemId).OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(e => new { e.OrderItemId, e.EntryType })
             .HasDatabaseName("ux_ledger_item_type")
             .IsUnique()
             .HasFilter("order_item_id IS NOT NULL");
-        builder.HasIndex(e => new { e.SellerId, e.CreatedAt }).HasDatabaseName("ix_ledger_seller_id_created_at");
+
+        // ix_ledger_seller_id_created_at and ix_ledger_created_at cover the report queries (ADR-0003). They INCLUDE
+        // the amount column, which EF cannot express for a complex property, so the AddReportingIndexes migration
+        // creates them in SQL and they are not part of this model.
     }
 }

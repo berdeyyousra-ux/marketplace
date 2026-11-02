@@ -1,0 +1,56 @@
+Result  (cost=16545.67..16545.68 rows=1 width=88) (actual time=4.891..4.892 rows=1 loops=1)
+  Buffers: shared hit=2808
+  InitPlan 1
+    ->  Aggregate  (cost=2576.78..2576.79 rows=1 width=32) (actual time=3.775..3.775 rows=1 loops=1)
+          Buffers: shared hit=435
+          ->  Index Only Scan using ix_ledger_seller_id_created_at on seller_ledger_entries  (cost=0.56..2469.25 rows=43011 width=6) (actual time=0.013..2.217 rows=42886 loops=1)
+                Index Cond: (seller_id = '0191b36c-f3d1-7054-aa1f-e63381bb12b8'::uuid)
+                Heap Fetches: 0
+                Buffers: shared hit=435
+  InitPlan 2
+    ->  Aggregate  (cost=222.33..222.34 rows=1 width=32) (actual time=0.099..0.099 rows=1 loops=1)
+          Buffers: shared hit=17
+          ->  Index Only Scan using ix_ledger_seller_id_created_at on seller_ledger_entries seller_ledger_entries_1  (cost=0.56..218.00 rows=1729 width=6) (actual time=0.008..0.077 rows=593 loops=1)
+                Index Cond: ((seller_id = '0191b36c-f3d1-7054-aa1f-e63381bb12b8'::uuid) AND (created_at >= (now() - '30 days'::interval)))
+                Filter: (entry_type = ANY ('{Sale,Refund}'::text[]))
+                Rows Removed by Filter: 593
+                Heap Fetches: 0
+                Buffers: shared hit=17
+  InitPlan 3
+    ->  Aggregate  (cost=13523.58..13523.59 rows=1 width=8) (actual time=0.953..0.953 rows=1 loops=1)
+          Buffers: shared hit=2336
+          ->  Sort  (cost=13515.15..13519.36 rows=1687 width=16) (actual time=0.920..0.933 rows=579 loops=1)
+                Sort Key: oi.order_id
+                Sort Method: quicksort  Memory: 25kB
+                Buffers: shared hit=2336
+                ->  Nested Loop  (cost=0.99..13424.72 rows=1687 width=16) (actual time=0.010..0.869 rows=579 loops=1)
+                      Buffers: shared hit=2333
+                      ->  Index Only Scan using ix_ledger_seller_id_created_at on seller_ledger_entries l  (cost=0.56..218.00 rows=1687 width=16) (actual time=0.003..0.070 rows=579 loops=1)
+                            Index Cond: ((seller_id = '0191b36c-f3d1-7054-aa1f-e63381bb12b8'::uuid) AND (created_at >= (now() - '30 days'::interval)))
+                            Filter: (entry_type = 'Sale'::text)
+                            Rows Removed by Filter: 607
+                            Heap Fetches: 0
+                            Buffers: shared hit=17
+                      ->  Index Scan using pk_order_items on order_items oi  (cost=0.43..7.83 rows=1 width=32) (actual time=0.001..0.001 rows=1 loops=579)
+                            Index Cond: (id = l.order_item_id)
+                            Buffers: shared hit=2316
+  InitPlan 4
+    ->  Aggregate  (cost=218.11..218.12 rows=1 width=8) (actual time=0.052..0.052 rows=1 loops=1)
+          Buffers: shared hit=17
+          ->  Index Only Scan using ix_ledger_seller_id_created_at on seller_ledger_entries seller_ledger_entries_2  (cost=0.56..218.00 rows=42 width=0) (actual time=0.013..0.051 rows=14 loops=1)
+                Index Cond: ((seller_id = '0191b36c-f3d1-7054-aa1f-e63381bb12b8'::uuid) AND (created_at >= (now() - '30 days'::interval)))
+                Filter: (entry_type = 'Refund'::text)
+                Rows Removed by Filter: 1172
+                Heap Fetches: 0
+                Buffers: shared hit=17
+  InitPlan 5
+    ->  Aggregate  (cost=4.83..4.83 rows=1 width=8) (actual time=0.011..0.011 rows=1 loops=1)
+          Buffers: shared hit=3
+          ->  Index Only Scan using ix_products_seller_id_status on products  (cost=0.29..4.77 rows=24 width=0) (actual time=0.009..0.010 rows=25 loops=1)
+                Index Cond: ((seller_id = '0191b36c-f3d1-7054-aa1f-e63381bb12b8'::uuid) AND (status = 'Published'::text))
+                Heap Fetches: 0
+                Buffers: shared hit=3
+Planning:
+  Buffers: shared hit=487
+Planning Time: 0.610 ms
+Execution Time: 4.953 ms
