@@ -61,6 +61,30 @@ public sealed class OrderExpiryJob(AppDbContext db, AuditTrail audit, TimeProvid
     }
 }
 
+// R-10: refreshes mv_seller_monthly_revenue every 15 minutes without blocking readers, then records when the
+// refresh started. Entries written after that moment may be missing from the view, and R-10 reads them live.
+public sealed class SellerRevenueViewRefreshJob(AppDbContext db, TimeProvider timeProvider) : IScheduledJob
+{
+    public const string ViewName = "mv_seller_monthly_revenue";
+
+    public string Name => "seller-revenue-view-refresh";
+
+    public TimeSpan Interval => TimeSpan.FromMinutes(15);
+
+    public async Task<int> RunAsync(CancellationToken cancellationToken)
+    {
+        var startedAt = timeProvider.GetUtcNow();
+        await db.Database.ExecuteSqlRawAsync($"REFRESH MATERIALIZED VIEW CONCURRENTLY {ViewName}", cancellationToken);
+        await db.Database.ExecuteSqlAsync(
+            $"""
+            INSERT INTO report_refreshes (view_name, refreshed_at) VALUES ({ViewName}, {startedAt})
+            ON CONFLICT (view_name) DO UPDATE SET refreshed_at = EXCLUDED.refreshed_at
+            """,
+            cancellationToken);
+        return 1;
+    }
+}
+
 // Section 7.7 retention, which defines US-42. Dead-lettered outbox rows, payment events, the audit log and the
 // ledger are kept.
 public sealed class CleanupJob(AppDbContext db, TimeProvider timeProvider) : IScheduledJob

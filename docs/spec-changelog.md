@@ -4,6 +4,14 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### Section 13.2 R-10: EP-71 reads completed months from the view and later months live (T-054)
+
+**Spec:** R-10 is `mv_seller_monthly_revenue`, refreshed every 15 minutes, and serves EP-71 when it beats R-01.
+
+**Change:** R-10 is used, because it measured about 55 times faster than R-01 for the busiest seller in the 1M-order dataset (`docs/sql/R10-seller-monthly-revenue.md`). A new table, `report_refreshes (view_name, refreshed_at)`, records when each refresh started. EP-71 reads months that began before that time, less a 10-minute margin, from the view, and later months live from the ledger. With no refresh recorded, every month is read live, which is R-01.
+
+**Why:** ledger entries are only ever written at the current time, so this split gives R-01's exact result. Serving straight from a view that can be 15 minutes stale would hide a seller's newest sales.
+
 ### Section 10.2: payment provider policies wrap the provider, not only its HttpClient (T-040)
 
 **Spec:** resilience is implemented "with `Microsoft.Extensions.Http.Resilience` handlers per named `HttpClient`".

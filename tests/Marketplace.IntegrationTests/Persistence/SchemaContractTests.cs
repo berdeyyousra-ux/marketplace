@@ -16,7 +16,7 @@ public sealed class SchemaContractTests : IAsyncLifetime
     [
         "__EFMigrationsHistory", "ai_suggestions", "audit_log", "categories", "download_grants", "idempotency_keys",
         "one_time_tokens", "order_items", "orders", "outbox_messages", "payment_events", "payments", "products",
-        "refresh_tokens", "refund_requests", "role_claims", "roles", "seller_ledger_entries", "seller_profiles",
+        "refresh_tokens", "refund_requests", "report_refreshes", "role_claims", "roles", "seller_ledger_entries", "seller_profiles",
         "user_claims", "user_logins", "user_roles", "user_tokens", "users",
     ];
 

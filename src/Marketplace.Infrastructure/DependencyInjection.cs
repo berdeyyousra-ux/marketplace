@@ -65,6 +65,7 @@ public static class DependencyInjection
         services.AddScoped<Jobs.OrderExpiryJob>();
         services.AddScoped<Jobs.PaymentReconciliationJob>();
         services.AddScoped<Jobs.CleanupJob>();
+        services.AddScoped<Jobs.SellerRevenueViewRefreshJob>();
         AddResilienceSettings(services, ResilienceSettings.PaymentsApi, ResilienceSettings.ApiDefaults());
         AddResilienceSettings(services, ResilienceSettings.PaymentsWorker, ResilienceSettings.WorkerDefaults());
         services.AddSingleton<IPaymentProvider>(provider =>

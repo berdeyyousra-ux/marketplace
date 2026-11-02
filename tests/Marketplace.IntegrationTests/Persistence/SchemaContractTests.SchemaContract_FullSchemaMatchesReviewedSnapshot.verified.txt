@@ -149,6 +149,8 @@ refund_requests.reason_text character varying(2000) NOT NULL
 refund_requests.requested_by uuid NOT NULL
 refund_requests.status text NOT NULL
 refund_requests.updated_at timestamp with time zone NOT NULL
+report_refreshes.refreshed_at timestamp with time zone NOT NULL
+report_refreshes.view_name text NOT NULL
 role_claims.claim_type text
 role_claims.claim_value text
 role_claims.id integer(32,0) NOT NULL IDENTITY BY DEFAULT
@@ -264,6 +266,7 @@ refund_requests fk_refund_requests_users_decided_by FOREIGN KEY (decided_by) REF
 refund_requests fk_refund_requests_users_requested_by FOREIGN KEY (requested_by) REFERENCES users(id) ON DELETE RESTRICT
 refund_requests pk_refund_requests PRIMARY KEY (id)
 refund_requests ux_refund_requests_order_item_id UNIQUE (order_item_id)
+report_refreshes pk_report_refreshes PRIMARY KEY (view_name)
 role_claims fk_role_claims_roles_role_id FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
 role_claims pk_role_claims PRIMARY KEY (id)
 roles pk_roles PRIMARY KEY (id)
@@ -326,6 +329,7 @@ CREATE UNIQUE INDEX pk_payments ON public.payments USING btree (id)
 CREATE UNIQUE INDEX pk_products ON public.products USING btree (id)
 CREATE UNIQUE INDEX pk_refresh_tokens ON public.refresh_tokens USING btree (id)
 CREATE UNIQUE INDEX pk_refund_requests ON public.refund_requests USING btree (id)
+CREATE UNIQUE INDEX pk_report_refreshes ON public.report_refreshes USING btree (view_name)
 CREATE UNIQUE INDEX pk_role_claims ON public.role_claims USING btree (id)
 CREATE UNIQUE INDEX pk_roles ON public.roles USING btree (id)
 CREATE UNIQUE INDEX pk_seller_ledger_entries ON public.seller_ledger_entries USING btree (id)
@@ -339,6 +343,7 @@ CREATE UNIQUE INDEX ux_categories_slug ON public.categories USING btree (slug)
 CREATE UNIQUE INDEX ux_download_grants_active_buyer_product ON public.download_grants USING btree (buyer_id, product_id) WHERE (revoked_at IS NULL)
 CREATE UNIQUE INDEX ux_download_grants_order_item_id ON public.download_grants USING btree (order_item_id)
 CREATE UNIQUE INDEX ux_ledger_item_type ON public.seller_ledger_entries USING btree (order_item_id, entry_type) WHERE (order_item_id IS NOT NULL)
+CREATE UNIQUE INDEX ux_mv_seller_monthly_revenue_seller_id_month ON public.mv_seller_monthly_revenue USING btree (seller_id, month)
 CREATE UNIQUE INDEX ux_one_time_tokens_token_hash ON public.one_time_tokens USING btree (token_hash)
 CREATE UNIQUE INDEX ux_order_items_order_id_product_id ON public.order_items USING btree (order_id, product_id)
 CREATE UNIQUE INDEX ux_payment_events_provider_event ON public.payment_events USING btree (provider, provider_event_id)
