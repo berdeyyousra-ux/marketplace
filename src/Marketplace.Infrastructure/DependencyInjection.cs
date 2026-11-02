@@ -68,6 +68,29 @@ public static class DependencyInjection
         services.AddScoped<Jobs.SellerRevenueViewRefreshJob>();
         AddResilienceSettings(services, ResilienceSettings.PaymentsApi, ResilienceSettings.ApiDefaults());
         AddResilienceSettings(services, ResilienceSettings.PaymentsWorker, ResilienceSettings.WorkerDefaults());
+        AddResilienceSettings(services, ResilienceSettings.Llm, ResilienceSettings.LlmDefaults());
+
+        // Section 12.3: the LLM client comes from Ai:Provider. Fake is the default for development and tests.
+        services.AddOptions<Ai.AiOptions>()
+            .BindConfiguration(Ai.AiOptions.SectionName)
+            .Validate(ai => ai.Provider is Ai.AiOptions.FakeName or Ai.AiOptions.AnthropicName, "Ai:Provider must be Fake or Anthropic.")
+            .Validate(
+                ai => ai.Provider != Ai.AiOptions.AnthropicName || (!string.IsNullOrWhiteSpace(ai.Model) && !string.IsNullOrWhiteSpace(ai.ApiKey)),
+                "Ai:Model and Ai:ApiKey are required when Ai:Provider is Anthropic.")
+            .Validate(ai => ai.MaxOutputTokens > 0 && ai.DailyRequestCap >= 0, "Ai:MaxOutputTokens must be positive and Ai:DailyRequestCap not negative.")
+            .ValidateOnStart();
+        services.AddSingleton<Ai.FakeLlmClient>();
+
+        // The resilience pipeline owns timeouts, so the HttpClient's own timeout is off.
+        services.AddHttpClient(Ai.AiOptions.AnthropicName, client => client.Timeout = Timeout.InfiniteTimeSpan);
+        services.AddSingleton(provider => new Ai.AnthropicLlmClient(
+            provider.GetRequiredService<IHttpClientFactory>().CreateClient(Ai.AiOptions.AnthropicName),
+            provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Ai.AiOptions>>(),
+            provider.GetRequiredService<Microsoft.Extensions.Options.IOptionsMonitor<ResilienceSettings>>()));
+        services.AddSingleton<Application.Refunds.ILlmClient>(provider =>
+            provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Ai.AiOptions>>().Value.Provider == Ai.AiOptions.AnthropicName
+                ? provider.GetRequiredService<Ai.AnthropicLlmClient>()
+                : provider.GetRequiredService<Ai.FakeLlmClient>());
         services.AddSingleton<IPaymentProvider>(provider =>
         {
             IPaymentProvider selected = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<PaymentOptions>>().Value.Provider switch

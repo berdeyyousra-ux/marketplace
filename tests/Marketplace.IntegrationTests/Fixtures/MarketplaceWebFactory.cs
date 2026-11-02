@@ -72,7 +72,7 @@ public sealed class MarketplaceWebFactory : WebApplicationFactory<Program>, IAsy
 
         // Section 10.2 policies with short real-time values, so FM-09 and FM-10 run in well under a second. The breaker
         // never opens here, because tests that simulate failures share the provider; ResiliencePipelineTests cover it.
-        foreach (var profile in new[] { "PaymentsApi", "PaymentsWorker" })
+        foreach (var profile in new[] { "PaymentsApi", "PaymentsWorker", "Llm" })
         {
             builder.UseSetting($"Resilience:{profile}:AttemptTimeout", "00:00:00.300");
             builder.UseSetting($"Resilience:{profile}:TotalTimeout", "00:00:03");
