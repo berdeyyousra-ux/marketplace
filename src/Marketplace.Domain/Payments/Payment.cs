@@ -27,6 +27,13 @@ public sealed class Payment : AggregateRoot
         UpdatedAt = now;
     }
 
+    // Used by EF Core when materializing from the database.
+    private Payment()
+    {
+        Provider = string.Empty;
+        ProviderPaymentId = string.Empty;
+    }
+
     public Guid OrderId { get; private set; }
 
     public string Provider { get; private set; }

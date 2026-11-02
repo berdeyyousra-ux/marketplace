@@ -24,6 +24,11 @@ public sealed class LedgerEntry : Entity
         CreatedAt = now;
     }
 
+    // Used by EF Core when materializing from the database.
+    private LedgerEntry()
+    {
+    }
+
     public Guid SellerId { get; }
 
     public Guid? OrderItemId { get; }

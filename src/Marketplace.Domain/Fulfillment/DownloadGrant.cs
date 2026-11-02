@@ -24,6 +24,11 @@ public sealed class DownloadGrant : AggregateRoot
         MaxDownloads = DefaultMaxDownloads;
     }
 
+    // Used by EF Core when materializing from the database.
+    private DownloadGrant()
+    {
+    }
+
     public Guid OrderItemId { get; private set; }
 
     public Guid BuyerId { get; private set; }

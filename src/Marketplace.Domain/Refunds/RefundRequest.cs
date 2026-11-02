@@ -47,6 +47,12 @@ public sealed class RefundRequest : AggregateRoot
         UpdatedAt = now;
     }
 
+    // Used by EF Core when materializing from the database.
+    private RefundRequest()
+    {
+        ReasonText = string.Empty;
+    }
+
     public Guid OrderItemId { get; private set; }
 
     public Guid RequestedBy { get; private set; }
@@ -76,6 +82,9 @@ public sealed class RefundRequest : AggregateRoot
     public DateTimeOffset? ExecutedAt { get; private set; }
 
     public string? FailureReason { get; private set; }
+
+    // Mapped to the PostgreSQL xmin system column as an optimistic concurrency token (D-15).
+    public uint Version { get; private set; }
 
     public static Result<RefundRequest> Submit(
         Guid orderItemId, Guid requestedBy, string reasonText, RefundPolicyVerdict verdict, int downloadCount, DateTimeOffset now)

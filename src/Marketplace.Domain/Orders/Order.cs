@@ -19,6 +19,11 @@ public sealed class Order : AggregateRoot
         ExpiresAt = expiresAt;
     }
 
+    // Used by EF Core when materializing from the database.
+    private Order()
+    {
+    }
+
     public Guid BuyerId { get; private set; }
 
     public OrderStatus Status { get; private set; }
@@ -38,6 +43,9 @@ public sealed class Order : AggregateRoot
     public DateTimeOffset? ExpiredAt { get; private set; }
 
     public IReadOnlyList<OrderItem> Items => _items;
+
+    // Mapped to the PostgreSQL xmin system column as an optimistic concurrency token (D-15).
+    public uint Version { get; private set; }
 
     public static Result<Order> Create(
         Guid buyerId, IReadOnlyList<OrderLine> lines, DateTimeOffset now, int expiryMinutes, int commissionBasisPoints)
