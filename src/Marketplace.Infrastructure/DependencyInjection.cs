@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddSingleton<IFileStorage, AzureBlobFileStorage>();
         services.AddSingleton<IFileScanner, NoopFileScanner>();
         services.AddScoped<IProductSearch, ProductSearch>();
+        services.AddScoped<IIdempotencyStore, Idempotency.IdempotencyStore>();
 
         return services;
     }
