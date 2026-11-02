@@ -19,7 +19,10 @@ public sealed class MarketplaceWebFactory : WebApplicationFactory<Program>, IAsy
     public static readonly DateTimeOffset StartTime = new(2026, 11, 2, 9, 0, 0, TimeSpan.Zero);
 
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:17").Build();
-    private readonly AzuriteContainer _azurite = new AzuriteBuilder("mcr.microsoft.com/azure-storage/azurite:3.35.0").Build();
+    // Azurite lags behind the Azure SDK's newest storage API version, so the version check is skipped.
+    private readonly AzuriteContainer _azurite = new AzuriteBuilder("mcr.microsoft.com/azure-storage/azurite:3.37.0")
+        .WithCommand("--skipApiVersionCheck")
+        .Build();
 
     // A fresh random key per test run; no signing key is committed (section 11.3).
     public static readonly string TestSigningKey = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));

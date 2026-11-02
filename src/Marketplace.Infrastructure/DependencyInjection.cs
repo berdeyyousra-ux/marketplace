@@ -4,6 +4,7 @@ using Marketplace.Infrastructure.Email;
 using Marketplace.Infrastructure.Identity;
 using Marketplace.Infrastructure.Outbox;
 using Marketplace.Infrastructure.Persistence;
+using Marketplace.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +35,9 @@ public static class DependencyInjection
         services.AddOptions<EmailOptions>().BindConfiguration(EmailOptions.SectionName);
         services.AddOptions<AccountLinkOptions>().BindConfiguration(EmailOptions.SectionName);
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
+        services.AddOptions<StorageOptions>().BindConfiguration(StorageOptions.SectionName);
+        services.AddSingleton<IFileStorage, AzureBlobFileStorage>();
+        services.AddSingleton<IFileScanner, NoopFileScanner>();
 
         return services;
     }

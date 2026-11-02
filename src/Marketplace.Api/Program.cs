@@ -17,6 +17,9 @@ const string ReadinessTag = "ready";
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Section 9.2: 1 MB by default; the upload endpoint raises its own limit.
+builder.WebHost.ConfigureKestrel(kestrel => kestrel.Limits.MaxRequestBodySize = 1024 * 1024);
+
 builder.Host.UseSerilog((context, services, logger) => logger
     .ReadFrom.Configuration(context.Configuration)
     .ReadFrom.Services(services)
