@@ -91,7 +91,7 @@ public sealed class FakePaymentProvider(IOptions<PaymentOptions> options, TimePr
     public async Task CancelPaymentAsync(string providerPaymentId, CancellationToken cancellationToken)
     {
         await SimulateAsync(cancellationToken);
-        var payment = Find(providerPaymentId);
+        var payment = Adopt(providerPaymentId, ProviderPaymentStatus.Canceled, Money.Eur(0m));
         if (payment.Status == ProviderPaymentStatus.RequiresPayment)
         {
             payment.Status = ProviderPaymentStatus.Canceled;
@@ -101,7 +101,7 @@ public sealed class FakePaymentProvider(IOptions<PaymentOptions> options, TimePr
     public async Task<ProviderRefund> RefundAsync(string providerPaymentId, Money amount, string idempotencyKey, CancellationToken cancellationToken)
     {
         await SimulateAsync(cancellationToken);
-        var payment = Find(providerPaymentId);
+        var payment = Adopt(providerPaymentId, ProviderPaymentStatus.Succeeded, amount);
         return _refundsByIdempotencyKey.GetOrAdd(idempotencyKey, _ =>
         {
             if (payment.Status != ProviderPaymentStatus.Succeeded)
@@ -237,6 +237,14 @@ public sealed class FakePaymentProvider(IOptions<PaymentOptions> options, TimePr
             throw new PaymentProviderUnavailableException("Simulated provider failure.");
         }
     }
+
+    // State lives in this process only, and the Api and Worker are separate processes: a payment created through the
+    // Api is unknown to the Worker. The Worker's operations adopt such a payment in the state the database implies
+    // (a refund is only requested for a succeeded payment; a cancelled one has nothing left to pay).
+    private FakePayment Adopt(string providerPaymentId, ProviderPaymentStatus status, Money amount) =>
+        providerPaymentId.StartsWith("pi_fake_", StringComparison.Ordinal)
+            ? _payments.GetOrAdd(providerPaymentId, id => new FakePayment(id, Guid.Empty, amount) { Status = status })
+            : Find(providerPaymentId);
 
     private FakePayment Find(string providerPaymentId) =>
         _payments.TryGetValue(providerPaymentId, out var payment)
