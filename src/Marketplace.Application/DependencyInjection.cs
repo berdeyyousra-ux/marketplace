@@ -1,0 +1,28 @@
+using FluentValidation;
+using Marketplace.Application.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Marketplace.Application;
+
+public static class DependencyInjection
+{
+    private static readonly Type[] _handlerInterfaces = [typeof(ICommandHandler<,>), typeof(IQueryHandler<,>)];
+
+    // Registers every handler and validator in this assembly. Handlers are scoped, like the DbContext they use.
+    public static IServiceCollection AddApplication(this IServiceCollection services)
+    {
+        var assembly = typeof(DependencyInjection).Assembly;
+
+        foreach (var type in assembly.GetTypes().Where(type => type is { IsClass: true, IsAbstract: false }))
+        {
+            foreach (var handlerInterface in type.GetInterfaces()
+                .Where(candidate => candidate.IsGenericType && _handlerInterfaces.Contains(candidate.GetGenericTypeDefinition())))
+            {
+                services.AddScoped(handlerInterface, type);
+            }
+        }
+
+        services.AddValidatorsFromAssembly(assembly, ServiceLifetime.Singleton, includeInternalTypes: true);
+        return services;
+    }
+}
