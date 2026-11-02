@@ -1,3 +1,4 @@
+using Marketplace.Application.Abstractions;
 using Marketplace.Application.Ops;
 using Marketplace.Domain.Catalog;
 using Marketplace.Domain.Fulfillment;
@@ -16,7 +17,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 namespace Marketplace.Infrastructure.Persistence;
 
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
-    : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>(options)
+    : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>(options), IAppDbContext
 {
     public DbSet<SellerProfile> SellerProfiles => Set<SellerProfile>();
 
