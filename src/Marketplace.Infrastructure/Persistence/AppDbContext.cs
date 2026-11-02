@@ -1,3 +1,4 @@
+using Marketplace.Application.Ops;
 using Marketplace.Domain.Catalog;
 using Marketplace.Domain.Fulfillment;
 using Marketplace.Domain.Identity;
@@ -38,6 +39,16 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<RefundRequest> RefundRequests => Set<RefundRequest>();
 
     public DbSet<LedgerEntry> LedgerEntries => Set<LedgerEntry>();
+
+    public DbSet<PaymentEvent> PaymentEvents => Set<PaymentEvent>();
+
+    public DbSet<AiSuggestion> AiSuggestions => Set<AiSuggestion>();
+
+    public DbSet<IdempotencyKey> IdempotencyKeys => Set<IdempotencyKey>();
+
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+
+    public DbSet<AuditLogEntry> AuditLog => Set<AuditLogEntry>();
 
     // Section 7.2 lists every index explicitly, so EF's automatic foreign key indexes are turned off.
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
