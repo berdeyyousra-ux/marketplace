@@ -182,6 +182,25 @@ public sealed class IdentityService(UserManager<AppUser> users, IPasswordHasher<
         }
     }
 
+    public async Task<Result<Unit>> SetPasswordAsync(Guid userId, string newPassword, CancellationToken cancellationToken)
+    {
+        var user = await RequireAsync(userId);
+        foreach (var validator in users.PasswordValidators)
+        {
+            var check = await validator.ValidateAsync(users, user, newPassword);
+            if (!check.Succeeded)
+            {
+                return DomainErrors.Validation(string.Join(" ", check.Errors.Select(error => error.Description)));
+            }
+        }
+
+        user.PasswordHash = users.PasswordHasher.HashPassword(user, newPassword);
+        user.AccessFailedCount = 0;
+        user.LockoutEnd = null;
+        await users.UpdateSecurityStampAsync(user);
+        return Unit.Value;
+    }
+
     public async Task<IReadOnlyList<string>> GetRolesAsync(Guid userId, CancellationToken cancellationToken) =>
         [.. await users.GetRolesAsync(await RequireAsync(userId))];
 
