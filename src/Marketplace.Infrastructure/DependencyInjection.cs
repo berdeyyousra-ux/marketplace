@@ -1,3 +1,4 @@
+using Marketplace.Application.Abstractions;
 using Marketplace.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +17,9 @@ public static class DependencyInjection
 
             options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention();
         });
+
+        services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
+        services.AddSingleton<IDbExceptionTranslator, DbExceptionTranslator>();
 
         return services;
     }
