@@ -201,6 +201,15 @@ public sealed class IdentityService(UserManager<AppUser> users, IPasswordHasher<
         return Unit.Value;
     }
 
+    public async Task AddToRoleAsync(Guid userId, string role, CancellationToken cancellationToken)
+    {
+        var result = await users.AddToRoleAsync(await RequireAsync(userId), role);
+        if (!result.Succeeded && !result.Errors.Any(error => error.Code == "UserAlreadyInRole"))
+        {
+            throw new InvalidOperationException("Adding the role failed: " + string.Join(" ", result.Errors.Select(error => error.Code)));
+        }
+    }
+
     public async Task<IReadOnlyList<string>> GetRolesAsync(Guid userId, CancellationToken cancellationToken) =>
         [.. await users.GetRolesAsync(await RequireAsync(userId))];
 
