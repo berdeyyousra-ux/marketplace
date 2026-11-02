@@ -1,0 +1,12 @@
+{
+  "caseId": "approve-02",
+  "source": "fixture",
+  "provider": "fixture",
+  "model": "none",
+  "promptVersion": "refund-advisor.v1",
+  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "outputs": [
+    "```json\n{\"category\":\"not_as_described\",\"summary\":\"Fixture answer for approve-02: The listing says 120 slides but the deck has only 18 and none of the advertised animations.\",\"recommendedAction\":\"approve\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}\n```",
+    "{\"category\":\"not_as_described\",\"summary\":\"Fixture answer for approve-02: The listing says 120 slides but the deck has only 18 and none of the advertised animations.\",\"recommendedAction\":\"approve\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+  ]
+}

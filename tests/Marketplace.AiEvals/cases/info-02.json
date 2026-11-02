@@ -1,0 +1,26 @@
+{
+  "id": "info-02",
+  "facts": {
+    "buyerMessage": "Not what I expected, refund.",
+    "productTitle": "Weekly Planner",
+    "categorySlug": "templates",
+    "price": "5.99 EUR",
+    "daysSincePurchase": 3,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 1,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "other",
+    "acceptableActions": [
+      "needs_more_info"
+    ]
+  },
+  "tags": [
+    "info",
+    "vague"
+  ]
+}

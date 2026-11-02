@@ -1,0 +1,25 @@
+{
+  "id": "reject-07",
+  "facts": {
+    "buyerMessage": "I already printed all 200 pages and used them in class. Refund please.",
+    "productTitle": "Coloring Pages 3",
+    "categorySlug": "other",
+    "price": "6.99 EUR",
+    "daysSincePurchase": 13,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 9,
+    "buyerRefundsLast180Days": 2,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "changed_mind",
+    "acceptableActions": [
+      "reject"
+    ]
+  },
+  "tags": [
+    "reject"
+  ]
+}

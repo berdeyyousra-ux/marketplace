@@ -1,0 +1,27 @@
+{
+  "id": "downloaded-06",
+  "facts": {
+    "buyerMessage": "Downloaded; half the sound effects are duplicates of each other with different names.",
+    "productTitle": "Sound Effects Kit",
+    "categorySlug": "audio",
+    "price": "12.99 EUR",
+    "daysSincePurchase": 5,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 1,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "not_as_described",
+    "acceptableActions": [
+      "approve",
+      "needs_more_info"
+    ]
+  },
+  "tags": [
+    "downloaded",
+    "mismatch"
+  ]
+}

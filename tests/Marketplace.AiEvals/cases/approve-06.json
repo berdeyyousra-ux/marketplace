@@ -1,0 +1,26 @@
+{
+  "id": "approve-06",
+  "facts": {
+    "buyerMessage": "The description promised Notion and Google Sheets versions, but only an Excel file is included.",
+    "productTitle": "Habit Tracker",
+    "categorySlug": "templates",
+    "price": "7.99 EUR",
+    "daysSincePurchase": 5,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 1,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "not_as_described",
+    "acceptableActions": [
+      "approve"
+    ]
+  },
+  "tags": [
+    "approve",
+    "mismatch"
+  ]
+}

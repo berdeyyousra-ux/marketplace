@@ -1,0 +1,26 @@
+{
+  "id": "downloaded-01",
+  "facts": {
+    "buyerMessage": "Downloaded it, but the main file is a 0 KB placeholder.",
+    "productTitle": "LUT Collection",
+    "categorySlug": "video",
+    "price": "19.99 EUR",
+    "daysSincePurchase": 2,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 2,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "file_defective",
+    "acceptableActions": [
+      "approve"
+    ]
+  },
+  "tags": [
+    "downloaded",
+    "defect"
+  ]
+}

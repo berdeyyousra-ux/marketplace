@@ -1,0 +1,11 @@
+{
+  "caseId": "approve-04",
+  "source": "fixture",
+  "provider": "fixture",
+  "model": "none",
+  "promptVersion": "refund-advisor.v1",
+  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "outputs": [
+    "{\"category\":\"accidental_purchase\",\"summary\":\"Fixture answer for approve-04: I clicked buy by mistake on my phone while scrolling and have not downloaded it. Please cancel.\",\"recommendedAction\":\"approve\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+  ]
+}

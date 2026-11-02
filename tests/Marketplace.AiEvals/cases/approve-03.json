@@ -1,0 +1,26 @@
+{
+  "id": "approve-03",
+  "facts": {
+    "buyerMessage": "I was charged twice for the same font. I already own it from an order last week.",
+    "productTitle": "Rounded Sans",
+    "categorySlug": "fonts",
+    "price": "24.99 EUR",
+    "daysSincePurchase": 1,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 0,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "Eligible"
+  },
+  "expected": {
+    "category": "duplicate_purchase",
+    "acceptableActions": [
+      "approve"
+    ]
+  },
+  "tags": [
+    "approve",
+    "duplicate"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "approve-07",
+  "facts": {
+    "buyerMessage": "The video files are 480p but the product page says 4K. I checked every clip.",
+    "productTitle": "Stock Footage Pack 7",
+    "categorySlug": "video",
+    "price": "39.99 EUR",
+    "daysSincePurchase": 2,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 2,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "not_as_described",
+    "acceptableActions": [
+      "approve"
+    ]
+  },
+  "tags": [
+    "approve",
+    "mismatch"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "caseId": "info-01",
+  "source": "fixture",
+  "provider": "fixture",
+  "model": "none",
+  "promptVersion": "refund-advisor.v1",
+  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "outputs": [
+    "{\"category\":\"does_not_work_for_me\",\"summary\":\"Fixture answer for info-01: Doesn't work.\",\"recommendedAction\":\"needs_more_info\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+  ]
+}

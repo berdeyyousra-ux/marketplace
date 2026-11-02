@@ -55,8 +55,11 @@ jobs:
         run: dotnet test --project tests/Marketplace.IntegrationTests/Marketplace.IntegrationTests.csproj --configuration Release --no-build
 
       # Exit code 8 means no tests ran. Remove the flag when T-074 adds the eval runner.
+      # Section 12.7: the case set and the replay gate, then eval-refunds over the saved outputs.
       - name: AI evals
-        run: dotnet test --project tests/Marketplace.AiEvals/Marketplace.AiEvals.csproj --configuration Release --no-build --ignore-exit-code 8
+        run: |
+          dotnet test --project tests/Marketplace.AiEvals/Marketplace.AiEvals.csproj --configuration Release --no-build
+          dotnet run --project src/Marketplace.Tools --configuration Release --no-build -- eval-refunds --mode recorded
 
       # Section 7.5: prove the migrations apply to an empty database. Run twice to show a re-run is a no-op.
       - name: Build migration bundle

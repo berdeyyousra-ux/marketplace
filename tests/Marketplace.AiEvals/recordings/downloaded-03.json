@@ -1,0 +1,11 @@
+{
+  "caseId": "downloaded-03",
+  "source": "fixture",
+  "provider": "fixture",
+  "model": "none",
+  "promptVersion": "refund-advisor.v1",
+  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "outputs": [
+    "{\"category\":\"accidental_purchase\",\"summary\":\"Fixture answer for downloaded-03: Downloaded it, it's fine, but I bought the wrong colour scheme.\",\"recommendedAction\":\"approve\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+  ]
+}

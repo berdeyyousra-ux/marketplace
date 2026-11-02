@@ -1,0 +1,26 @@
+{
+  "id": "info-04",
+  "facts": {
+    "buyerMessage": "It's broken I think? Can you check.",
+    "productTitle": "API Starter",
+    "categorySlug": "software",
+    "price": "49.99 EUR",
+    "daysSincePurchase": 4,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 2,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "does_not_work_for_me",
+    "acceptableActions": [
+      "needs_more_info"
+    ]
+  },
+  "tags": [
+    "info",
+    "vague"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "downloaded-05",
+  "facts": {
+    "buyerMessage": "I downloaded it and decided I prefer a different style.",
+    "productTitle": "Script Font",
+    "categorySlug": "fonts",
+    "price": "19.99 EUR",
+    "daysSincePurchase": 4,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 2,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "changed_mind",
+    "acceptableActions": [
+      "reject",
+      "needs_more_info"
+    ]
+  },
+  "tags": [
+    "downloaded"
+  ]
+}

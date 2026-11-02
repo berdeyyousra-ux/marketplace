@@ -1,0 +1,11 @@
+{
+  "caseId": "downloaded-01",
+  "source": "fixture",
+  "provider": "fixture",
+  "model": "none",
+  "promptVersion": "refund-advisor.v1",
+  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "outputs": [
+    "{\"category\":\"file_defective\",\"summary\":\"Fixture answer for downloaded-01: Downloaded it, but the main file is a 0 KB placeholder.\",\"recommendedAction\":\"approve\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+  ]
+}

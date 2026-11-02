@@ -1,0 +1,11 @@
+{
+  "caseId": "approve-06",
+  "source": "fixture",
+  "provider": "fixture",
+  "model": "none",
+  "promptVersion": "refund-advisor.v1",
+  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "outputs": [
+    "{\"category\":\"not_as_described\",\"summary\":\"Fixture answer for approve-06: The description promised Notion and Google Sheets versions, but only an Excel file is included.\",\"recommendedAction\":\"approve\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+  ]
+}

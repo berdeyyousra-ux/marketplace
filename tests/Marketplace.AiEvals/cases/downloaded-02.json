@@ -1,0 +1,27 @@
+{
+  "id": "downloaded-02",
+  "facts": {
+    "buyerMessage": "I opened it once and realised it's for Keynote only; I use PowerPoint. The page didn't say.",
+    "productTitle": "Pitch Deck",
+    "categorySlug": "templates",
+    "price": "15.99 EUR",
+    "daysSincePurchase": 1,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 1,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "not_as_described",
+    "acceptableActions": [
+      "approve",
+      "needs_more_info"
+    ]
+  },
+  "tags": [
+    "downloaded",
+    "mismatch"
+  ]
+}

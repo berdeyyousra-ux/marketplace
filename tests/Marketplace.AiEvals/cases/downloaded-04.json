@@ -1,0 +1,27 @@
+{
+  "id": "downloaded-04",
+  "facts": {
+    "buyerMessage": "Downloaded three times; the installer fails each time with error 0x80070005.",
+    "productTitle": "Plugin Bundle",
+    "categorySlug": "software",
+    "price": "44.99 EUR",
+    "daysSincePurchase": 3,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 3,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "does_not_work_for_me",
+    "acceptableActions": [
+      "approve",
+      "needs_more_info"
+    ]
+  },
+  "tags": [
+    "downloaded",
+    "defect"
+  ]
+}

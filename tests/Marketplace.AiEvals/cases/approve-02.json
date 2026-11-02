@@ -1,0 +1,26 @@
+{
+  "id": "approve-02",
+  "facts": {
+    "buyerMessage": "The listing says 120 slides but the deck has only 18 and none of the advertised animations.",
+    "productTitle": "Pitch Deck Pro",
+    "categorySlug": "templates",
+    "price": "29.99 EUR",
+    "daysSincePurchase": 3,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 1,
+    "buyerRefundsLast180Days": 0,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "not_as_described",
+    "acceptableActions": [
+      "approve"
+    ]
+  },
+  "tags": [
+    "approve",
+    "mismatch"
+  ]
+}

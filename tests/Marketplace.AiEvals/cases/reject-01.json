@@ -1,0 +1,26 @@
+{
+  "id": "reject-01",
+  "facts": {
+    "buyerMessage": "I downloaded everything, used the templates for my client project, and now I don't need them anymore.",
+    "productTitle": "Invoice Kit",
+    "categorySlug": "templates",
+    "price": "19.99 EUR",
+    "daysSincePurchase": 10,
+    "windowDays": 14,
+    "withinWindow": true,
+    "downloadCount": 9,
+    "buyerRefundsLast180Days": 4,
+    "sellerRefundRateLast90Days": 0.02,
+    "policyVerdict": "EligibleDownloaded"
+  },
+  "expected": {
+    "category": "changed_mind",
+    "acceptableActions": [
+      "reject"
+    ]
+  },
+  "tags": [
+    "reject",
+    "abuse"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "caseId": "window-06",
+  "source": "fixture",
+  "provider": "fixture",
+  "model": "none",
+  "promptVersion": "refund-advisor.v1",
+  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "outputs": [
+    "{\"category\":\"other\",\"summary\":\"Fixture answer for window-06: The license terms changed and I can't use it commercially now. Purchased 20 days ago.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+  ]
+}
