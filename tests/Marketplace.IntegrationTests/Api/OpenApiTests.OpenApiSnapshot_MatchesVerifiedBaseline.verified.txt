@@ -441,6 +441,69 @@
         ]
       }
     },
+    /api/v1/orders: {
+      post: {
+        tags: [
+          Orders
+        ],
+        summary: Creates a Pending order for 1 to 10 products at today's prices. Needs an Idempotency-Key (US-22).,
+        requestBody: {
+          content: {
+            application/json: {
+              schema: {
+                $ref: #/components/schemas/CreateOrderCommand
+              }
+            },
+            text/json: {
+              schema: {
+                $ref: #/components/schemas/CreateOrderCommand
+              }
+            },
+            application/*+json: {
+              schema: {
+                $ref: #/components/schemas/CreateOrderCommand
+              }
+            }
+          },
+          required: true
+        },
+        responses: {
+          201: {
+            description: Created,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/OrderResponse
+                }
+              }
+            }
+          },
+          409: {
+            description: Conflict,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          422: {
+            description: Unprocessable Entity,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
     /api/v1/products/{id}/file: {
       post: {
         tags: [
@@ -1097,6 +1160,21 @@
           }
         }
       },
+      CreateOrderCommand: {
+        required: [
+          productIds
+        ],
+        type: object,
+        properties: {
+          productIds: {
+            type: array,
+            items: {
+              type: string,
+              format: uuid
+            }
+          }
+        }
+      },
       ForgotPasswordCommand: {
         required: [
           email
@@ -1184,6 +1262,80 @@
           },
           currency: {
             type: string
+          }
+        }
+      },
+      OrderItemResponse: {
+        required: [
+          id,
+          productId,
+          title,
+          unitPrice,
+          status
+        ],
+        type: object,
+        properties: {
+          id: {
+            type: string,
+            format: uuid
+          },
+          productId: {
+            type: string,
+            format: uuid
+          },
+          title: {
+            type: string
+          },
+          unitPrice: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          status: {
+            type: string
+          }
+        }
+      },
+      OrderResponse: {
+        required: [
+          id,
+          status,
+          total,
+          createdAt,
+          expiresAt,
+          paidAt,
+          items
+        ],
+        type: object,
+        properties: {
+          id: {
+            type: string,
+            format: uuid
+          },
+          status: {
+            type: string
+          },
+          total: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          createdAt: {
+            type: string,
+            format: date-time
+          },
+          expiresAt: {
+            type: string,
+            format: date-time
+          },
+          paidAt: {
+            type: [
+              null,
+              string
+            ],
+            format: date-time
+          },
+          items: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/OrderItemResponse
+            }
           }
         }
       },
@@ -1643,6 +1795,9 @@
     },
     {
       name: Me
+    },
+    {
+      name: Orders
     },
     {
       name: ProductFiles

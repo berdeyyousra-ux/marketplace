@@ -96,6 +96,34 @@ public abstract class IntegrationTestBase(MarketplaceWebFactory factory) : IAsyn
         return WithToken((await RefreshTokensAsync(tokens.RefreshToken)).AccessToken);
     }
 
+    // Creates, uploads a small PDF for, and publishes a product through the real API. Returns its ID.
+    protected static async Task<Guid> CreatePublishedProductAsync(HttpClient seller, string title = "Notion Budget Template", string amount = "19.99")
+    {
+        var created = await seller.PostAsJsonAsync(
+            "/api/v1/products", new { title, description = "A digital product.", price = new { amount, currency = "EUR" }, categoryId = 2 }, CancellationToken);
+        created.EnsureSuccessStatusCode();
+        var id = (await created.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(CancellationToken)).GetProperty("id").GetGuid();
+
+        using var form = new MultipartFormDataContent();
+        var file = new ByteArrayContent(System.Text.Encoding.ASCII.GetBytes("%PDF-1.7\ntest product\n"));
+        file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+        form.Add(file, "file", "product.pdf");
+        (await seller.PostAsync($"/api/v1/products/{id}/file", form, CancellationToken)).EnsureSuccessStatusCode();
+
+        var etag = (await seller.GetAsync($"/api/v1/products/{id}", CancellationToken)).Headers.ETag!.Tag;
+        using var publish = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/products/{id}/publish");
+        publish.Headers.TryAddWithoutValidation("If-Match", etag);
+        (await seller.SendAsync(publish, CancellationToken)).EnsureSuccessStatusCode();
+        return id;
+    }
+
+    protected static Task<HttpResponseMessage> CreateOrderAsync(HttpClient buyer, IEnumerable<Guid> productIds, string? idempotencyKey = null)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/orders") { Content = JsonContent.Create(new { productIds }) };
+        request.Headers.TryAddWithoutValidation("Idempotency-Key", idempotencyKey ?? Guid.NewGuid().ToString("N"));
+        return buyer.SendAsync(request, CancellationToken);
+    }
+
     // Creates a user through the real register and verify-email flow, then returns its ID.
     protected async Task<Guid> CreateVerifiedUserAsync(string email, string password = DefaultPassword, string displayName = "Test User")
     {
