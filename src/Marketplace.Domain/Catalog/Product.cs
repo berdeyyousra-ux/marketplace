@@ -26,6 +26,13 @@ public sealed class Product : AggregateRoot
         UpdatedAt = now;
     }
 
+    // Used by EF Core when materializing from the database.
+    private Product()
+    {
+        Title = string.Empty;
+        Description = string.Empty;
+    }
+
     public Guid SellerId { get; private set; }
 
     public int CategoryId { get; private set; }
@@ -49,6 +56,9 @@ public sealed class Product : AggregateRoot
     public DateTimeOffset? RemovedAt { get; private set; }
 
     public string? RemovedReason { get; private set; }
+
+    // Mapped to the PostgreSQL xmin system column as an optimistic concurrency token (D-15).
+    public uint Version { get; private set; }
 
     public static Result<Product> Create(
         Guid sellerId, int categoryId, string title, string description, Money price, DateTimeOffset now)

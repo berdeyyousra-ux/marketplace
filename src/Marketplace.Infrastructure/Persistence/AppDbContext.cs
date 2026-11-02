@@ -1,10 +1,16 @@
 using Marketplace.Domain.Catalog;
+using Marketplace.Domain.Fulfillment;
 using Marketplace.Domain.Identity;
+using Marketplace.Domain.Ledger;
+using Marketplace.Domain.Orders;
+using Marketplace.Domain.Payments;
+using Marketplace.Domain.Refunds;
 using Marketplace.Infrastructure.Identity;
 using Marketplace.Infrastructure.Persistence.Configurations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace Marketplace.Infrastructure.Persistence;
 
@@ -18,6 +24,27 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     public DbSet<OneTimeToken> OneTimeTokens => Set<OneTimeToken>();
+
+    public DbSet<Product> Products => Set<Product>();
+
+    public DbSet<Order> Orders => Set<Order>();
+
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+
+    public DbSet<Payment> Payments => Set<Payment>();
+
+    public DbSet<DownloadGrant> DownloadGrants => Set<DownloadGrant>();
+
+    public DbSet<RefundRequest> RefundRequests => Set<RefundRequest>();
+
+    public DbSet<LedgerEntry> LedgerEntries => Set<LedgerEntry>();
+
+    // Section 7.2 lists every index explicitly, so EF's automatic foreign key indexes are turned off.
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(configurationBuilder);
+        configurationBuilder.Conventions.Remove<ForeignKeyIndexConvention>();
+    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

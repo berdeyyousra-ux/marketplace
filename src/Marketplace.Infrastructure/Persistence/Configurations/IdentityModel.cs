@@ -24,10 +24,11 @@ internal static class IdentityModel
             role.HasIndex(r => r.NormalizedName).HasDatabaseName("ux_roles_normalized_name").IsUnique();
         });
 
-        builder.Entity<IdentityUserRole<Guid>>().ToTable("user_roles");
-        builder.Entity<IdentityUserClaim<Guid>>().ToTable("user_claims");
-        builder.Entity<IdentityUserLogin<Guid>>().ToTable("user_logins");
+        // Identity's own foreign key indexes, kept as Identity generates them (section 7.1).
+        builder.Entity<IdentityUserRole<Guid>>(table => table.ToTable("user_roles").HasIndex(r => r.RoleId, "ix_user_roles_role_id").HasDatabaseName("ix_user_roles_role_id"));
+        builder.Entity<IdentityUserClaim<Guid>>(table => table.ToTable("user_claims").HasIndex(c => c.UserId, "ix_user_claims_user_id").HasDatabaseName("ix_user_claims_user_id"));
+        builder.Entity<IdentityUserLogin<Guid>>(table => table.ToTable("user_logins").HasIndex(l => l.UserId, "ix_user_logins_user_id").HasDatabaseName("ix_user_logins_user_id"));
         builder.Entity<IdentityUserToken<Guid>>().ToTable("user_tokens");
-        builder.Entity<IdentityRoleClaim<Guid>>().ToTable("role_claims");
+        builder.Entity<IdentityRoleClaim<Guid>>(table => table.ToTable("role_claims").HasIndex(c => c.RoleId, "ix_role_claims_role_id").HasDatabaseName("ix_role_claims_role_id"));
     }
 }
