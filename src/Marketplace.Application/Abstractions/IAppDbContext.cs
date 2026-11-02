@@ -7,6 +7,7 @@ using Marketplace.Domain.Orders;
 using Marketplace.Domain.Payments;
 using Marketplace.Domain.Refunds;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Marketplace.Application.Abstractions;
 
@@ -46,4 +47,7 @@ public interface IAppDbContext
     DbSet<AuditLogEntry> AuditLog { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
+    // R-08: state changes that span several saves run inside one explicit transaction.
+    Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken);
 }

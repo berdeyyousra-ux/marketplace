@@ -1,4 +1,5 @@
 using Marketplace.Application.Abstractions;
+using Marketplace.Infrastructure.Identity;
 using Marketplace.Infrastructure.Outbox;
 using Marketplace.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,7 @@ public static class DependencyInjection
         services.AddSingleton<ICorrelationContext, AmbientCorrelationContext>();
         services.AddScoped<IOutbox, Outbox.Outbox>();
         services.AddSingleton<OutboxProcessor>();
+        services.AddMarketplaceIdentity();
 
         return services;
     }
