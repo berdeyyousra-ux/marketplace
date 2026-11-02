@@ -23,4 +23,15 @@ public sealed class AuthController : ControllerBase
         ArgumentNullException.ThrowIfNull(handler);
         return this.ToActionResult(await handler.HandleAsync(command, cancellationToken), _ => Accepted());
     }
+
+    /// <summary>Confirms an email address with the single-use token from the verification email (US-02).</summary>
+    [HttpPost("verify-email")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> VerifyEmailAsync(
+        VerifyEmailCommand command, [FromServices] ICommandHandler<VerifyEmailCommand, Unit> handler, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return this.ToActionResult(await handler.HandleAsync(command, cancellationToken), _ => NoContent());
+    }
 }

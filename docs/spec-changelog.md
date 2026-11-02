@@ -4,6 +4,16 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### T-021 and T-038: account email handlers move into T-021
+
+**Resolves:** a sequencing gap. T-021 must test US-02 and US-07, which need the verification and reset tokens. Section 9.1 has the Worker's email handlers issue those tokens, but the backlog lists those handlers under T-038.
+
+**Change:** T-021 includes the `EmailVerificationRequested`, `PasswordResetRequested` and `AccountExistsNotice` handlers, `IEmailSender` with the MailKit SMTP sender (D-27), and the test fake. T-038 keeps the order receipt email and anything else in its scope. No behavior changes; only the task each piece lands in.
+
+### Section 16: new configuration key Email:LinkBaseUrl
+
+Account emails link to the web client, for example `{LinkBaseUrl}/verify-email?token=...`, and section 16 has no key for that URL. `Email:LinkBaseUrl` defaults to `http://localhost:3000`, matching the default CORS origin. It is not a secret.
+
 ### Section 5.4: InvariantGlobalization is turned off
 
 **Resolves:** a conflict. Section 5.4 sets `InvariantGlobalization` to `true`, and in that mode .NET's `string.Normalize` returns text unchanged, so section 11.2's NFC normalization could not work. An integration test showed the normalization silently doing nothing.

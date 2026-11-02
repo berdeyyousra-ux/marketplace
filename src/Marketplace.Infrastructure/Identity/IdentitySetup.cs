@@ -121,6 +121,26 @@ public sealed class IdentityService(UserManager<AppUser> users, IPasswordHasher<
             : DomainErrors.Validation(string.Join(" ", result.Errors.Select(error => error.Description)));
     }
 
+    public async Task<AccountSummary?> GetAccountAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        var user = await users.FindByIdAsync(userId.ToString());
+        return user is null || user.DeletedAt is not null
+            ? null
+            : new AccountSummary(user.Id, user.Email!, user.DisplayName, user.EmailConfirmed);
+    }
+
+    public async Task ConfirmEmailAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        var user = await users.FindByIdAsync(userId.ToString())
+            ?? throw new InvalidOperationException("The user for a valid verification token no longer exists.");
+        user.EmailConfirmed = true;
+        var result = await users.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            throw new InvalidOperationException("Confirming the email failed: " + string.Join(" ", result.Errors.Select(error => error.Code)));
+        }
+    }
+
     public void SpendPasswordHashTime(string password) => hasher.HashPassword(_timingUser, password);
 
     private static Error EmailTaken => new("email_taken", "This email is already registered.", ErrorType.Conflict);

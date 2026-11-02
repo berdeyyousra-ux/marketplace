@@ -1,3 +1,4 @@
+using Marketplace.Application;
 using Marketplace.Infrastructure;
 using Marketplace.Worker.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,7 @@ builder.Services.AddSerilog((services, logger) => logger
     .Enrich.FromLogContext()
     .WriteTo.Console(new CompactJsonFormatter()));
 
+builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 builder.Services.AddHostedService<OutboxWorker>();
 
