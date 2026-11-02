@@ -5,6 +5,7 @@ using Marketplace.Api.Logging;
 using Marketplace.Api.Middleware;
 using Marketplace.Application;
 using Marketplace.Infrastructure;
+using Marketplace.Infrastructure.Identity;
 using Marketplace.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -100,6 +101,7 @@ app.MapMarketplaceDocs();
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false }).DisableRateLimiting();
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains(ReadinessTag) }).DisableRateLimiting();
 
+await app.Services.SeedAdminAsync(app.Configuration);
 await app.RunAsync();
 
 static string GetRoutePattern(HttpContext context) =>

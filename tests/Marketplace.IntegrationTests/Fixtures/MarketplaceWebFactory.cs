@@ -27,6 +27,11 @@ public sealed class MarketplaceWebFactory : WebApplicationFactory<Program>, IAsy
     // A fresh random key per test run; no signing key is committed (section 11.3).
     public static readonly string TestSigningKey = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
 
+    public const string AdminEmail = "admin@marketplace.test";
+
+    // A fresh random admin password per run, long enough for the section 11.1 rules.
+    public static readonly string AdminPassword = "admin-" + Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(12));
+
     public FakeTimeProvider Time { get; } = new(StartTime);
 
     public string DatabaseConnectionString => _postgres.GetConnectionString();
@@ -35,8 +40,13 @@ public sealed class MarketplaceWebFactory : WebApplicationFactory<Program>, IAsy
     {
         await Task.WhenAll(_postgres.StartAsync(), _azurite.StartAsync());
 
-        using var scope = Services.CreateScope();
-        await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
+        // Migrate before the app starts, because startup seeds the admin into these tables (section 7.6).
+        await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
+            .UseNpgsql(_postgres.GetConnectionString())
+            .UseSnakeCaseNamingConvention()
+            .Options);
+        await db.Database.MigrateAsync();
+        _ = Services;
     }
 
     public override async ValueTask DisposeAsync()
@@ -52,6 +62,8 @@ public sealed class MarketplaceWebFactory : WebApplicationFactory<Program>, IAsy
         builder.UseSetting("ConnectionStrings:Database", _postgres.GetConnectionString());
         builder.UseSetting("ConnectionStrings:BlobStorage", _azurite.GetConnectionString());
         builder.UseSetting("Jwt:SigningKey", TestSigningKey);
+        builder.UseSetting("Seed:Admin:Email", AdminEmail);
+        builder.UseSetting("Seed:Admin:Password", AdminPassword);
 
         // Every test request shares one address, so limits would leak between tests. RateLimitTests re-enable them.
         builder.UseSetting("RateLimiting:Enabled", "false");
