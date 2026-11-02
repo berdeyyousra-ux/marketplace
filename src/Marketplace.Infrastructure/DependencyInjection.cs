@@ -58,6 +58,7 @@ public static class DependencyInjection
             return new Stripe.StripeClient(key, httpClient: new Stripe.SystemNetHttpClient(http));
         });
         services.AddSingleton<StripePaymentProvider>();
+        services.AddScoped<IPaymentEventInbox, PaymentEventInbox>();
         services.AddSingleton<IPaymentProvider>(provider =>
             provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<PaymentOptions>>().Value.Provider switch
             {
