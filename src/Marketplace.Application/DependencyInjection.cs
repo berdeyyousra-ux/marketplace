@@ -32,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<Ops.AuditTrail>();
         services.AddScoped<Catalog.ProductOwnership>();
         services.AddScoped<Payments.OrderPaymentService>();
+        services.AddSingleton<Payments.PaymentReconciler>();
         services.AddValidatorsFromAssembly(
             assembly,
             ServiceLifetime.Singleton,
