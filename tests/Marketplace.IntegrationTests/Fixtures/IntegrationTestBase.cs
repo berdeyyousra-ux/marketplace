@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using Marketplace.Infrastructure.Identity;
 using Marketplace.Infrastructure.Outbox;
+using Marketplace.Infrastructure.Payments;
 using Marketplace.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -115,6 +116,28 @@ public abstract class IntegrationTestBase(MarketplaceWebFactory factory) : IAsyn
         publish.Headers.TryAddWithoutValidation("If-Match", etag);
         (await seller.SendAsync(publish, CancellationToken)).EnsureSuccessStatusCode();
         return id;
+    }
+
+    // Pays a Pending order through the fake provider and its signed webhook, then processes the outbox until idle.
+    protected async Task PayOrderAsync(HttpClient buyer, Guid orderId)
+    {
+        using var pay = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/orders/{orderId}/payment");
+        pay.Headers.TryAddWithoutValidation("Idempotency-Key", Guid.NewGuid().ToString("N"));
+        (await buyer.SendAsync(pay, CancellationToken)).EnsureSuccessStatusCode();
+        var providerPaymentId = await WithDbAsync(db => db.Payments.Where(payment => payment.OrderId == orderId).Select(payment => payment.ProviderPaymentId).SingleAsync(CancellationToken));
+
+        var (headers, body) = Factory.Services.GetRequiredService<FakePaymentProvider>().CompletePayment(providerPaymentId);
+        using var webhook = new HttpRequestMessage(HttpMethod.Post, "/api/v1/webhooks/payments") { Content = new ByteArrayContent(body) };
+        foreach (var (name, value) in headers)
+        {
+            webhook.Headers.TryAddWithoutValidation(name, value);
+        }
+
+        (await AsAnonymous().SendAsync(webhook, CancellationToken)).EnsureSuccessStatusCode();
+        var processor = Factory.Services.GetRequiredService<OutboxProcessor>();
+        for (var round = 0; round < 10 && await processor.ProcessBatchAsync(CancellationToken) > 0; round++)
+        {
+        }
     }
 
     protected static Task<HttpResponseMessage> CreateOrderAsync(HttpClient buyer, IEnumerable<Guid> productIds, string? idempotencyKey = null)

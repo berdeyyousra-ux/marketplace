@@ -1,7 +1,7 @@
 using Serilog.Core;
 using Serilog.Events;
 
-namespace Marketplace.Api.Logging;
+namespace Marketplace.Infrastructure.Logging;
 
 // Section 11.3: log properties whose names contain password, token, secret, authorization, clientSecret
 // or apiKey are masked, including inside destructured objects, dictionaries and sequences.

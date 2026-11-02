@@ -1,11 +1,11 @@
 using Marketplace.Api.Auth;
 using Marketplace.Api.Errors;
 using Marketplace.Api.Infrastructure;
-using Marketplace.Api.Logging;
 using Marketplace.Api.Middleware;
 using Marketplace.Application;
 using Marketplace.Infrastructure;
 using Marketplace.Infrastructure.Identity;
+using Marketplace.Infrastructure.Logging;
 using Marketplace.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;

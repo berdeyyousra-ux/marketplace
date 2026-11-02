@@ -1,4 +1,4 @@
-using Marketplace.Api.Logging;
+using Marketplace.Infrastructure.Logging;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;

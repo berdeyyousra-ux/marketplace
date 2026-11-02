@@ -1,11 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Marketplace.Infrastructure.Outbox;
-using Marketplace.Infrastructure.Payments;
 using Marketplace.IntegrationTests.Fixtures;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 
 namespace Marketplace.IntegrationTests.Orders;
@@ -137,25 +134,7 @@ public sealed class DownloadTests(MarketplaceWebFactory factory) : IntegrationTe
         var order = await (await CreateOrderAsync(buyer, [productId])).Content.ReadFromJsonAsync<JsonElement>(CancellationToken);
         var orderId = order.GetProperty("id").GetGuid();
 
-        using var pay = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/orders/{orderId}/payment");
-        pay.Headers.TryAddWithoutValidation("Idempotency-Key", Guid.NewGuid().ToString("N"));
-        (await buyer.SendAsync(pay, CancellationToken)).EnsureSuccessStatusCode();
-        var providerPaymentId = await WithDbAsync(db => db.Payments.Where(payment => payment.OrderId == orderId).Select(payment => payment.ProviderPaymentId).SingleAsync(CancellationToken));
-
-        var (headers, body) = Factory.Services.GetRequiredService<FakePaymentProvider>().CompletePayment(providerPaymentId);
-        using var webhook = new HttpRequestMessage(HttpMethod.Post, "/api/v1/webhooks/payments") { Content = new ByteArrayContent(body) };
-        foreach (var (name, value) in headers)
-        {
-            webhook.Headers.TryAddWithoutValidation(name, value);
-        }
-
-        (await AsAnonymous().SendAsync(webhook, CancellationToken)).StatusCode.ShouldBe(HttpStatusCode.OK);
-        var processor = Factory.Services.GetRequiredService<OutboxProcessor>();
-        for (var round = 0; round < 10 && await processor.ProcessBatchAsync(CancellationToken) > 0; round++)
-        {
-        }
-
-        (await WithDbAsync(db => db.DownloadGrants.CountAsync(grant => grant.BuyerId != Guid.Empty, CancellationToken))).ShouldBeGreaterThan(0);
+        await PayOrderAsync(buyer, orderId);
         return (buyer, order.GetProperty("items")[0].GetProperty("id").GetGuid());
     }
 }
