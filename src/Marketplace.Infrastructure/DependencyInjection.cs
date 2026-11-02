@@ -45,6 +45,8 @@ public static class DependencyInjection
         services.AddScoped<IProductSearch, ProductSearch>();
         services.AddScoped<IIdempotencyStore, Idempotency.IdempotencyStore>();
         services.AddOptions<Application.Orders.MarketplaceOptions>().BindConfiguration(Application.Orders.MarketplaceOptions.SectionName);
+        services.AddOptions<Application.Refunds.RefundOptions>().BindConfiguration(Application.Refunds.RefundOptions.SectionName);
+        services.AddOptions<Application.Refunds.AiQuotaOptions>().BindConfiguration(Application.Refunds.AiQuotaOptions.SectionName);
 
         // D-25: the provider comes from Payments:Provider. Fake is the default for development and tests.
         services.AddOptions<PaymentOptions>().BindConfiguration(PaymentOptions.SectionName);
@@ -73,10 +75,12 @@ public static class DependencyInjection
         // Section 12.3: the LLM client comes from Ai:Provider. Fake is the default for development and tests.
         services.AddOptions<Ai.AiOptions>()
             .BindConfiguration(Ai.AiOptions.SectionName)
-            .Validate(ai => ai.Provider is Ai.AiOptions.FakeName or Ai.AiOptions.AnthropicName, "Ai:Provider must be Fake or Anthropic.")
             .Validate(
-                ai => ai.Provider != Ai.AiOptions.AnthropicName || (!string.IsNullOrWhiteSpace(ai.Model) && !string.IsNullOrWhiteSpace(ai.ApiKey)),
-                "Ai:Model and Ai:ApiKey are required when Ai:Provider is Anthropic.")
+                ai => ai.Provider is Ai.AiOptions.FakeName or Ai.AiOptions.AnthropicName or Ai.AiOptions.OpenAiName,
+                "Ai:Provider must be Fake, Anthropic or OpenAi.")
+            .Validate(
+                ai => ai.Provider == Ai.AiOptions.FakeName || (!string.IsNullOrWhiteSpace(ai.Model) && !string.IsNullOrWhiteSpace(ai.ApiKey)),
+                "Ai:Model and Ai:ApiKey are required when Ai:Provider is Anthropic or OpenAi.")
             .Validate(ai => ai.MaxOutputTokens > 0 && ai.DailyRequestCap >= 0, "Ai:MaxOutputTokens must be positive and Ai:DailyRequestCap not negative.")
             .ValidateOnStart();
         services.AddSingleton<Ai.FakeLlmClient>();
@@ -88,10 +92,18 @@ public static class DependencyInjection
             provider.GetRequiredService<IHttpClientFactory>().CreateClient(Ai.AiOptions.AnthropicName),
             provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Ai.AiOptions>>(),
             provider.GetRequiredService<Microsoft.Extensions.Options.IOptionsMonitor<ResilienceSettings>>()));
+        services.AddHttpClient(Ai.AiOptions.OpenAiName, client => client.Timeout = Timeout.InfiniteTimeSpan);
+        services.AddSingleton(provider => new Ai.OpenAiLlmClient(
+            provider.GetRequiredService<IHttpClientFactory>().CreateClient(Ai.AiOptions.OpenAiName),
+            provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Ai.AiOptions>>(),
+            provider.GetRequiredService<Microsoft.Extensions.Options.IOptionsMonitor<ResilienceSettings>>()));
         services.AddSingleton<Application.Refunds.ILlmClient>(provider =>
-            provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Ai.AiOptions>>().Value.Provider == Ai.AiOptions.AnthropicName
-                ? provider.GetRequiredService<Ai.AnthropicLlmClient>()
-                : provider.GetRequiredService<Ai.FakeLlmClient>());
+            provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Ai.AiOptions>>().Value.Provider switch
+            {
+                Ai.AiOptions.AnthropicName => provider.GetRequiredService<Ai.AnthropicLlmClient>(),
+                Ai.AiOptions.OpenAiName => provider.GetRequiredService<Ai.OpenAiLlmClient>(),
+                _ => provider.GetRequiredService<Ai.FakeLlmClient>(),
+            });
         services.AddSingleton<IPaymentProvider>(provider =>
         {
             IPaymentProvider selected = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<PaymentOptions>>().Value.Provider switch
