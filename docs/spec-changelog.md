@@ -4,6 +4,16 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### Section 4.5: the rate limiter runs after authentication
+
+**Resolves:** a contradiction. Section 4.5 places the rate limiter (step 7) before authentication (step 8), but section 11.4 limits the `download` and `global` policies per user, and the user is only known after authentication.
+
+**Change:** `UseRateLimiter` runs immediately after `UseAuthentication` and before `UseAuthorization`. Every section 11.4 limit applies exactly as written, and the IP-based policies (`auth`, `refresh`, `webhook`) are unaffected. The cost is that a request with an invalid token is checked before it is counted.
+
+### Section 16: new configuration key RateLimiting:Enabled
+
+Defaults to `true`. The integration-test host sets it to `false`, because every test request comes from the same address and limits would leak between unrelated tests. The rate limit tests turn it back on in their own host. Production must leave it at the default.
+
 ### T-021 and T-038: account email handlers move into T-021
 
 **Resolves:** a sequencing gap. T-021 must test US-02 and US-07, which need the verification and reset tokens. Section 9.1 has the Worker's email handlers issue those tokens, but the backlog lists those handlers under T-038.
