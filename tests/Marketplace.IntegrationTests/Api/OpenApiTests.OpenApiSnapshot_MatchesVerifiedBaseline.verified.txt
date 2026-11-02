@@ -1406,6 +1406,189 @@
         ]
       }
     },
+    /api/v1/sellers/me/dashboard/summary: {
+      get: {
+        tags: [
+          Sellers
+        ],
+        summary: Balance, revenue, orders and refunds over the last 30 days, and active products (US-16, R-07).,
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/SellerSummaryResponse
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
+    /api/v1/sellers/me/dashboard/revenue-by-month: {
+      get: {
+        tags: [
+          Sellers
+        ],
+        summary: Net sales, fees and seller net per month with a running total; months without sales are zero (US-16, R-01).,
+        parameters: [
+          {
+            name: Months,
+            in: query,
+            schema: {
+              pattern: ^-?(?:0|[1-9]\d*)$,
+              type: [
+                integer,
+                string
+              ],
+              format: int32
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ItemListOfMonthlyRevenue
+                }
+              }
+            }
+          },
+          422: {
+            description: Unprocessable Entity,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
+    /api/v1/sellers/me/dashboard/top-products: {
+      get: {
+        tags: [
+          Sellers
+        ],
+        summary: The caller's best-selling products by units over the last N days, refunds excluded (US-16, R-02).,
+        parameters: [
+          {
+            name: Days,
+            in: query,
+            schema: {
+              pattern: ^-?(?:0|[1-9]\d*)$,
+              type: [
+                integer,
+                string
+              ],
+              format: int32
+            }
+          },
+          {
+            name: Limit,
+            in: query,
+            schema: {
+              pattern: ^-?(?:0|[1-9]\d*)$,
+              type: [
+                integer,
+                string
+              ],
+              format: int32
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ItemListOfTopProduct
+                }
+              }
+            }
+          },
+          422: {
+            description: Unprocessable Entity,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
+    /api/v1/sellers/me/dashboard/recent-orders: {
+      get: {
+        tags: [
+          Sellers
+        ],
+        summary: The caller's sold order lines, newest first. Keyset paginated (US-16, R-09).,
+        parameters: [
+          {
+            name: Limit,
+            in: query,
+            schema: {
+              pattern: ^-?(?:0|[1-9]\d*)$,
+              type: [
+                integer,
+                string
+              ],
+              format: int32
+            }
+          },
+          {
+            name: Cursor,
+            in: query,
+            schema: {
+              type: string
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/PageOfRecentOrderLine
+                }
+              }
+            }
+          },
+          400: {
+            description: Bad Request,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
     /api/v1/categories: {
       get: {
         tags: [
@@ -1570,6 +1753,34 @@
           }
         }
       },
+      ItemListOfMonthlyRevenue: {
+        required: [
+          items
+        ],
+        type: object,
+        properties: {
+          items: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/MonthlyRevenue
+            }
+          }
+        }
+      },
+      ItemListOfTopProduct: {
+        required: [
+          items
+        ],
+        type: object,
+        properties: {
+          items: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/TopProduct
+            }
+          }
+        }
+      },
       LibraryItem: {
         required: [
           orderItemId,
@@ -1706,6 +1917,33 @@
           },
           currency: {
             type: string
+          }
+        }
+      },
+      MonthlyRevenue: {
+        required: [
+          month,
+          netSales,
+          platformFees,
+          sellerNet,
+          runningSellerNet
+        ],
+        type: object,
+        properties: {
+          month: {
+            type: string
+          },
+          netSales: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          platformFees: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          sellerNet: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          runningSellerNet: {
+            $ref: #/components/schemas/MoneyDto
           }
         }
       },
@@ -1934,6 +2172,27 @@
             type: array,
             items: {
               $ref: #/components/schemas/ProductSummary
+            }
+          },
+          nextCursor: {
+            type: [
+              null,
+              string
+            ]
+          }
+        }
+      },
+      PageOfRecentOrderLine: {
+        required: [
+          items,
+          nextCursor
+        ],
+        type: object,
+        properties: {
+          items: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/RecentOrderLine
             }
           },
           nextCursor: {
@@ -2225,6 +2484,49 @@
           }
         }
       },
+      RecentOrderLine: {
+        required: [
+          orderId,
+          orderItemId,
+          productId,
+          productTitle,
+          unitPrice,
+          sellerAmount,
+          status,
+          paidAt
+        ],
+        type: object,
+        properties: {
+          orderId: {
+            type: string,
+            format: uuid
+          },
+          orderItemId: {
+            type: string,
+            format: uuid
+          },
+          productId: {
+            type: string,
+            format: uuid
+          },
+          productTitle: {
+            type: string
+          },
+          unitPrice: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          sellerAmount: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          status: {
+            type: string
+          },
+          paidAt: {
+            type: string,
+            format: date-time
+          }
+        }
+      },
       RefreshCommand: {
         required: [
           refreshToken
@@ -2377,6 +2679,48 @@
           }
         }
       },
+      SellerSummaryResponse: {
+        required: [
+          balance,
+          revenueLast30Days,
+          ordersLast30Days,
+          refundsLast30Days,
+          activeProducts
+        ],
+        type: object,
+        properties: {
+          balance: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          revenueLast30Days: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          ordersLast30Days: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          },
+          refundsLast30Days: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          },
+          activeProducts: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          }
+        }
+      },
       TokenPair: {
         required: [
           accessToken,
@@ -2402,6 +2746,35 @@
           },
           tokenType: {
             type: string
+          }
+        }
+      },
+      TopProduct: {
+        required: [
+          productId,
+          title,
+          units,
+          gross
+        ],
+        type: object,
+        properties: {
+          productId: {
+            type: string,
+            format: uuid
+          },
+          title: {
+            type: string
+          },
+          units: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int64
+          },
+          gross: {
+            $ref: #/components/schemas/MoneyDto
           }
         }
       },

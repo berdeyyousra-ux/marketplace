@@ -4,6 +4,7 @@ using Marketplace.Application.Abstractions;
 using Marketplace.Application.Catalog;
 using Marketplace.Application.Common;
 using Marketplace.Application.Identity;
+using Marketplace.Application.Reporting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -48,6 +49,53 @@ public sealed class SellersController : ControllerBase
         [FromQuery] SellerProductsQuery query,
         [FromServices] IQueryHandler<SellerProductsQuery, Page<SellerProductSummary>> handler,
         CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return this.ToActionResult(await handler.HandleAsync(query, cancellationToken), page => Ok(page));
+    }
+
+    /// <summary>Balance, revenue, orders and refunds over the last 30 days, and active products (US-16, R-07).</summary>
+    [HttpGet("me/dashboard/summary")]
+    [Authorize(Policy = AuthenticationSetup.RequireSeller)]
+    [ProducesResponseType(typeof(SellerSummaryResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> DashboardSummaryAsync(
+        [FromServices] IQueryHandler<SellerSummaryQuery, SellerSummaryResponse> handler, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return this.ToActionResult(await handler.HandleAsync(new SellerSummaryQuery(), cancellationToken), summary => Ok(summary));
+    }
+
+    /// <summary>Net sales, fees and seller net per month with a running total; months without sales are zero (US-16, R-01).</summary>
+    [HttpGet("me/dashboard/revenue-by-month")]
+    [Authorize(Policy = AuthenticationSetup.RequireSeller)]
+    [ProducesResponseType(typeof(ItemList<MonthlyRevenue>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> RevenueByMonthAsync(
+        [FromQuery] RevenueByMonthQuery query, [FromServices] IQueryHandler<RevenueByMonthQuery, ItemList<MonthlyRevenue>> handler, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return this.ToActionResult(await handler.HandleAsync(query, cancellationToken), months => Ok(months));
+    }
+
+    /// <summary>The caller's best-selling products by units over the last N days, refunds excluded (US-16, R-02).</summary>
+    [HttpGet("me/dashboard/top-products")]
+    [Authorize(Policy = AuthenticationSetup.RequireSeller)]
+    [ProducesResponseType(typeof(ItemList<TopProduct>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> TopProductsAsync(
+        [FromQuery] SellerTopProductsQuery query, [FromServices] IQueryHandler<SellerTopProductsQuery, ItemList<TopProduct>> handler, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return this.ToActionResult(await handler.HandleAsync(query, cancellationToken), products => Ok(products));
+    }
+
+    /// <summary>The caller's sold order lines, newest first. Keyset paginated (US-16, R-09).</summary>
+    [HttpGet("me/dashboard/recent-orders")]
+    [Authorize(Policy = AuthenticationSetup.RequireSeller)]
+    [ProducesResponseType(typeof(Page<RecentOrderLine>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> RecentOrdersAsync(
+        [FromQuery] RecentOrdersQuery query, [FromServices] IQueryHandler<RecentOrdersQuery, Page<RecentOrderLine>> handler, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(handler);
         return this.ToActionResult(await handler.HandleAsync(query, cancellationToken), page => Ok(page));
