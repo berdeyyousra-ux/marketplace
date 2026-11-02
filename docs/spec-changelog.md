@@ -4,6 +4,34 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### Sections 10.1 and 10.3: outbox and idempotency SQL take the time from TimeProvider
+
+**Resolves:** a conflict between R-07, which requires all time to come from the injected `TimeProvider`, and the SQL in sections 10.1 and 10.3, which uses the database's `now()`.
+
+**Decision (repo owner):** the queries keep their logic but take the current time as a parameter (`@now`) from `TimeProvider`. Lease expiry, retry backoff and idempotency locks can then be tested with the fake clock, for example in FM-11.
+
+### Section 9.6: a second paid order for an already-owned product is cancelled and refunded
+
+**Resolves:** a gap. Section 9.3 lets a buyer hold several Pending orders for the same product. If two are paid, the second cannot create a download grant (`ux_download_grants_active_buyer_product`), and section 9.6 has no path for it.
+
+**Decision (repo owner):** the duplicate order is cancelled, `AutoRefundPayment` is queued, and an audit row is written, the same way FM-07 handles a payment for a Cancelled order. The buyer keeps one copy and gets the second payment back.
+
+### Section 9.6 step 3: the amount-mismatch audit row is written in its own transaction
+
+**Resolves:** a conflict. Section 9.6 step 3 writes `payment.amount_mismatch` and then throws inside the same transaction, which rolls the audit row back, but FM-08 requires the row to exist.
+
+**Decision (repo owner):** the payment transaction is rolled back, the audit row is written in a separate short transaction, and the message is then dead-lettered. The order stays Pending.
+
+### Section 9.9 and US-41: the reconciliation window is 10 minutes to 48 hours
+
+**Resolves:** a contradiction. Section 9.9 selects payments created less than 24 hours ago but also says to cancel payments still unpaid after 24 hours, which the selection can never include.
+
+**Decision (repo owner):** reconciliation checks `RequiresPayment` payments created 10 minutes to 48 hours ago. Those older than 24 hours that are still unpaid are cancelled at the provider and marked Failed. This replaces the 24-hour bound in US-41.
+
+### T-030 is built before T-021
+
+T-021's register and password flows queue emails through the outbox (section 9.1), which T-030 builds. T-030 depends only on T-015, so building it first respects R-02's dependency order.
+
 ### R-05: analyzer rules that conflict with names or styles the spec requires
 
 **Changes:** R-05, which says never to weaken an analyzer rule to make something pass.
