@@ -4,6 +4,29 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### Sections 12.3 and 16: OpenAI as a second LLM provider
+
+**Spec:** v1 ships `AnthropicLlmClient` and `FakeLlmClient`, and `Ai:Provider` selects between them.
+
+**Change (repo owner's request):** `OpenAiLlmClient` is added, selected with `Ai:Provider=OpenAi`. The repo owner has an OpenAI key rather than an Anthropic one. The AI refund feature can now run against either provider. `Ai:Provider` accepts `Fake` (the default), `Anthropic` or `OpenAi`.
+
+How the OpenAI client works:
+- It calls the Chat Completions API (`POST /v1/chat/completions`) over `HttpClient`.
+- The prompt goes in a `system` message and the facts in a `user` message, with `max_completion_tokens` set from `Ai:MaxOutputTokens`.
+- It asks for `response_format: json_object`. The answer still goes through the same strict section 12.4 parser, the one retry and the code-computed flags as the Anthropic client, so the format setting only makes a valid answer more likely and is not trusted on its own.
+- It sends no `temperature`, because reasoning models accept only the default.
+- `Ai:OpenAiReasoningEffort` is sent as `reasoning_effort` only when set, because models that do not reason reject it. `Ai:Effort` remains Anthropic-only.
+- It uses the same section 10.2 LLM resilience profile (`Resilience:Llm`): timeouts, network errors, 429 and 5xx are retried once, other 4xx are not, and the circuit breaker is shared in behaviour.
+- A refusal comes back as an empty answer, so it ends as `InvalidOutput`.
+- The model name comes only from `Ai:Model`, and is never hard-coded.
+
+Configuration:
+- Both real providers need `Ai:Model` and `Ai:ApiKey`; startup validation refuses to start without them.
+- `Ai:BaseUrl` optionally overrides either provider's address.
+- For local development, the Api and the Worker share one user-secrets store (the same `UserSecretsId`), because the analysis runs in the Worker.
+
+**Why:** a provider choice made through `ILlmClient` keeps D-36's boundary (`IRefundAdvisor` decides nothing, and a human approves every refund) and lets the project run with the key that is available.
+
 ### Sections 12.3 and 12.5: no temperature, and a higher output-token default for the LLM call (T-070)
 
 **Spec:** temperature 0, and `Ai:MaxOutputTokens` default 500.

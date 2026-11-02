@@ -6,6 +6,7 @@ public sealed class AiOptions
     public const string SectionName = "Ai";
     public const string FakeName = "Fake";
     public const string AnthropicName = "Anthropic";
+    public const string OpenAiName = "OpenAi";
 
     public string Provider { get; set; } = FakeName;
 
@@ -13,7 +14,8 @@ public sealed class AiOptions
 
     public string? ApiKey { get; set; }
 
-    public Uri BaseUrl { get; set; } = new("https://api.anthropic.com");
+    // Overrides the provider's API address; each client has its own default.
+    public Uri? BaseUrl { get; set; }
 
     public bool Enabled { get; set; } = true;
 
@@ -23,6 +25,9 @@ public sealed class AiOptions
     // spec's 500 (changelog 2026-11-02).
     public int MaxOutputTokens { get; set; } = 2000;
 
-    // Sent as output_config.effort when set; low suits a short classification.
+    // Anthropic only: sent as output_config.effort when set; low suits a short classification.
     public string? Effort { get; set; } = "low";
+
+    // OpenAI only: sent as reasoning_effort when set. Leave it empty for models that do not reason, which reject it.
+    public string? OpenAiReasoningEffort { get; set; }
 }

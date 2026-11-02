@@ -19,6 +19,8 @@ public sealed class AnthropicLlmClient : ILlmClient
 {
     public const string ApiVersion = "2026-10-21";
 
+    public static readonly Uri DefaultBaseUrl = new("https://api.anthropic.com");
+
     private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web)
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
@@ -72,7 +74,7 @@ public sealed class AnthropicLlmClient : ILlmClient
 
     private async Task<LlmResponse> SendAsync(MessagesRequest body, CancellationToken cancellationToken)
     {
-        using var message = new HttpRequestMessage(HttpMethod.Post, new Uri(_options.BaseUrl, "v1/messages"))
+        using var message = new HttpRequestMessage(HttpMethod.Post, new Uri(_options.BaseUrl ?? DefaultBaseUrl, "v1/messages"))
         {
             Content = JsonContent.Create(body, options: _json),
         };

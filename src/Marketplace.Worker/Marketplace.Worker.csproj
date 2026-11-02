@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <!-- The same store as the Api, so Ai:* and other local secrets reach the Worker in Development. -->
+    <UserSecretsId>18f7d163-08a0-473c-9815-e6f056f2c564</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

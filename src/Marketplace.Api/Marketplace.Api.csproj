@@ -1,5 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
+  <!-- Local secrets (dotnet user-secrets), shared with the Worker, which runs the AI analysis. -->
+  <PropertyGroup>
+    <UserSecretsId>18f7d163-08a0-473c-9815-e6f056f2c564</UserSecretsId>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="../Marketplace.Application/Marketplace.Application.csproj" />
     <ProjectReference Include="../Marketplace.Infrastructure/Marketplace.Infrastructure.csproj" />
