@@ -138,7 +138,10 @@ public sealed class StripePaymentProvider(IOptions<PaymentOptions> options, IStr
         }
         catch (StripeException exception) when ((int)exception.HttpStatusCode >= 500 || (int)exception.HttpStatusCode == 429)
         {
-            throw new PaymentProviderUnavailableException("Stripe is unavailable.", exception);
+            throw new PaymentProviderUnavailableException("Stripe is unavailable.", exception)
+            {
+                RetryAfter = exception.StripeResponse?.Headers?.RetryAfter?.Delta,
+            };
         }
         catch (HttpRequestException exception)
         {

@@ -4,6 +4,14 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### Section 10.2: payment provider policies wrap the provider, not only its HttpClient (T-040)
+
+**Spec:** resilience is implemented "with `Microsoft.Extensions.Http.Resilience` handlers per named `HttpClient`".
+
+**Change:** the payment provider's timeout, retry and circuit-breaker policies are a Polly pipeline in `ResilientPaymentProvider`, which wraps whichever `IPaymentProvider` is configured. The values are the section 10.2 defaults, bound from `Resilience:PaymentsApi` (create, get) and `Resilience:PaymentsWorker` (cancel, refund). The Stripe SDK's own network retries are turned off, so calls are not retried twice.
+
+**Why:** the fake provider makes no HTTP calls, so HttpClient handlers would leave FM-09 and FM-10 untestable as T-040 requires. The policies, values and retry conditions are unchanged. The LLM client (Phase 4) will use the same settings type.
+
 ### Section 9.11: IPaymentProvider gains ReadStoredEvent
 
 The Worker processes webhook events after they are stored, but `ParseWebhook` needs the original signature headers, which are not stored, and rejects payloads older than the 5-minute tolerance. `ReadStoredEvent(rawPayload)` parses a payload that `ParseWebhook` already verified at receive time. It is used only on rows from the `payment_events` inbox, which hold only verified events.

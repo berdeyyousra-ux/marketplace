@@ -55,7 +55,8 @@ public static class DependencyInjection
             var key = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<PaymentOptions>>().Value.Stripe.SecretKey
                 ?? throw new InvalidOperationException("Payments:Stripe:SecretKey is not configured.");
             var http = provider.GetRequiredService<IHttpClientFactory>().CreateClient(PaymentOptions.StripeName);
-            return new Stripe.StripeClient(key, httpClient: new Stripe.SystemNetHttpClient(http));
+            // Retries belong to ResilientPaymentProvider (section 10.2), so the SDK's own are off.
+            return new Stripe.StripeClient(key, httpClient: new Stripe.SystemNetHttpClient(http, maxNetworkRetries: 0));
         });
         services.AddSingleton<StripePaymentProvider>();
         services.AddScoped<IPaymentEventInbox, PaymentEventInbox>();
@@ -63,14 +64,30 @@ public static class DependencyInjection
         services.AddScoped<Jobs.OrderExpiryJob>();
         services.AddScoped<Jobs.PaymentReconciliationJob>();
         services.AddScoped<Jobs.CleanupJob>();
+        AddResilienceSettings(services, ResilienceSettings.PaymentsApi, ResilienceSettings.ApiDefaults());
+        AddResilienceSettings(services, ResilienceSettings.PaymentsWorker, ResilienceSettings.WorkerDefaults());
         services.AddSingleton<IPaymentProvider>(provider =>
-            provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<PaymentOptions>>().Value.Provider switch
+        {
+            IPaymentProvider selected = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<PaymentOptions>>().Value.Provider switch
             {
                 PaymentOptions.StripeName => provider.GetRequiredService<StripePaymentProvider>(),
                 PaymentOptions.FakeName => provider.GetRequiredService<FakePaymentProvider>(),
                 var other => throw new InvalidOperationException($"Unknown Payments:Provider '{other}'."),
-            });
+            };
+            var settings = provider.GetRequiredService<Microsoft.Extensions.Options.IOptionsMonitor<ResilienceSettings>>();
+            return new ResilientPaymentProvider(selected, settings.Get(ResilienceSettings.PaymentsApi), settings.Get(ResilienceSettings.PaymentsWorker));
+        });
 
         return services;
     }
+
+    private static void AddResilienceSettings(IServiceCollection services, string name, ResilienceSettings defaults) =>
+        services.AddOptions<ResilienceSettings>(name)
+            .Configure(settings =>
+            {
+                settings.AttemptTimeout = defaults.AttemptTimeout;
+                settings.MaxRetries = defaults.MaxRetries;
+                settings.TotalTimeout = defaults.TotalTimeout;
+            })
+            .BindConfiguration($"{ResilienceSettings.SectionName}:{name}");
 }

@@ -88,16 +88,43 @@ public sealed class CreatePaymentTests(MarketplaceWebFactory factory) : Integrat
     }
 
     [Fact]
-    public async Task US23_ProviderDown_Returns503AndRecordsNothing()
+    public async Task FM09_US23_ProviderDown_RetriesThenReturns503AndRecordsNothing()
     {
         var (buyer, orderId) = await PendingOrderAsync("pay-down");
-        Provider.FailNext(1);
+        Provider.FailNext(3);
+        var callsBefore = Provider.CallCount;
 
         var response = await PayAsync(buyer, orderId);
 
         response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
         (await response.Content.ReadFromJsonAsync<JsonElement>(CancellationToken)).GetProperty("code").GetString().ShouldBe("payment_provider_unavailable");
         (await WithDbAsync(db => db.Payments.CountAsync(CancellationToken))).ShouldBe(0);
+        (Provider.CallCount - callsBefore).ShouldBe(3, "one attempt and two retries");
+    }
+
+    [Fact]
+    public async Task FM09_ProviderTimesOut_RetriesThenReturns503AndRecordsNothing()
+    {
+        var (buyer, orderId) = await PendingOrderAsync("pay-timeout");
+        Provider.TimeoutNext(3);
+
+        var response = await PayAsync(buyer, orderId);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        (await response.Content.ReadFromJsonAsync<JsonElement>(CancellationToken)).GetProperty("code").GetString().ShouldBe("payment_provider_unavailable");
+        (await WithDbAsync(db => db.Payments.CountAsync(CancellationToken))).ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task FM10_ProviderFailsOnceThenSucceeds_CreatesExactlyOnePayment()
+    {
+        var (buyer, orderId) = await PendingOrderAsync("pay-flaky");
+        Provider.FailNext(1);
+
+        var response = await PayAsync(buyer, orderId);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await WithDbAsync(db => db.Payments.CountAsync(CancellationToken))).ShouldBe(1);
     }
 
     private async Task<(HttpClient Buyer, Guid OrderId)> PendingOrderAsync(string prefix)
