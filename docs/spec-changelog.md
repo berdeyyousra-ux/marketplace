@@ -2,6 +2,29 @@
 
 Changes to, and resolved contradictions in, the build specification.
 
+## 2026-11-02
+
+### R-05: analyzer rules that conflict with names or styles the spec requires
+
+**Changes:** R-05, which says never to weaken an analyzer rule to make something pass.
+
+**Decision (repo owner):** when an analyzer rule conflicts with a name or style that this spec explicitly requires, the agent may suppress that one rule at that one place, with a written justification in the code. The PR lists the suppression and may be merged when checks pass. Existing examples are `Error` (CA1716, section 6.1), and the test naming rules in `tests/.editorconfig` (CA1707 and the Async suffix, sections 3 and 14.4).
+
+**Still needs the repo owner:** any other weakened, suppressed or removed rule, test or CI check.
+
+### Sections 9.6 and 9.8: zero-amount ledger entries are not written
+
+**Resolves:** a conflict between section 6.4, where a platform fee can round to 0.00 (for example at 1 basis point, a mandatory test case), and the `ck_ledger_amount_sign` check in section 7.2, which requires PlatformFee entries to be negative and FeeRefund entries to be positive.
+
+**Decision (repo owner):** a ledger entry whose amount is 0.00 is not written.
+
+**Effect:**
+
+- Section 9.6 writes the Sale entry and, only when the platform fee is non-zero, the PlatformFee entry.
+- Section 9.8 writes the Refund entry and, only when the platform fee is non-zero, the FeeRefund entry.
+- The section 7.2 check is unchanged, and seller balances are the same either way.
+- `LedgerEntry` rejects a zero amount, so callers must skip zero entries rather than create them.
+
 ## 2026-11-01
 
 ### Section 18: gitleaks replaces the secret grep
