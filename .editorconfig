@@ -61,3 +61,7 @@ dotnet_naming_style.underscore_camel.capitalization = camel_case
 dotnet_naming_rule.private_fields_underscored.symbols = private_fields
 dotnet_naming_rule.private_fields_underscored.style = underscore_camel
 dotnet_naming_rule.private_fields_underscored.severity = warning
+
+# EF Core migrations are tool-generated (R-12 already treats them as generated files).
+[src/Marketplace.Infrastructure/Persistence/Migrations/*.cs]
+generated_code = true
