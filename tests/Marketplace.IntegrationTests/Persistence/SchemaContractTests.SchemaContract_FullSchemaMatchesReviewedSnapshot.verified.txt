@@ -1,0 +1,357 @@
+﻿## Columns
+ai_suggestions.created_at timestamp with time zone NOT NULL
+ai_suggestions.error character varying(1000)
+ai_suggestions.id uuid NOT NULL
+ai_suggestions.input_facts jsonb NOT NULL
+ai_suggestions.input_tokens integer(32,0)
+ai_suggestions.latency_ms integer(32,0)
+ai_suggestions.model character varying(100) NOT NULL
+ai_suggestions.output_tokens integer(32,0)
+ai_suggestions.parsed_output jsonb
+ai_suggestions.prompt_version character varying(30) NOT NULL
+ai_suggestions.raw_output text
+ai_suggestions.refund_request_id uuid NOT NULL
+ai_suggestions.validation_status text NOT NULL
+audit_log.action character varying(100) NOT NULL
+audit_log.actor_type text NOT NULL
+audit_log.actor_user_id uuid
+audit_log.correlation_id character varying(64)
+audit_log.details jsonb
+audit_log.entity_id uuid
+audit_log.entity_type character varying(50)
+audit_log.id bigint(64,0) NOT NULL IDENTITY ALWAYS
+audit_log.occurred_at timestamp with time zone NOT NULL
+categories.id integer(32,0) NOT NULL IDENTITY ALWAYS
+categories.name character varying(80) NOT NULL
+categories.slug character varying(60) NOT NULL
+categories.sort_order integer(32,0) NOT NULL
+download_grants.buyer_id uuid NOT NULL
+download_grants.created_at timestamp with time zone NOT NULL
+download_grants.download_count integer(32,0) NOT NULL DEFAULT 0
+download_grants.expires_at timestamp with time zone NOT NULL
+download_grants.id uuid NOT NULL
+download_grants.max_downloads integer(32,0) NOT NULL DEFAULT 10
+download_grants.order_item_id uuid NOT NULL
+download_grants.product_id uuid NOT NULL
+download_grants.revoked_at timestamp with time zone
+idempotency_keys.created_at timestamp with time zone NOT NULL
+idempotency_keys.expires_at timestamp with time zone NOT NULL
+idempotency_keys.key character varying(64) NOT NULL
+idempotency_keys.locked_until timestamp with time zone NOT NULL
+idempotency_keys.method character varying(10) NOT NULL
+idempotency_keys.path character varying(200) NOT NULL
+idempotency_keys.request_hash character(64) NOT NULL
+idempotency_keys.response_body text
+idempotency_keys.response_status integer(32,0)
+idempotency_keys.status text NOT NULL
+idempotency_keys.user_id uuid NOT NULL
+one_time_tokens.created_at timestamp with time zone NOT NULL
+one_time_tokens.expires_at timestamp with time zone NOT NULL
+one_time_tokens.id uuid NOT NULL
+one_time_tokens.purpose text NOT NULL
+one_time_tokens.token_hash character(64) NOT NULL
+one_time_tokens.used_at timestamp with time zone
+one_time_tokens.user_id uuid NOT NULL
+order_items.currency character(3) NOT NULL DEFAULT 'EUR'::bpchar
+order_items.id uuid NOT NULL
+order_items.order_id uuid NOT NULL
+order_items.platform_fee numeric(12,2) NOT NULL
+order_items.product_id uuid NOT NULL
+order_items.product_title character varying(120) NOT NULL
+order_items.refunded_at timestamp with time zone
+order_items.seller_amount numeric(12,2) NOT NULL
+order_items.seller_id uuid NOT NULL
+order_items.status text NOT NULL DEFAULT 'Active'::text
+order_items.unit_price numeric(12,2) NOT NULL
+orders.buyer_id uuid NOT NULL
+orders.cancelled_at timestamp with time zone
+orders.created_at timestamp with time zone NOT NULL
+orders.currency character(3) NOT NULL DEFAULT 'EUR'::bpchar
+orders.expired_at timestamp with time zone
+orders.expires_at timestamp with time zone NOT NULL
+orders.id uuid NOT NULL
+orders.paid_at timestamp with time zone
+orders.status text NOT NULL
+orders.total numeric(12,2) NOT NULL
+orders.updated_at timestamp with time zone NOT NULL
+outbox_messages.attempts integer(32,0) NOT NULL DEFAULT 0
+outbox_messages.available_at timestamp with time zone NOT NULL
+outbox_messages.correlation_id character varying(64)
+outbox_messages.created_at timestamp with time zone NOT NULL
+outbox_messages.dead_lettered_at timestamp with time zone
+outbox_messages.id uuid NOT NULL
+outbox_messages.last_error text
+outbox_messages.payload jsonb NOT NULL
+outbox_messages.processed_at timestamp with time zone
+outbox_messages.type character varying(100) NOT NULL
+payment_events.attempts integer(32,0) NOT NULL DEFAULT 0
+payment_events.event_type character varying(100) NOT NULL
+payment_events.id uuid NOT NULL
+payment_events.last_error text
+payment_events.payload jsonb NOT NULL
+payment_events.processed_at timestamp with time zone
+payment_events.provider character varying(30) NOT NULL
+payment_events.provider_event_id character varying(100) NOT NULL
+payment_events.received_at timestamp with time zone NOT NULL
+payments.amount numeric(12,2) NOT NULL
+payments.created_at timestamp with time zone NOT NULL
+payments.currency character(3) NOT NULL DEFAULT 'EUR'::bpchar
+payments.failure_code character varying(100)
+payments.id uuid NOT NULL
+payments.order_id uuid NOT NULL
+payments.provider character varying(30) NOT NULL
+payments.provider_payment_id character varying(100) NOT NULL
+payments.status text NOT NULL
+payments.updated_at timestamp with time zone NOT NULL
+products.category_id integer(32,0) NOT NULL
+products.created_at timestamp with time zone NOT NULL
+products.currency character(3) NOT NULL DEFAULT 'EUR'::bpchar
+products.description character varying(5000) NOT NULL
+products.file_content_type character varying(100)
+products.file_key character varying(300)
+products.file_name character varying(255)
+products.file_sha256 character(64)
+products.file_size_bytes bigint(64,0)
+products.id uuid NOT NULL
+products.price numeric(12,2) NOT NULL
+products.published_at timestamp with time zone
+products.removed_at timestamp with time zone
+products.removed_reason character varying(500)
+products.search_vector tsvector GENERATED
+products.seller_id uuid NOT NULL
+products.status text NOT NULL
+products.title character varying(120) NOT NULL
+products.updated_at timestamp with time zone NOT NULL
+refresh_tokens.created_at timestamp with time zone NOT NULL
+refresh_tokens.created_ip inet
+refresh_tokens.expires_at timestamp with time zone NOT NULL
+refresh_tokens.family_id uuid NOT NULL
+refresh_tokens.id uuid NOT NULL
+refresh_tokens.replaced_by_id uuid
+refresh_tokens.revoked_at timestamp with time zone
+refresh_tokens.token_hash character(64) NOT NULL
+refresh_tokens.used_at timestamp with time zone
+refresh_tokens.user_agent character varying(300)
+refresh_tokens.user_id uuid NOT NULL
+refund_requests.created_at timestamp with time zone NOT NULL
+refund_requests.decided_at timestamp with time zone
+refund_requests.decided_by uuid
+refund_requests.decision text
+refund_requests.decision_note character varying(1000)
+refund_requests.download_count_at_request integer(32,0) NOT NULL
+refund_requests.executed_at timestamp with time zone
+refund_requests.failure_reason character varying(500)
+refund_requests.id uuid NOT NULL
+refund_requests.order_item_id uuid NOT NULL
+refund_requests.override_reason character varying(1000)
+refund_requests.policy_verdict text NOT NULL
+refund_requests.reason_text character varying(2000) NOT NULL
+refund_requests.requested_by uuid NOT NULL
+refund_requests.status text NOT NULL
+refund_requests.updated_at timestamp with time zone NOT NULL
+role_claims.claim_type text
+role_claims.claim_value text
+role_claims.id integer(32,0) NOT NULL IDENTITY BY DEFAULT
+role_claims.role_id uuid NOT NULL
+roles.concurrency_stamp text
+roles.id uuid NOT NULL
+roles.name character varying(256)
+roles.normalized_name character varying(256)
+seller_ledger_entries.amount numeric(12,2) NOT NULL
+seller_ledger_entries.created_at timestamp with time zone NOT NULL
+seller_ledger_entries.currency character(3) NOT NULL DEFAULT 'EUR'::bpchar
+seller_ledger_entries.entry_type text NOT NULL
+seller_ledger_entries.id uuid NOT NULL
+seller_ledger_entries.order_item_id uuid
+seller_ledger_entries.seller_id uuid NOT NULL
+seller_profiles.bio character varying(1000)
+seller_profiles.country character(2) NOT NULL
+seller_profiles.created_at timestamp with time zone NOT NULL
+seller_profiles.display_name character varying(80) NOT NULL
+seller_profiles.id uuid NOT NULL
+seller_profiles.user_id uuid NOT NULL
+user_claims.claim_type text
+user_claims.claim_value text
+user_claims.id integer(32,0) NOT NULL IDENTITY BY DEFAULT
+user_claims.user_id uuid NOT NULL
+user_logins.login_provider text NOT NULL
+user_logins.provider_display_name text
+user_logins.provider_key text NOT NULL
+user_logins.user_id uuid NOT NULL
+user_roles.role_id uuid NOT NULL
+user_roles.user_id uuid NOT NULL
+user_tokens.login_provider text NOT NULL
+user_tokens.name text NOT NULL
+user_tokens.user_id uuid NOT NULL
+user_tokens.value text
+users.access_failed_count integer(32,0) NOT NULL
+users.concurrency_stamp text
+users.created_at timestamp with time zone NOT NULL
+users.deleted_at timestamp with time zone
+users.display_name character varying(80) NOT NULL
+users.email character varying(256)
+users.email_confirmed boolean NOT NULL
+users.id uuid NOT NULL
+users.lockout_enabled boolean NOT NULL
+users.lockout_end timestamp with time zone
+users.normalized_email character varying(256)
+users.normalized_user_name character varying(256)
+users.password_hash text
+users.phone_number text
+users.phone_number_confirmed boolean NOT NULL
+users.security_stamp text
+users.two_factor_enabled boolean NOT NULL
+users.user_name character varying(256)
+
+## Constraints
+ai_suggestions ck_ai_suggestions_status CHECK ((validation_status = ANY (ARRAY['Valid'::text, 'InvalidOutput'::text, 'ProviderError'::text, 'Skipped'::text])))
+ai_suggestions fk_ai_suggestions_refund_requests_refund_request_id FOREIGN KEY (refund_request_id) REFERENCES refund_requests(id) ON DELETE RESTRICT
+ai_suggestions pk_ai_suggestions PRIMARY KEY (id)
+audit_log ck_audit_log_actor_type CHECK ((actor_type = ANY (ARRAY['User'::text, 'System'::text, 'Worker'::text, 'Webhook'::text])))
+audit_log pk_audit_log PRIMARY KEY (id)
+categories pk_categories PRIMARY KEY (id)
+categories ux_categories_slug UNIQUE (slug)
+download_grants ck_download_grants_counts CHECK (((max_downloads > 0) AND (download_count >= 0)))
+download_grants fk_download_grants_order_items_order_item_id FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE RESTRICT
+download_grants fk_download_grants_products_product_id FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
+download_grants fk_download_grants_users_buyer_id FOREIGN KEY (buyer_id) REFERENCES users(id) ON DELETE RESTRICT
+download_grants pk_download_grants PRIMARY KEY (id)
+download_grants ux_download_grants_order_item_id UNIQUE (order_item_id)
+idempotency_keys ck_idempotency_keys_status CHECK ((status = ANY (ARRAY['InProgress'::text, 'Completed'::text])))
+idempotency_keys fk_idempotency_keys_users_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+idempotency_keys pk_idempotency_keys PRIMARY KEY (user_id, key)
+one_time_tokens ck_one_time_tokens_purpose CHECK ((purpose = ANY (ARRAY['EmailVerification'::text, 'PasswordReset'::text])))
+one_time_tokens fk_one_time_tokens_users_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+one_time_tokens pk_one_time_tokens PRIMARY KEY (id)
+one_time_tokens ux_one_time_tokens_token_hash UNIQUE (token_hash)
+order_items ck_order_items_amounts CHECK (((platform_fee >= (0)::numeric) AND (seller_amount >= (0)::numeric) AND ((platform_fee + seller_amount) = unit_price)))
+order_items ck_order_items_status CHECK ((status = ANY (ARRAY['Active'::text, 'Refunded'::text])))
+order_items ck_order_items_unit_price CHECK ((unit_price > (0)::numeric))
+order_items fk_order_items_orders_order_id FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE RESTRICT
+order_items fk_order_items_products_product_id FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
+order_items fk_order_items_seller_profiles_seller_id FOREIGN KEY (seller_id) REFERENCES seller_profiles(id) ON DELETE RESTRICT
+order_items pk_order_items PRIMARY KEY (id)
+order_items ux_order_items_order_id_product_id UNIQUE (order_id, product_id)
+orders ck_orders_paid_at CHECK (((status = ANY (ARRAY['Paid'::text, 'PartiallyRefunded'::text, 'Refunded'::text])) = (paid_at IS NOT NULL)))
+orders ck_orders_status CHECK ((status = ANY (ARRAY['Pending'::text, 'Paid'::text, 'PartiallyRefunded'::text, 'Refunded'::text, 'Cancelled'::text, 'Expired'::text])))
+orders ck_orders_total CHECK ((total > (0)::numeric))
+orders fk_orders_users_buyer_id FOREIGN KEY (buyer_id) REFERENCES users(id) ON DELETE RESTRICT
+orders pk_orders PRIMARY KEY (id)
+outbox_messages pk_outbox_messages PRIMARY KEY (id)
+payment_events pk_payment_events PRIMARY KEY (id)
+payment_events ux_payment_events_provider_event UNIQUE (provider, provider_event_id)
+payments ck_payments_amount CHECK ((amount > (0)::numeric))
+payments ck_payments_status CHECK ((status = ANY (ARRAY['RequiresPayment'::text, 'Succeeded'::text, 'Failed'::text, 'Refunded'::text])))
+payments fk_payments_orders_order_id FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE RESTRICT
+payments pk_payments PRIMARY KEY (id)
+payments ux_payments_provider_payment_id UNIQUE (provider, provider_payment_id)
+products ck_products_currency CHECK ((currency = 'EUR'::bpchar))
+products ck_products_price CHECK (((price >= 0.50) AND (price <= 10000.00)))
+products ck_products_published_has_file CHECK (((status <> 'Published'::text) OR ((file_key IS NOT NULL) AND (published_at IS NOT NULL))))
+products ck_products_status CHECK ((status = ANY (ARRAY['Draft'::text, 'Published'::text, 'Unpublished'::text, 'Removed'::text])))
+products fk_products_categories_category_id FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT
+products fk_products_seller_profiles_seller_id FOREIGN KEY (seller_id) REFERENCES seller_profiles(id) ON DELETE RESTRICT
+products pk_products PRIMARY KEY (id)
+refresh_tokens fk_refresh_tokens_users_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+refresh_tokens pk_refresh_tokens PRIMARY KEY (id)
+refresh_tokens ux_refresh_tokens_token_hash UNIQUE (token_hash)
+refund_requests ck_refund_requests_decided CHECK (((decision IS NULL) = (decided_by IS NULL)))
+refund_requests ck_refund_requests_decision CHECK (((decision IS NULL) OR (decision = ANY (ARRAY['Approved'::text, 'Rejected'::text]))))
+refund_requests ck_refund_requests_status CHECK ((status = ANY (ARRAY['Submitted'::text, 'Approved'::text, 'Rejected'::text, 'Executing'::text, 'Completed'::text, 'Failed'::text])))
+refund_requests ck_refund_requests_verdict CHECK ((policy_verdict = ANY (ARRAY['Eligible'::text, 'EligibleDownloaded'::text, 'IneligibleOutsideWindow'::text])))
+refund_requests fk_refund_requests_order_items_order_item_id FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE RESTRICT
+refund_requests fk_refund_requests_users_decided_by FOREIGN KEY (decided_by) REFERENCES users(id) ON DELETE RESTRICT
+refund_requests fk_refund_requests_users_requested_by FOREIGN KEY (requested_by) REFERENCES users(id) ON DELETE RESTRICT
+refund_requests pk_refund_requests PRIMARY KEY (id)
+refund_requests ux_refund_requests_order_item_id UNIQUE (order_item_id)
+role_claims fk_role_claims_roles_role_id FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
+role_claims pk_role_claims PRIMARY KEY (id)
+roles pk_roles PRIMARY KEY (id)
+seller_ledger_entries ck_ledger_amount_sign CHECK ((((entry_type = ANY (ARRAY['Sale'::text, 'FeeRefund'::text])) AND (amount > (0)::numeric)) OR ((entry_type = ANY (ARRAY['PlatformFee'::text, 'Refund'::text, 'Payout'::text])) AND (amount < (0)::numeric))))
+seller_ledger_entries ck_ledger_entry_type CHECK ((entry_type = ANY (ARRAY['Sale'::text, 'PlatformFee'::text, 'Refund'::text, 'FeeRefund'::text, 'Payout'::text])))
+seller_ledger_entries fk_seller_ledger_entries_order_items_order_item_id FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE RESTRICT
+seller_ledger_entries fk_seller_ledger_entries_seller_profiles_seller_id FOREIGN KEY (seller_id) REFERENCES seller_profiles(id) ON DELETE RESTRICT
+seller_ledger_entries pk_seller_ledger_entries PRIMARY KEY (id)
+seller_profiles fk_seller_profiles_users_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
+seller_profiles pk_seller_profiles PRIMARY KEY (id)
+seller_profiles ux_seller_profiles_user_id UNIQUE (user_id)
+user_claims fk_user_claims_users_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+user_claims pk_user_claims PRIMARY KEY (id)
+user_logins fk_user_logins_users_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+user_logins pk_user_logins PRIMARY KEY (login_provider, provider_key)
+user_roles fk_user_roles_roles_role_id FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
+user_roles fk_user_roles_users_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+user_roles pk_user_roles PRIMARY KEY (user_id, role_id)
+user_tokens fk_user_tokens_users_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+user_tokens pk_user_tokens PRIMARY KEY (user_id, login_provider, name)
+users pk_users PRIMARY KEY (id)
+
+## Indexes
+CREATE INDEX ix_ai_suggestions_refund_request_id ON public.ai_suggestions USING btree (refund_request_id, created_at DESC)
+CREATE INDEX ix_audit_log_entity ON public.audit_log USING btree (entity_type, entity_id, id DESC)
+CREATE INDEX ix_audit_log_occurred_at ON public.audit_log USING btree (occurred_at DESC)
+CREATE INDEX ix_idempotency_keys_expires_at ON public.idempotency_keys USING btree (expires_at)
+CREATE INDEX ix_ledger_seller_id_created_at ON public.seller_ledger_entries USING btree (seller_id, created_at)
+CREATE INDEX ix_one_time_tokens_user_id_purpose ON public.one_time_tokens USING btree (user_id, purpose)
+CREATE INDEX ix_order_items_product_id ON public.order_items USING btree (product_id)
+CREATE INDEX ix_order_items_seller_id_order_id ON public.order_items USING btree (seller_id, order_id)
+CREATE INDEX ix_orders_buyer_id_created_at ON public.orders USING btree (buyer_id, created_at DESC, id DESC)
+CREATE INDEX ix_orders_paid_at ON public.orders USING btree (paid_at) WHERE (paid_at IS NOT NULL)
+CREATE INDEX ix_orders_pending_expires_at ON public.orders USING btree (expires_at) WHERE (status = 'Pending'::text)
+CREATE INDEX ix_outbox_messages_pending ON public.outbox_messages USING btree (available_at, created_at) WHERE ((processed_at IS NULL) AND (dead_lettered_at IS NULL))
+CREATE INDEX ix_payment_events_unprocessed ON public.payment_events USING btree (received_at) WHERE (processed_at IS NULL)
+CREATE INDEX ix_payments_order_id ON public.payments USING btree (order_id)
+CREATE INDEX ix_products_category_published ON public.products USING btree (category_id, published_at DESC, id DESC) WHERE (status = 'Published'::text)
+CREATE INDEX ix_products_price_published ON public.products USING btree (price, id) WHERE (status = 'Published'::text)
+CREATE INDEX ix_products_search_vector ON public.products USING gin (search_vector)
+CREATE INDEX ix_products_seller_id_status ON public.products USING btree (seller_id, status)
+CREATE INDEX ix_refresh_tokens_family_id ON public.refresh_tokens USING btree (family_id)
+CREATE INDEX ix_refresh_tokens_user_id ON public.refresh_tokens USING btree (user_id)
+CREATE INDEX ix_refund_requests_status_created_at ON public.refund_requests USING btree (status, created_at)
+CREATE INDEX ix_role_claims_role_id ON public.role_claims USING btree (role_id)
+CREATE INDEX ix_user_claims_user_id ON public.user_claims USING btree (user_id)
+CREATE INDEX ix_user_logins_user_id ON public.user_logins USING btree (user_id)
+CREATE INDEX ix_user_roles_role_id ON public.user_roles USING btree (role_id)
+CREATE UNIQUE INDEX pk_ai_suggestions ON public.ai_suggestions USING btree (id)
+CREATE UNIQUE INDEX pk_audit_log ON public.audit_log USING btree (id)
+CREATE UNIQUE INDEX pk_categories ON public.categories USING btree (id)
+CREATE UNIQUE INDEX pk_download_grants ON public.download_grants USING btree (id)
+CREATE UNIQUE INDEX pk_idempotency_keys ON public.idempotency_keys USING btree (user_id, key)
+CREATE UNIQUE INDEX pk_one_time_tokens ON public.one_time_tokens USING btree (id)
+CREATE UNIQUE INDEX pk_order_items ON public.order_items USING btree (id)
+CREATE UNIQUE INDEX pk_orders ON public.orders USING btree (id)
+CREATE UNIQUE INDEX pk_outbox_messages ON public.outbox_messages USING btree (id)
+CREATE UNIQUE INDEX pk_payment_events ON public.payment_events USING btree (id)
+CREATE UNIQUE INDEX pk_payments ON public.payments USING btree (id)
+CREATE UNIQUE INDEX pk_products ON public.products USING btree (id)
+CREATE UNIQUE INDEX pk_refresh_tokens ON public.refresh_tokens USING btree (id)
+CREATE UNIQUE INDEX pk_refund_requests ON public.refund_requests USING btree (id)
+CREATE UNIQUE INDEX pk_role_claims ON public.role_claims USING btree (id)
+CREATE UNIQUE INDEX pk_roles ON public.roles USING btree (id)
+CREATE UNIQUE INDEX pk_seller_ledger_entries ON public.seller_ledger_entries USING btree (id)
+CREATE UNIQUE INDEX pk_seller_profiles ON public.seller_profiles USING btree (id)
+CREATE UNIQUE INDEX pk_user_claims ON public.user_claims USING btree (id)
+CREATE UNIQUE INDEX pk_user_logins ON public.user_logins USING btree (login_provider, provider_key)
+CREATE UNIQUE INDEX pk_user_roles ON public.user_roles USING btree (user_id, role_id)
+CREATE UNIQUE INDEX pk_users ON public.users USING btree (id)
+CREATE UNIQUE INDEX pk_user_tokens ON public.user_tokens USING btree (user_id, login_provider, name)
+CREATE UNIQUE INDEX ux_categories_slug ON public.categories USING btree (slug)
+CREATE UNIQUE INDEX ux_download_grants_active_buyer_product ON public.download_grants USING btree (buyer_id, product_id) WHERE (revoked_at IS NULL)
+CREATE UNIQUE INDEX ux_download_grants_order_item_id ON public.download_grants USING btree (order_item_id)
+CREATE UNIQUE INDEX ux_ledger_item_type ON public.seller_ledger_entries USING btree (order_item_id, entry_type) WHERE (order_item_id IS NOT NULL)
+CREATE UNIQUE INDEX ux_one_time_tokens_token_hash ON public.one_time_tokens USING btree (token_hash)
+CREATE UNIQUE INDEX ux_order_items_order_id_product_id ON public.order_items USING btree (order_id, product_id)
+CREATE UNIQUE INDEX ux_payment_events_provider_event ON public.payment_events USING btree (provider, provider_event_id)
+CREATE UNIQUE INDEX ux_payments_one_live_per_order ON public.payments USING btree (order_id) WHERE (status = ANY (ARRAY['RequiresPayment'::text, 'Succeeded'::text]))
+CREATE UNIQUE INDEX ux_payments_provider_payment_id ON public.payments USING btree (provider, provider_payment_id)
+CREATE UNIQUE INDEX ux_refresh_tokens_token_hash ON public.refresh_tokens USING btree (token_hash)
+CREATE UNIQUE INDEX ux_refund_requests_order_item_id ON public.refund_requests USING btree (order_item_id)
+CREATE UNIQUE INDEX ux_roles_normalized_name ON public.roles USING btree (normalized_name)
+CREATE UNIQUE INDEX ux_seller_profiles_user_id ON public.seller_profiles USING btree (user_id)
+CREATE UNIQUE INDEX ux_users_normalized_email ON public.users USING btree (normalized_email)
+CREATE UNIQUE INDEX ux_users_normalized_user_name ON public.users USING btree (normalized_user_name)
+
+## Triggers
+audit_log trg_audit_log_append_only
+seller_ledger_entries trg_seller_ledger_entries_append_only
+
