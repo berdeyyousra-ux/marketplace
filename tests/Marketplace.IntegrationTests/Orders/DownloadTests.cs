@@ -13,12 +13,7 @@ public sealed class DownloadTests(MarketplaceWebFactory factory) : IntegrationTe
     [Fact]
     public async Task US26_PaidBuyer_GetsSignedUrlThatDownloadsTheFileFromAzurite()
     {
-        // Azurite checks the SAS expiry against the real clock, so the fake clock must not be behind it.
-        var realNow = DateTimeOffset.UtcNow;
-        if (realNow > Time.GetUtcNow())
-        {
-            Time.Advance(realNow - Time.GetUtcNow());
-        }
+        CatchUpWithRealTime();
 
         var (buyer, itemId) = await PaidItemAsync("signed");
         using (buyer)

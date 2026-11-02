@@ -118,6 +118,18 @@ public abstract class IntegrationTestBase(MarketplaceWebFactory factory) : IAsyn
         return id;
     }
 
+    // Azurite checks SAS expiry against the real clock, so tests that download move the fake clock up to it. The
+    // step is whole seconds: PostgreSQL keeps microseconds, and a sub-microsecond clock breaks timestamp equality in
+    // the tests that run afterwards.
+    protected void CatchUpWithRealTime()
+    {
+        var behind = DateTimeOffset.UtcNow - Time.GetUtcNow();
+        if (behind > TimeSpan.Zero)
+        {
+            Time.Advance(TimeSpan.FromSeconds(Math.Ceiling(behind.TotalSeconds)));
+        }
+    }
+
     // Pays a Pending order through the fake provider and its signed webhook, then processes the outbox until idle.
     protected async Task PayOrderAsync(HttpClient buyer, Guid orderId)
     {

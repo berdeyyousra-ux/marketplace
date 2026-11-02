@@ -55,12 +55,7 @@ public sealed class SeedToolTests(MarketplaceWebFactory factory) : IntegrationTe
     [Fact]
     public async Task SeedDemo_CreatesBrowsableDataThatSeededUsersCanDownload()
     {
-        // Azurite checks SAS expiry against the real clock.
-        var realNow = DateTimeOffset.UtcNow;
-        if (realNow > Time.GetUtcNow())
-        {
-            Time.Advance(realNow - Time.GetUtcNow());
-        }
+        CatchUpWithRealTime();
 
         var data = await SeedCommands.DemoAsync(
             SeedOptions.Demo(Time.GetUtcNow()), Factory.DatabaseConnectionString, Factory.BlobConnectionString, TextWriter.Null, CancellationToken);
