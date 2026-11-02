@@ -1,4 +1,5 @@
 using Marketplace.Api.Auth;
+using Marketplace.Api.Errors;
 using Marketplace.Api.Logging;
 using Marketplace.Api.Middleware;
 using Marketplace.Infrastructure;
@@ -24,6 +25,16 @@ builder.Host.UseSerilog((context, services, logger) => logger
 builder.Services.AddInfrastructure();
 builder.Services.AddMarketplaceAuthentication(builder.Environment);
 
+builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
+{
+    // Framework-generated problems (404, 405, 401 and so on) get the same code and traceId fields.
+    if (!context.ProblemDetails.Extensions.ContainsKey("code"))
+    {
+        ApiProblems.Enrich(context.HttpContext, context.ProblemDetails, ApiProblems.CodeForStatus(context.ProblemDetails.Status ?? 500));
+    }
+});
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<AppDbContext>(tags: [ReadinessTag]);
 
@@ -47,6 +58,8 @@ builder.Services.AddCors(options => options.AddPolicy(CorsPolicyName, policy => 
 var app = builder.Build();
 
 app.UseForwardedHeaders();
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseSerilogRequestLogging(options =>
 {

@@ -13,7 +13,12 @@ public sealed class CorrelationIdMiddleware(RequestDelegate next)
         string? supplied = context.Request.Headers[_headerName];
         var correlationId = IsValid(supplied) ? supplied! : Guid.CreateVersion7().ToString();
 
-        context.Response.Headers[_headerName] = correlationId;
+        // Set when the response starts, so the header survives the exception handler clearing the response.
+        context.Response.OnStarting(() =>
+        {
+            context.Response.Headers[_headerName] = correlationId;
+            return Task.CompletedTask;
+        });
 
         using (LogContext.PushProperty("CorrelationId", correlationId))
         using (AmbientCorrelationContext.Begin(correlationId))
