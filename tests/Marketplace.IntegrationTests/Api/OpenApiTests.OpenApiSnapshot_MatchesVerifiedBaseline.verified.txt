@@ -502,6 +502,157 @@
         security: [
           {}
         ]
+      },
+      get: {
+        tags: [
+          Orders
+        ],
+        summary: Lists the caller's own orders, newest first. Keyset paginated (US-25).,
+        parameters: [
+          {
+            name: Status,
+            in: query,
+            schema: {
+              type: string
+            }
+          },
+          {
+            name: Limit,
+            in: query,
+            schema: {
+              pattern: ^-?(?:0|[1-9]\d*)$,
+              type: [
+                integer,
+                string
+              ],
+              format: int32
+            }
+          },
+          {
+            name: Cursor,
+            in: query,
+            schema: {
+              type: string
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/PageOfOrderSummary
+                }
+              }
+            }
+          },
+          400: {
+            description: Bad Request,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
+    /api/v1/orders/{id}: {
+      get: {
+        tags: [
+          Orders
+        ],
+        summary: Returns one order with its items and latest payment. Visible to its buyer and to admins (US-25).,
+        parameters: [
+          {
+            name: id,
+            in: path,
+            required: true,
+            schema: {
+              type: string,
+              format: uuid
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/OrderDetail
+                }
+              }
+            }
+          },
+          404: {
+            description: Not Found,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
+    /api/v1/orders/{id}/cancel: {
+      post: {
+        tags: [
+          Orders
+        ],
+        summary: Cancels the caller's Pending order. Paid orders cannot be cancelled (US-27).,
+        parameters: [
+          {
+            name: id,
+            in: path,
+            required: true,
+            schema: {
+              type: string,
+              format: uuid
+            }
+          }
+        ],
+        responses: {
+          204: {
+            description: No Content,
+            content: {}
+          },
+          404: {
+            description: Not Found,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          409: {
+            description: Conflict,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
       }
     },
     /api/v1/orders/{id}/payment: {
@@ -1363,6 +1514,62 @@
           }
         }
       },
+      OrderDetail: {
+        required: [
+          id,
+          status,
+          total,
+          createdAt,
+          expiresAt,
+          paidAt,
+          items,
+          payment
+        ],
+        type: object,
+        properties: {
+          id: {
+            type: string,
+            format: uuid
+          },
+          status: {
+            type: string
+          },
+          total: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          createdAt: {
+            type: string,
+            format: date-time
+          },
+          expiresAt: {
+            type: string,
+            format: date-time
+          },
+          paidAt: {
+            type: [
+              null,
+              string
+            ],
+            format: date-time
+          },
+          items: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/OrderItemResponse
+            }
+          },
+          payment: {
+            oneOf: [
+              {
+                type: null
+              },
+              {
+                $ref: #/components/schemas/PaymentSummary
+              }
+            ]
+          }
+        }
+      },
       OrderItemResponse: {
         required: [
           id,
@@ -1437,6 +1644,69 @@
           }
         }
       },
+      OrderSummary: {
+        required: [
+          id,
+          status,
+          total,
+          itemCount,
+          createdAt,
+          paidAt
+        ],
+        type: object,
+        properties: {
+          id: {
+            type: string,
+            format: uuid
+          },
+          status: {
+            type: string
+          },
+          total: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          itemCount: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int32
+          },
+          createdAt: {
+            type: string,
+            format: date-time
+          },
+          paidAt: {
+            type: [
+              null,
+              string
+            ],
+            format: date-time
+          }
+        }
+      },
+      PageOfOrderSummary: {
+        required: [
+          items,
+          nextCursor
+        ],
+        type: object,
+        properties: {
+          items: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/OrderSummary
+            }
+          },
+          nextCursor: {
+            type: [
+              null,
+              string
+            ]
+          }
+        }
+      },
       PageOfProductSummary: {
         required: [
           items,
@@ -1500,6 +1770,35 @@
           },
           amount: {
             $ref: #/components/schemas/MoneyDto
+          }
+        }
+      },
+      PaymentSummary: {
+        required: [
+          id,
+          provider,
+          status,
+          amount,
+          createdAt
+        ],
+        type: object,
+        properties: {
+          id: {
+            type: string,
+            format: uuid
+          },
+          provider: {
+            type: string
+          },
+          status: {
+            type: string
+          },
+          amount: {
+            $ref: #/components/schemas/MoneyDto
+          },
+          createdAt: {
+            type: string,
+            format: date-time
           }
         }
       },
