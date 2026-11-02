@@ -16,6 +16,9 @@ public sealed class SqlReports(AppDbContext db) : IReports
     private static readonly ConcurrentDictionary<string, string> _sql = new(StringComparer.Ordinal);
 
     public Task<List<MonthlyRevenueRow>> SellerMonthlyRevenueAsync(Guid sellerId, DateTimeOffset periodStart, DateTimeOffset periodEnd, CancellationToken cancellationToken) =>
+        QueryAsync<MonthlyRevenueRow>("R10-seller-monthly-revenue", cancellationToken, Uuid("seller_id", sellerId), Time("from", periodStart), Time("to", periodEnd));
+
+    public Task<List<MonthlyRevenueRow>> SellerMonthlyRevenueFromLedgerAsync(Guid sellerId, DateTimeOffset periodStart, DateTimeOffset periodEnd, CancellationToken cancellationToken) =>
         QueryAsync<MonthlyRevenueRow>("R01-seller-monthly-revenue", cancellationToken, Uuid("seller_id", sellerId), Time("from", periodStart), Time("to", periodEnd));
 
     public Task<List<CategoryTopProductRow>> TopProductsPerCategoryAsync(DateTimeOffset since, int perCategory, CancellationToken cancellationToken) =>

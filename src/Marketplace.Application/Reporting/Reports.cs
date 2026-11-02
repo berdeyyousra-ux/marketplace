@@ -31,8 +31,11 @@ public sealed record RecentSaleRow(
 // callers take them from TimeProvider (R-07).
 public interface IReports
 {
-    // R-01. Months in [periodStart, periodEnd), one row per month.
+    // R-10 (EP-71): R-01's result, with completed months read from mv_seller_monthly_revenue.
     Task<List<MonthlyRevenueRow>> SellerMonthlyRevenueAsync(Guid sellerId, DateTimeOffset periodStart, DateTimeOffset periodEnd, CancellationToken cancellationToken);
+
+    // R-01. Months in [periodStart, periodEnd), one row per month, read from the ledger.
+    Task<List<MonthlyRevenueRow>> SellerMonthlyRevenueFromLedgerAsync(Guid sellerId, DateTimeOffset periodStart, DateTimeOffset periodEnd, CancellationToken cancellationToken);
 
     // R-02.
     Task<List<CategoryTopProductRow>> TopProductsPerCategoryAsync(DateTimeOffset since, int perCategory, CancellationToken cancellationToken);

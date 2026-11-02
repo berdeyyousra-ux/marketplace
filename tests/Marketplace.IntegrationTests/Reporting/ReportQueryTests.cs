@@ -1,6 +1,8 @@
 using Marketplace.Application.Reporting;
+using Marketplace.Infrastructure.Jobs;
 using Marketplace.IntegrationTests.Fixtures;
 using Marketplace.Tools.Seeding;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 
@@ -29,8 +31,10 @@ public sealed class ReportQueryTests(MarketplaceWebFactory factory) : Integratio
         var from = thisMonth.AddMonths(-23);
         var to = thisMonth.AddMonths(1);
 
-        var rows = await ReportsAsync(reports => reports.SellerMonthlyRevenueAsync(_data.Sellers[seller].Id, from, to, CancellationToken));
+        var rows = await ReportsAsync(reports => reports.SellerMonthlyRevenueFromLedgerAsync(_data.Sellers[seller].Id, from, to, CancellationToken));
 
+        // Without a recorded refresh R-10 reads every month live, so it must equal R-01.
+        (await ReportsAsync(reports => reports.SellerMonthlyRevenueAsync(_data.Sellers[seller].Id, from, to, CancellationToken))).ShouldBe(rows);
         rows.Count.ShouldBe(24);
         var running = 0m;
         for (var month = 0; month < 24; month++)
@@ -42,6 +46,32 @@ public sealed class ReportQueryTests(MarketplaceWebFactory factory) : Integratio
             running += netSales + fees;
             rows[month].ShouldBe(new MonthlyRevenueRow($"{start:yyyy-MM}", netSales, -fees, netSales + fees, running));
         }
+    }
+
+    [Fact]
+    public async Task R10_AfterRefresh_ReadsCompletedMonthsFromTheViewAndLaterEntriesLive()
+    {
+        var seller = _data.Sellers[BusiestSeller()].Id;
+        var thisMonth = new DateTimeOffset(_now.Year, _now.Month, 1, 0, 0, 0, TimeSpan.Zero);
+        var from = thisMonth.AddMonths(-23);
+        var to = thisMonth.AddMonths(1);
+        await RefreshViewAsync();
+
+        (await ReportsAsync(reports => reports.SellerMonthlyRevenueAsync(seller, from, to, CancellationToken)))
+            .ShouldBe(await ReportsAsync(reports => reports.SellerMonthlyRevenueFromLedgerAsync(seller, from, to, CancellationToken)));
+
+        // A back-dated entry the view has not seen shows that completed months come from the view, and an entry
+        // in the current month shows that it is read live.
+        await AddSaleAsync(seller, 10m, thisMonth.AddMonths(-3).AddDays(2));
+        await AddSaleAsync(seller, 7m, _now);
+        var fromView = await ReportsAsync(reports => reports.SellerMonthlyRevenueAsync(seller, from, to, CancellationToken));
+        var fromLedger = await ReportsAsync(reports => reports.SellerMonthlyRevenueFromLedgerAsync(seller, from, to, CancellationToken));
+        (fromLedger[^4].NetSales - fromView[^4].NetSales).ShouldBe(10m);
+        (fromView[^1] with { RunningSellerNet = fromLedger[^1].RunningSellerNet }).ShouldBe(fromLedger[^1]);
+        (fromLedger[^1].RunningSellerNet - fromView[^1].RunningSellerNet).ShouldBe(10m, "the running total carries the back-dated entry the view lacks");
+
+        await RefreshViewAsync();
+        (await ReportsAsync(reports => reports.SellerMonthlyRevenueAsync(seller, from, to, CancellationToken))).ShouldBe(fromLedger);
     }
 
     [Fact]
@@ -225,6 +255,17 @@ public sealed class ReportQueryTests(MarketplaceWebFactory factory) : Integratio
         seen.Select(row => row.OrderItemId).ShouldBe(expected.Select(entry => entry.Item.Id), ignoreOrder: true);
         seen.Select(row => row.PaidAt).ShouldBeInOrder(SortDirection.Descending);
     }
+
+    private async Task RefreshViewAsync()
+    {
+        await using var scope = Factory.Services.CreateAsyncScope();
+        await scope.ServiceProvider.GetRequiredService<SellerRevenueViewRefreshJob>().RunAsync(CancellationToken);
+    }
+
+    private Task<int> AddSaleAsync(Guid sellerId, decimal amount, DateTimeOffset at) =>
+        WithDbAsync(db => db.Database.ExecuteSqlAsync(
+            $"INSERT INTO seller_ledger_entries (id, seller_id, entry_type, amount, created_at) VALUES ({Guid.CreateVersion7()}, {sellerId}, 'Sale', {amount}, {at})",
+            CancellationToken));
 
     private async Task<T> ReportsAsync<T>(Func<IReports, Task<T>> query)
     {

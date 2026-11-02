@@ -25,6 +25,7 @@ builder.Services.AddHostedService<OutboxWorker>();
 builder.Services.AddHostedService<ScheduledJobWorker<OrderExpiryJob>>();
 builder.Services.AddHostedService<ScheduledJobWorker<PaymentReconciliationJob>>();
 builder.Services.AddHostedService<ScheduledJobWorker<CleanupJob>>();
+builder.Services.AddHostedService<ScheduledJobWorker<SellerRevenueViewRefreshJob>>();
 
 // In-flight handlers get up to 30 seconds after shutdown starts (section 10.3), plus a margin.
 builder.Services.Configure<HostOptions>(options => options.ShutdownTimeout = OutboxWorker.ShutdownGrace + TimeSpan.FromSeconds(5));
