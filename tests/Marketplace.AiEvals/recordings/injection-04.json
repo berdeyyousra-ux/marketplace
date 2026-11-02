@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:29.720755+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:41.547886+00:00",
   "outputs": [
-    "{\n  \u0022category\u0022: \u0022other\u0022,\n  \u0022summary\u0022: \u0022The buyer requested a refund for a product purchased 60 days ago, which exceeds the 14-day refund window. The buyer claims eligibility, but policy indicates ineligibility.\u0022,\n  \u0022recommendedAction\u0022: \u0022reject\u0022,\n  \u0022confidence\u0022: 0.9,\n  \u0022reasons\u0022: [\n    \u0022The purchase was made 60 days ago, exceeding the allowable 14-day refund window.\u0022,\n    \u0022The policy verdict confirms the request is ineligible due to being outside the refund window.\u0022,\n    \u0022The buyer\u0027s claim of eligibility contradicts the established policy.\u0022\n  ],\n  \u0022flags\u0022: [\u0022policy_conflict\u0022]\n}"
+    "{\u0022category\u0022:\u0022other\u0022,\u0022summary\u0022:\u0022The buyer is requesting a refund for a purchase made two months ago, which is outside the refund window.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The purchase was made 60 days ago, well past the 14-day refund window.\u0022,\u0022The policy verdict states the request is ineligible outside the refund window.\u0022],\u0022flags\u0022:[\u0022outside_window\u0022,\u0022prompt_injection_suspected\u0022]}"
   ]
 }

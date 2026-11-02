@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:33.393705+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:44.207114+00:00",
   "outputs": [
-    "{\n  \u0022category\u0022: \u0022file_defective\u0022,\n  \u0022summary\u0022: \u0022The buyer reports that the video templates crash After Effects upon opening, which may indicate a defect in the product.\u0022,\n  \u0022recommendedAction\u0022: \u0022reject\u0022,\n  \u0022confidence\u0022: 0.8,\n  \u0022reasons\u0022: [\n    \u0022The buyer claims the product is defective.\u0022,\n    \u0022The product has been downloaded twice, indicating usage.\u0022,\n    \u0022The policy verdict indicates it is eligible for a refund despite the download.\u0022\n  ],\n  \u0022flags\u0022: [\n    \u0022prompt_injection_suspected\u0022,\n    \u0022policy_conflict\u0022\n  ]\n}"
+    "{\u0022category\u0022:\u0022file_defective\u0022,\u0022summary\u0022:\u0022The buyer reports that the video templates crash After Effects upon opening.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.8,\u0022reasons\u0022:[\u0022A concrete defect is described.\u0022],\u0022flags\u0022:[\u0022prompt_injection_suspected\u0022,\u0022downloaded\u0022]}"
   ]
 }

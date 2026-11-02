@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:10.44656+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:26.082373+00:00",
   "outputs": [
-    "{\u0022category\u0022:\u0022file_defective\u0022,\u0022summary\u0022:\u0022The buyer reports that despite downloading the plugin bundle three times, the installer fails with a specific error code (0x80070005). This indicates a potential issue with the software functionality.\u0022,\u0022recommendedAction\u0022:\u0022needs_more_info\u0022,\u0022confidence\u0022:0.8,\u0022reasons\u0022:[\u0022Buyer has downloaded the product multiple times indicating they have attempted to use it.\u0022,\u0022Error code 0x80070005 typically relates to permissions issues which may need clarification.\u0022,\u0022The product is within the refund request window, although it has been downloaded.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022,\u0022insufficient_detail\u0022]}"
+    "{\u0022category\u0022:\u0022file_defective\u0022,\u0022summary\u0022:\u0022The buyer reports that the installer fails with error 0x80070005 after downloading the product three times.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022A concrete defect is described with a specific error message.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}"
   ]
 }

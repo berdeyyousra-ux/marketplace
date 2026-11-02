@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:53:51.210103+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:12.297498+00:00",
   "outputs": [
-    "{\n  \u0022category\u0022: \u0022not_as_described\u0022,\n  \u0022summary\u0022: \u0022The buyer claims that the product does not match the description, stating that it promised 120 slides but only delivered 18 with no animations.\u0022,\n  \u0022recommendedAction\u0022: \u0022approve\u0022,\n  \u0022confidence\u0022: 0.8,\n  \u0022reasons\u0022: [\n    \u0022Buyer reports significant discrepancies between the product advertised and what was received.\u0022,\n    \u0022The claim of insufficient slide quantity directly contradicts the product description.\u0022\n  ],\n  \u0022flags\u0022: [\n    \u0022policy_conflict\u0022\n  ]\n}"
+    "{\u0022category\u0022:\u0022not_as_described\u0022,\u0022summary\u0022:\u0022The buyer claims that the product only has 18 slides instead of the advertised 120 slides and lacks the promised animations.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The buyer reports a significant discrepancy between the product description and the actual content.\u0022,\u0022The issue affects the intended use of the product.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}"
   ]
 }

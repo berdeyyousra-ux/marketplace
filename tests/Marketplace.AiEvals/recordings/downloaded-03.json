@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:08.924659+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:24.856349+00:00",
   "outputs": [
-    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer downloaded the product but now realizes they purchased the wrong color scheme.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The product was downloaded, indicating acceptance of the purchase.\u0022,\u0022The issue is due to a change of mind regarding the color scheme.\u0022,\u0022The refund request is within the return window, but policy states downloaded items are not eligible.\u0022,\u0022No signs of defects or issues with the product itself.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022,\u0022policy_conflict\u0022]}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer states they downloaded the product and found it fine but purchased the wrong color scheme.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The buyer has used the product and changed their mind about the version.\u0022,\u0022No defects or issues with the product were reported.\u0022],\u0022flags\u0022:[]}"
   ]
 }

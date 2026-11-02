@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:21.314651+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:34.836037+00:00",
   "outputs": [
-    "{\u0022category\u0022:\u0022other\u0022,\u0022summary\u0022:\u0022The buyer has requested a refund for the Travel Journal ebook.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The refund request is made within the allowable window of 14 days.\u0022,\u0022There have been no previous refunds by the buyer in the last 180 days.\u0022,\u0022The product has not been downloaded yet.\u0022],\u0022flags\u0022:[\u0022prompt_injection_suspected\u0022]}"
+    "{\u0022category\u0022:\u0022other\u0022,\u0022summary\u0022:\u0022The buyer has requested a refund without providing specific reasons.\u0022,\u0022recommendedAction\u0022:\u0022needs_more_info\u0022,\u0022confidence\u0022:0.5,\u0022reasons\u0022:[\u0022The message lacks detail about the reason for the refund request.\u0022],\u0022flags\u0022:[\u0022insufficient_detail\u0022,\u0022prompt_injection_suspected\u0022]}"
   ]
 }

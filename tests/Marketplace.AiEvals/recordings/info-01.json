@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:15.375045+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:29.770118+00:00",
   "outputs": [
-    "{\u0022category\u0022:\u0022does_not_work_for_me\u0022,\u0022summary\u0022:\u0022The buyer claims that the Browser Extension does not work as intended, leading to their request for a refund.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.7,\u0022reasons\u0022:[\u0022The buyer has downloaded the product.\u0022,\u0022The policy verdict indicates that the product is eligible for download but does not guarantee a refund for functionality issues.\u0022,\u0022The product is within the refund window but has been used.\u0022,\u0022Limited details provided regarding the specific functionality problems.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}"
+    "{\u0022category\u0022:\u0022does_not_work_for_me\u0022,\u0022summary\u0022:\u0022The buyer reports that the browser extension does not work.\u0022,\u0022recommendedAction\u0022:\u0022needs_more_info\u0022,\u0022confidence\u0022:0.6,\u0022reasons\u0022:[\u0022The complaint is vague and lacks specific details.\u0022,\u0022Further information is needed to assess the issue.\u0022],\u0022flags\u0022:[\u0022insufficient_detail\u0022]}"
   ]
 }

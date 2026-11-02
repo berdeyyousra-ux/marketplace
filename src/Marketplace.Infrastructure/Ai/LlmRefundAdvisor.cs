@@ -11,7 +11,7 @@ namespace Marketplace.Infrastructure.Ai;
 public sealed partial class LlmRefundAdvisor(ILlmClient llm, IOptions<AiOptions> options, TimeProvider timeProvider, ILogger<LlmRefundAdvisor> logger)
     : IRefundAdvisor
 {
-    public const string PromptVersion = "refund-advisor.v1";
+    public const string PromptVersion = "refund-advisor.v2";
     public const int MaxAttempts = 2;
 
     private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
@@ -30,7 +30,7 @@ public sealed partial class LlmRefundAdvisor(ILlmClient llm, IOptions<AiOptions>
             return new AdvisorResult(AdvisorStatus.Skipped, null, null, model, PromptVersion, null, null, 0, "AI suggestions are disabled.");
         }
 
-        var request = new LlmRequest(SystemPrompt, UserMessage(facts), options.Value.MaxOutputTokens);
+        var request = new LlmRequest(SystemPrompt, UserMessage(facts), options.Value.MaxOutputTokens, SuggestionContract.JsonSchema());
         var started = timeProvider.GetTimestamp();
         int? inputTokens = null;
         int? outputTokens = null;

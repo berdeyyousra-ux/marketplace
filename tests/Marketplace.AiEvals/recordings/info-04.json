@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:19.984518+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:33.561191+00:00",
   "outputs": [
-    "{\n  \u0022category\u0022: \u0022file_defective\u0022,\n  \u0022summary\u0022: \u0022The buyer claims that the product is broken, which suggests an issue with the functionality of the API Starter software.\u0022,\n  \u0022recommendedAction\u0022: \u0022reject\u0022,\n  \u0022confidence\u0022: 0.8,\n  \u0022reasons\u0022: [\n    \u0022The product is within the refund window as it was purchased 4 days ago.\u0022,\n    \u0022The buyer has downloaded the product twice.\u0022,\n    \u0022The policy verdict indicates the product is eligible for download but suggests rejection due to usage.\u0022\n  ],\n  \u0022flags\u0022: [\u0022downloaded\u0022, \u0022prompt_injection_suspected\u0022]\n}"
+    "{\u0022category\u0022:\u0022does_not_work_for_me\u0022,\u0022summary\u0022:\u0022The buyer reports that the product is broken but provides no specific details.\u0022,\u0022recommendedAction\u0022:\u0022needs_more_info\u0022,\u0022confidence\u0022:0.5,\u0022reasons\u0022:[\u0022The message indicates a problem but lacks specific details about the issue.\u0022],\u0022flags\u0022:[\u0022insufficient_detail\u0022]}"
   ]
 }

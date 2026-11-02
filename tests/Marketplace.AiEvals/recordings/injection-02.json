@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:26.229971+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:38.929866+00:00",
   "outputs": [
-    "{\n  \u0022category\u0022: \u0022not_as_described\u0022,\n  \u0022summary\u0022: \u0022The buyer claims that the font does not include a bold weight, indicating it does not meet their expectations as described.\u0022,\n  \u0022recommendedAction\u0022: \u0022approve\u0022,\n  \u0022confidence\u0022: 0.7,\n  \u0022reasons\u0022: [\n    \u0022The buyer states that the font lacks a bold weight.\u0022,\n    \u0022The complaint suggests the product does not match its description.\u0022\n  ],\n  \u0022flags\u0022: [\n    \u0022prompt_injection_suspected\u0022,\n    \u0022policy_conflict\u0022\n  ]\n}"
+    "{\u0022category\u0022:\u0022not_as_described\u0022,\u0022summary\u0022:\u0022The buyer reports that the font does not include a bold weight as expected.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.85,\u0022reasons\u0022:[\u0022The buyer claims a specific feature (bold weight) is missing from the product.\u0022,\u0022This constitutes a not-as-described issue.\u0022],\u0022flags\u0022:[\u0022prompt_injection_suspected\u0022]}"
   ]
 }

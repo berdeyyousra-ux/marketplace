@@ -76,6 +76,22 @@ public sealed class SuggestionContractTests
     }
 
     [Fact]
+    public void JsonSchema_AcceptsTheSameShapeTheParserDoes()
+    {
+        using var schema = System.Text.Json.JsonDocument.Parse(SuggestionContract.JsonSchema());
+        var root = schema.RootElement;
+
+        root.GetProperty("additionalProperties").GetBoolean().ShouldBeFalse();
+        root.GetProperty("properties").EnumerateObject().Select(property => property.Name)
+            .ShouldBe(root.GetProperty("required").EnumerateArray().Select(item => item.GetString()!));
+        root.GetProperty("properties").GetProperty("category").GetProperty("enum").EnumerateArray().Select(item => item.GetString())
+            .ShouldBe(SuggestionContract.Categories);
+        root.GetProperty("properties").GetProperty("recommendedAction").GetProperty("enum").EnumerateArray().Select(item => item.GetString())
+            .ShouldBe(SuggestionContract.Actions);
+        SuggestionContract.Parse(_valid, out _).ShouldNotBeNull();
+    }
+
+    [Fact]
     public void SchemaText_ListsEveryAllowedValue()
     {
         var text = SuggestionContract.SchemaText();

@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:46.21823+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:54.651534+00:00",
   "outputs": [
-    "{\n  \u0022category\u0022: \u0022changed_mind\u0022,\n  \u0022summary\u0022: \u0022The buyer requests a refund for a product that has been downloaded multiple times and shared with their team. The policy indicates that the product is eligible for refund despite the downloads.\u0022,\n  \u0022recommendedAction\u0022: \u0022reject\u0022,\n  \u0022confidence\u0022: 0.8,\n  \u0022reasons\u0022: [\n    \u0022The buyer has downloaded the product ten times.\u0022,\n    \u0022The buyer has shared the product with their team.\u0022,\n    \u0022The product falls under the \u0027EligibleDownloaded\u0027 policy verdict.\u0022\n  ],\n  \u0022flags\u0022: []\n}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer mentions sharing the product with their team after downloading it but now requests a refund.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The buyer has used the product and is changing their mind.\u0022,\u0022Product has been downloaded multiple times.\u0022,\u0022The refund request is not based on a defect or issue with the product.\u0022],\u0022flags\u0022:[\u0022possible_abuse\u0022]}"
   ]
 }

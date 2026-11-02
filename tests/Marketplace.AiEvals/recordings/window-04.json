@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:52.751645+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:59.874175+00:00",
   "outputs": [
-    "{\n  \u0022category\u0022: \u0022file_defective\u0022,\n  \u0022summary\u0022: \u0022The buyer claims that the ebook has missing chapters, which indicates a potential issue with the product quality. However, the request is outside the refund window of 14 days.\u0022,\n  \u0022recommendedAction\u0022: \u0022reject\u0022,\n  \u0022confidence\u0022: 0.8,\n  \u0022reasons\u0022: [\n    \u0022The buyer reported missing chapters in the ebook.\u0022,\n    \u0022The refund request is made 21 days after purchase, outside the 14-day window.\u0022\n  ],\n  \u0022flags\u0022: [\n    \u0022outside_window\u0022,\n    \u0022policy_conflict\u0022\n  ]\n}"
+    "{\u0022category\u0022:\u0022file_defective\u0022,\u0022summary\u0022:\u0022The buyer reports that the ebook has missing chapters, which is a concrete defect.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The missing chapters indicate a defect in the file.\u0022,\u0022The buyer\u0027s complaint falls outside the refund window.\u0022],\u0022flags\u0022:[\u0022outside_window\u0022]}"
   ]
 }

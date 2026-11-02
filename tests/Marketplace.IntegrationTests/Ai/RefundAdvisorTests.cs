@@ -26,7 +26,7 @@ public sealed class RefundAdvisorTests
 
         result.Status.ShouldBe(AdvisorStatus.Valid);
         result.Suggestion!.Flags.ShouldBe(["downloaded"]);
-        (result.Model, result.PromptVersion, result.InputTokens, result.OutputTokens).ShouldBe((FakeLlmClient.ModelName, "refund-advisor.v1", 100, 50));
+        (result.Model, result.PromptVersion, result.InputTokens, result.OutputTokens).ShouldBe((FakeLlmClient.ModelName, "refund-advisor.v2", 100, 50));
         result.RawOutput.ShouldBe(_valid);
     }
 

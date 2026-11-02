@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:02.677908+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:19.665528+00:00",
   "outputs": [
-    "{\u0022category\u0022:\u0022not_as_described\u0022,\u0022summary\u0022:\u0022The buyer claims that the video files received are 480p while the product page indicates that they should be 4K. This discrepancy constitutes a misrepresentation of the product.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.85,\u0022reasons\u0022:[\u0022Buyer states the video quality does not match the product description.\u0022,\u0022Product page advertised 4K resolution, but buyer received 480p files.\u0022,\u0022This misrepresentation can significantly impact the buyer\u0027s satisfaction.\u0022],\u0022flags\u0022:[\u0022prompt_injection_suspected\u0022,\u0022policy_conflict\u0022]}"
+    "{\u0022category\u0022:\u0022not_as_described\u0022,\u0022summary\u0022:\u0022The buyer reports that the video files are 480p, while the product page claims they are 4K, indicating a mismatch between the product description and the actual files received.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The buyer describes a concrete issue with file resolution not matching the description.\u0022,\u0022The product was downloaded, and the buyer verified the quality of the clips.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}"
   ]
 }

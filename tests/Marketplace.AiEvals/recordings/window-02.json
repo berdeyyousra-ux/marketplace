@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:49.885513+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:57.675712+00:00",
   "outputs": [
-    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer is requesting a refund, stating they forgot they purchased the product and have not downloaded it. However, the request is outside the refund window.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The buyer did not download the product which indicates no usage.\u0022,\u0022The refund request is made 40 days after purchase, which is outside the 14-day refund window.\u0022,\u0022Policy states that refunds are ineligible outside of the window.\u0022,\u0022The buyer does not have a history of refunds in the last 180 days.\u0022],\u0022flags\u0022:[\u0022outside_window\u0022]}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer forgot about the purchase and never downloaded the Study Notes but is requesting a refund.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The refund request is due to forgetting the purchase, which is not a valid reason for a refund.\u0022,\u0022The request is outside the refund window.\u0022],\u0022flags\u0022:[\u0022outside_window\u0022,\u0022prompt_injection_suspected\u0022]}"
   ]
 }

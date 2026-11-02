@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:05.442553+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:22.497358+00:00",
   "outputs": [
-    "{\u0022category\u0022:\u0022file_defective\u0022,\u0022summary\u0022:\u0022The buyer claims that the main file is a 0 KB placeholder, indicating a possible issue with the product\u0027s functionality.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.8,\u0022reasons\u0022:[\u0022The buyer reported the file is defective (0 KB placeholder).\u0022,\u0022The product was downloaded, which is consistent with the claim of a file issue.\u0022,\u0022There have been no previous refunds for this buyer in the last 180 days.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}"
+    "{\u0022category\u0022:\u0022file_defective\u0022,\u0022summary\u0022:\u0022The buyer reports that the main file is a 0 KB placeholder, indicating it is defective.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022A concrete defect in the file is described.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}"
   ]
 }

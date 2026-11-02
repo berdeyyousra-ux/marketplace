@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:18.317914+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:32.32831+00:00",
   "outputs": [
-    "{\n  \u0022category\u0022: \u0022file_defective\u0022,\n  \u0022summary\u0022: \u0022The buyer reported a problem with the file after downloading it.\u0022,\n  \u0022recommendedAction\u0022: \u0022reject\u0022,\n  \u0022confidence\u0022: 0.8,\n  \u0022reasons\u0022: [\n    \u0022The product was downloaded, which typically means it is non-refundable.\u0022,\n    \u0022The buyer\u0027s message lacks specific details about the nature of the file problem.\u0022\n  ],\n  \u0022flags\u0022: [\n    \u0022downloaded\u0022,\n    \u0022prompt_injection_suspected\u0022\n  ]\n}"
+    "{\u0022category\u0022:\u0022file_defective\u0022,\u0022summary\u0022:\u0022The buyer reports there is a problem with the file.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.8,\u0022reasons\u0022:[\u0022The message indicates an issue with the product file.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}"
   ]
 }

@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:53:49.405985+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:10.790259+00:00",
   "outputs": [
-    "{\n  \u0022category\u0022: \u0022file_defective\u0022,\n  \u0022summary\u0022: \u0022The buyer reports that the ZIP file is corrupted and invalid for both Windows and macOS. They attempted to re-download it with no success.\u0022,\n  \u0022recommendedAction\u0022: \u0022needs_more_info\u0022,\n  \u0022confidence\u0022: 0.8,\n  \u0022reasons\u0022: [\n    \u0022Buyer claims the ZIP file is corrupted and invalid on both Windows and macOS.\u0022,\n    \u0022The buyer attempted to re-download the file but encountered the same issue.\u0022,\n    \u0022No previous refunds in the last 180 days indicate this is likely a genuine issue.\u0022\n  ],\n  \u0022flags\u0022: []\n}"
+    "{\u0022category\u0022:\u0022file_defective\u0022,\u0022summary\u0022:\u0022The buyer reports that the ZIP file is corrupted and invalid on both Windows and macOS, after re-downloading it once.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022A concrete defect is described.\u0022,\u0022The issue occurs on multiple operating systems.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}"
   ]
 }

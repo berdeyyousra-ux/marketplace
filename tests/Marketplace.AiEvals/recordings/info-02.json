@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:16.803151+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:31.254291+00:00",
   "outputs": [
-    "{\n  \u0022category\u0022: \u0022not_as_described\u0022,\n  \u0022summary\u0022: \u0022The buyer finds the Weekly Planner not to meet their expectations and is requesting a refund.\u0022,\n  \u0022recommendedAction\u0022: \u0022reject\u0022,\n  \u0022confidence\u0022: 0.8,\n  \u0022reasons\u0022: [\n    \u0022The product was downloaded, indicating acceptance of its features.\u0022,\n    \u0022The claim of \u0027not what I expected\u0027 is subjective and does not fulfill refund policy criteria.\u0022,\n    \u0022No specific details were provided about the discrepancies.\u0022\n  ],\n  \u0022flags\u0022: [\u0022prompt_injection_suspected\u0022]\n}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer states that the product is not what they expected and is requesting a refund.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.85,\u0022reasons\u0022:[\u0022The buyer changed their mind after using the product.\u0022,\u0022No concrete defect or problem with the product is described.\u0022],\u0022flags\u0022:[]}"
   ]
 }

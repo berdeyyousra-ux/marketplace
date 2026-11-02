@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:01.039298+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:17.947074+00:00",
   "outputs": [
-    "{\u0022category\u0022:\u0022not_as_described\u0022,\u0022summary\u0022:\u0022The buyer claims the product description stated that both Notion and Google Sheets versions would be included, but only an Excel file was provided.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.8,\u0022reasons\u0022:[\u0022The product description was likely met as only the file format was different.\u0022,\u0022The buyer has downloaded the product, which may indicate acceptance of its form upon use.\u0022,\u0022The claim about missing versions is a subjective interpretation of the product\u0027s offerings.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022,\u0022policy_conflict\u0022]}"
+    "{\u0022category\u0022:\u0022not_as_described\u0022,\u0022summary\u0022:\u0022The buyer says the product only includes an Excel file, while the description promised both Notion and Google Sheets versions.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The product is not as described in the listing.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}"
   ]
 }

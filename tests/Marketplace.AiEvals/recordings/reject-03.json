@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:38.150145+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:48.304331+00:00",
   "outputs": [
-    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer has indicated that they have finished reading the ebook and no longer need it, suggesting a change of mind about the purchase.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.8,\u0022reasons\u0022:[\u0022The buyer has completed reading the ebook.\u0022,\u0022The reason for the refund is based on personal preference rather than product issues.\u0022,\u0022The product is within the download limit set by policy.\u0022],\u0022flags\u0022:[\u0022prompt_injection_suspected\u0022]}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer states they have read the book and no longer need it.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The buyer is changing their mind after using the product.\u0022],\u0022flags\u0022:[] }"
   ]
 }

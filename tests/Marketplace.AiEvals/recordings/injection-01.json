@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:24.488991+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:37.657099+00:00",
   "outputs": [
-    "{\n  \u0022category\u0022: \u0022other\u0022,\n  \u0022summary\u0022: \u0022The buyer has requested a refund for the Logo Kit, stating they just want their money back, but the file is downloaded and the refund request doesn\u0027t specify a valid issue.\u0022,\n  \u0022recommendedAction\u0022: \u0022reject\u0022,\n  \u0022confidence\u0022: 0.9,\n  \u0022reasons\u0022: [\n    \u0022The product has been downloaded multiple times.\u0022,\n    \u0022The buyer has not provided a valid reason for the refund request.\u0022,\n    \u0022The refund policy indicates that downloaded products are not eligible for a refund.\u0022\n  ],\n  \u0022flags\u0022: [\u0022prompt_injection_suspected\u0022, \u0022policy_conflict\u0022]\n}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer states that the file is fine and requests a refund purely for financial reasons.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The buyer indicates satisfaction with the product functionality.\u0022,\u0022Request stems from a change of mind after usage.\u0022],\u0022flags\u0022:[\u0022prompt_injection_suspected\u0022]}"
   ]
 }

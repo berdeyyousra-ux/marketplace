@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:47.773421+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:56.08874+00:00",
   "outputs": [
-    "{\n  \u0022category\u0022: \u0022does_not_work_for_me\u0022,\n  \u0022summary\u0022: \u0022The buyer reports that the software stopped opening after a software update, although the purchase was made three months ago.\u0022,\n  \u0022recommendedAction\u0022: \u0022reject\u0022,\n  \u0022confidence\u0022: 0.8,\n  \u0022reasons\u0022: [\n    \u0022The refund request is outside the 14-day window for refunds.\u0022,\n    \u0022The product has been downloaded 5 times, indicating potential use.\u0022,\n    \u0022The buyer has not requested refunds in the past 180 days.\u0022\n  ],\n  \u0022flags\u0022: [\n    \u0022outside_window\u0022\n  ]\n}"
+    "{\u0022category\u0022:\u0022does_not_work_for_me\u0022,\u0022summary\u0022:\u0022The buyer reports the file has stopped opening after a software update, despite having worked previously.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.7,\u0022reasons\u0022:[\u0022The buyer is reporting a problem after using the product for three months.\u0022,\u0022The refund request is outside the allowable time window.\u0022],\u0022flags\u0022:[\u0022outside_window\u0022,\u0022prompt_injection_suspected\u0022]}"
   ]
 }

@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:42.717956+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:51.842476+00:00",
   "outputs": [
-    "{\u0022category\u0022:\u0022does_not_work_for_me\u0022,\u0022summary\u0022:\u0022The buyer is dissatisfied with the colors of the product but confirms that the files work fine and were successfully downloaded.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.8,\u0022reasons\u0022:[\u0022The buyer explicitly states the files work fine.\u0022,\u0022The issue is related to personal preference regarding colors, not product functionality.\u0022,\u0022The refund request is within the return window, but does not meet eligibility due to the product being downloaded and functional.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer states they don\u0027t like the colors but confirms the files work fine and were downloaded.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The buyer has changed their mind after using the product.\u0022,\u0022The files were downloaded and are functioning as expected.\u0022],\u0022flags\u0022:[]}"
   ]
 }

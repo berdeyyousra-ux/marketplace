@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:54.28826+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:16:01.029397+00:00",
   "outputs": [
-    "{\n  \u0022category\u0022: \u0022changed_mind\u0022,\n  \u0022summary\u0022: \u0022The buyer no longer needs the Texture Pack they purchased last year.\u0022,\n  \u0022recommendedAction\u0022: \u0022reject\u0022,\n  \u0022confidence\u0022: 0.9,\n  \u0022reasons\u0022: [\n    \u0022The request is outside the refund window of 14 days.\u0022,\n    \u0022The buyer has had the product for 200 days.\u0022,\n    \u0022Requesting a refund due to a change of mind is not eligible.\u0022\n  ],\n  \u0022flags\u0022: [\n    \u0022outside_window\u0022,\n    \u0022policy_conflict\u0022\n  ]\n}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer states they no longer need the Texture Pack, which implies a change of mind after the purchase.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The buyer changed their mind about the purchase.\u0022,\u0022The refund request is outside the eligibility window.\u0022],\u0022flags\u0022:[\u0022outside_window\u0022]}"
   ]
 }

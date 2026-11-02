@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:53:53.127439+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:13.896122+00:00",
   "outputs": [
-    "{\n  \u0022category\u0022: \u0022duplicate_purchase\u0022,\n  \u0022summary\u0022: \u0022The buyer claims to have been charged twice for the same font and mentions ownership from a previous order. However, the product was not downloaded yet and the purchase is within the refund window.\u0022,\n  \u0022recommendedAction\u0022: \u0022approve\u0022,\n  \u0022confidence\u0022: 0.8,\n  \u0022reasons\u0022: [\n    \u0022The buyer states they own the font from a previous order.\u0022,\n    \u0022The request is made within the refund window.\u0022,\n    \u0022No downloads have been made yet.\u0022\n  ],\n  \u0022flags\u0022: []\n}"
+    "{\u0022category\u0022:\u0022duplicate_purchase\u0022,\u0022summary\u0022:\u0022The buyer reports being charged twice for the same font and states they already own it from a prior order.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The buyer claims a duplicate charge for the same product.\u0022,\u0022They indicate ownership of the font from a recent previous order.\u0022],\u0022flags\u0022:[\u0022prompt_injection_suspected\u0022]}"
   ]
 }

@@ -3,9 +3,9 @@
   "source": "live",
   "provider": "OpenAi",
   "model": "gpt-4o-mini",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T20:54:55.926163+00:00",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:16:02.434332+00:00",
   "outputs": [
-    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer is requesting a refund due to changes in license terms, stating they can no longer use the product commercially. However, the purchase was made 20 days ago, which is outside the refund window.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022Purchase was made 20 days ago, beyond the 14-day refund window.\u0022,\u0022Buyer claims inability to use product due to license changes, but this does not align with our refund policy.\u0022,\u0022No previous refunds by the buyer in the last 180 days indicating no prior issues with purchases.\u0022],\u0022flags\u0022:[\u0022outside_window\u0022,\u0022policy_conflict\u0022]}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer indicates dissatisfaction due to a change in license terms affecting commercial use, but this is generally considered a change of mind after purchase.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.85,\u0022reasons\u0022:[\u0022The buyer is unhappy with the product based on a change in license terms.\u0022,\u0022The request is outside the refund window.\u0022],\u0022flags\u0022:[\u0022outside_window\u0022,\u0022prompt_injection_suspected\u0022]}"
   ]
 }
