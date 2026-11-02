@@ -32,6 +32,8 @@ public sealed class OneTimeToken : Entity
 
     public DateTimeOffset? UsedAt { get; private set; }
 
+    public bool IsUsable(DateTimeOffset now) => UsedAt is null && now < ExpiresAt;
+
     public static OneTimeToken Issue(Guid userId, OneTimeTokenPurpose purpose, string tokenHash, DateTimeOffset now, TimeSpan lifetime)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tokenHash);

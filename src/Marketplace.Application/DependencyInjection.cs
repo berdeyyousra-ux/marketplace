@@ -22,6 +22,12 @@ public static class DependencyInjection
             }
         }
 
+        foreach (var type in assembly.GetTypes().Where(type => type is { IsClass: true, IsAbstract: false } && typeof(IOutboxHandler).IsAssignableFrom(type)))
+        {
+            services.AddScoped(typeof(IOutboxHandler), type);
+        }
+
+        services.AddScoped<Identity.OneTimeTokenService>();
         services.AddValidatorsFromAssembly(assembly, ServiceLifetime.Singleton, includeInternalTypes: true);
         return services;
     }

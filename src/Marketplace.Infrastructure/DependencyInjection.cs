@@ -1,4 +1,6 @@
 using Marketplace.Application.Abstractions;
+using Marketplace.Application.Identity;
+using Marketplace.Infrastructure.Email;
 using Marketplace.Infrastructure.Identity;
 using Marketplace.Infrastructure.Outbox;
 using Marketplace.Infrastructure.Persistence;
@@ -29,6 +31,9 @@ public static class DependencyInjection
         services.AddScoped<IOutbox, Outbox.Outbox>();
         services.AddSingleton<OutboxProcessor>();
         services.AddMarketplaceIdentity();
+        services.AddOptions<EmailOptions>().BindConfiguration(EmailOptions.SectionName);
+        services.AddOptions<AccountLinkOptions>().BindConfiguration(EmailOptions.SectionName);
+        services.AddSingleton<IEmailSender, SmtpEmailSender>();
 
         return services;
     }

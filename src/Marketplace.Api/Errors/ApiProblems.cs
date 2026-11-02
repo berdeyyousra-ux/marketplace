@@ -28,7 +28,7 @@ public static class ApiProblems
         {
             Type = TypeBase + error.Code,
             Title = Humanize(error.Code),
-            Status = statusOverride ?? ErrorStatusCodes.For(error.Type),
+            Status = statusOverride ?? ErrorStatusCodes.For(error),
             Detail = error.Message,
         };
         Enrich(context, problem, error.Code);

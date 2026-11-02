@@ -53,6 +53,9 @@ public sealed class MarketplaceWebFactory : WebApplicationFactory<Program>, IAsy
         {
             services.RemoveAll<TimeProvider>();
             services.AddSingleton<TimeProvider>(Time);
+            services.RemoveAll<IEmailSender>();
+            services.AddSingleton<FakeEmailSender>();
+            services.AddSingleton<IEmailSender>(provider => provider.GetRequiredService<FakeEmailSender>());
             services.AddSingleton<TestOutboxHandler>();
             services.AddSingleton<IOutboxHandler>(provider => provider.GetRequiredService<TestOutboxHandler>());
         });
