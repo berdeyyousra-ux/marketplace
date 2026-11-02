@@ -31,6 +31,7 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 builder.Services.AddMarketplaceControllers();
 builder.Services.AddMarketplaceRateLimiting(builder.Configuration);
+builder.Services.AddMarketplaceOpenApi();
 builder.Services.AddMarketplaceAuthentication(builder.Environment);
 
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
@@ -95,6 +96,7 @@ app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapMarketplaceDocs();
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false }).DisableRateLimiting();
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains(ReadinessTag) }).DisableRateLimiting();
 
