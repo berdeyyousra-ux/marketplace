@@ -1,3 +1,4 @@
+using Marketplace.Api.Auth;
 using Marketplace.Api.Middleware;
 using Marketplace.Infrastructure;
 using Marketplace.Infrastructure.Persistence;
@@ -19,6 +20,7 @@ builder.Host.UseSerilog((context, services, logger) => logger
     .WriteTo.Console(new CompactJsonFormatter()));
 
 builder.Services.AddInfrastructure();
+builder.Services.AddMarketplaceAuthentication(builder.Environment);
 
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<AppDbContext>(tags: [ReadinessTag]);
@@ -62,6 +64,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseCors(CorsPolicyName);
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains(ReadinessTag) });

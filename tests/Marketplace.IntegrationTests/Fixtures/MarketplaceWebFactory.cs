@@ -20,6 +20,9 @@ public sealed class MarketplaceWebFactory : WebApplicationFactory<Program>, IAsy
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:17").Build();
     private readonly AzuriteContainer _azurite = new AzuriteBuilder("mcr.microsoft.com/azure-storage/azurite:3.35.0").Build();
 
+    // A fresh random key per test run; no signing key is committed (section 11.3).
+    public static readonly string TestSigningKey = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+
     public FakeTimeProvider Time { get; } = new(StartTime);
 
     public string DatabaseConnectionString => _postgres.GetConnectionString();
@@ -44,6 +47,7 @@ public sealed class MarketplaceWebFactory : WebApplicationFactory<Program>, IAsy
         builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:Database", _postgres.GetConnectionString());
         builder.UseSetting("ConnectionStrings:BlobStorage", _azurite.GetConnectionString());
+        builder.UseSetting("Jwt:SigningKey", TestSigningKey);
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<TimeProvider>();
