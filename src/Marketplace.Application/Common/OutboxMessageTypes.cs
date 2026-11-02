@@ -15,6 +15,7 @@ public static class OutboxMessageTypes
     public const string AutoRefundPayment = nameof(AutoRefundPayment);
     public const string CancelPaymentIntent = nameof(CancelPaymentIntent);
     public const string DeleteBlob = nameof(DeleteBlob);
+    public const string DeleteCoverImage = nameof(DeleteCoverImage);
 }
 
 // Payload for the user-addressed messages. Raw tokens are never put in the outbox (section 9.1).

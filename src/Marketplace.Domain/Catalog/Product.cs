@@ -55,6 +55,11 @@ public sealed class Product : AggregateRoot
 
     public DateTimeOffset? RemovedAt { get; private set; }
 
+    // T-085: the public cover image's blob key, and when it last changed (a cache-busting version for its URL).
+    public string? CoverImageKey { get; private set; }
+
+    public DateTimeOffset? CoverImageUpdatedAt { get; private set; }
+
     public string? RemovedReason { get; private set; }
 
     // Mapped to the PostgreSQL xmin system column as an optimistic concurrency token (D-15).
@@ -105,6 +110,23 @@ public sealed class Product : AggregateRoot
         File = file;
         UpdatedAt = now;
         return Result.Success();
+    }
+
+    // Returns the replaced cover's key, if any, so its blob can be deleted.
+    public Result<string?> SetCover(string key, DateTimeOffset now)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+        if (Status == ProductStatus.Removed)
+        {
+            return DomainErrors.InvalidState("A removed product cannot receive a cover image.");
+        }
+
+        var previous = CoverImageKey;
+        CoverImageKey = key;
+        CoverImageUpdatedAt = now;
+        UpdatedAt = now;
+        return previous;
     }
 
     public Result Publish(DateTimeOffset now)

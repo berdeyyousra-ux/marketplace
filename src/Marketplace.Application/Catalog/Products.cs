@@ -34,6 +34,7 @@ public sealed record ProductResponse(
     DateTimeOffset UpdatedAt,
     DateTimeOffset? PublishedAt,
     ProductFileResponse? File,
+    Uri? CoverImageUrl,
     [property: JsonIgnore] uint Version,
     [property: JsonIgnore] bool IsOwner);
 
@@ -81,7 +82,7 @@ public sealed class ProductOwnership(IAppDbContext db, ICurrentUser currentUser)
 
 internal static class ProductMapping
 {
-    public static ProductResponse ToResponse(Product product, bool isOwner, bool showFile) => new(
+    public static ProductResponse ToResponse(Product product, bool isOwner, bool showFile, IPublicImageStorage images) => new(
         product.Id,
         product.SellerId,
         product.CategoryId,
@@ -93,6 +94,7 @@ internal static class ProductMapping
         product.UpdatedAt,
         product.PublishedAt,
         showFile && product.File is { } file ? new ProductFileResponse(file.Name, file.SizeBytes, file.ContentType, file.Sha256) : null,
+        CoverUrls.For(images, product.CoverImageKey, product.CoverImageUpdatedAt),
         product.Version,
         isOwner);
 
@@ -100,7 +102,7 @@ internal static class ProductMapping
         db.Categories.AnyAsync(category => category.Id == categoryId, cancellationToken);
 }
 
-public sealed class CreateProductCommandHandler(IAppDbContext db, ProductOwnership ownership, TimeProvider timeProvider)
+public sealed class CreateProductCommandHandler(IAppDbContext db, ProductOwnership ownership, TimeProvider timeProvider, IPublicImageStorage images)
     : ICommandHandler<CreateProductCommand, ProductResponse>
 {
     public async Task<Result<ProductResponse>> HandleAsync(CreateProductCommand command, CancellationToken cancellationToken)
@@ -124,11 +126,11 @@ public sealed class CreateProductCommandHandler(IAppDbContext db, ProductOwnersh
 
         db.Products.Add(created.Value);
         await db.SaveChangesAsync(cancellationToken);
-        return ProductMapping.ToResponse(created.Value, isOwner: true, showFile: true);
+        return ProductMapping.ToResponse(created.Value, isOwner: true, showFile: true, images);
     }
 }
 
-public sealed class UpdateProductCommandHandler(IAppDbContext db, ProductOwnership ownership, TimeProvider timeProvider)
+public sealed class UpdateProductCommandHandler(IAppDbContext db, ProductOwnership ownership, TimeProvider timeProvider, IPublicImageStorage images)
     : ICommandHandler<UpdateProductCommand, ProductResponse>
 {
     public async Task<Result<ProductResponse>> HandleAsync(UpdateProductCommand command, CancellationToken cancellationToken)
@@ -158,11 +160,12 @@ public sealed class UpdateProductCommandHandler(IAppDbContext db, ProductOwnersh
             return updated.Error;
         }
 
-        return await ProductSaving.SaveAsync(db, product, cancellationToken);
+        return await ProductSaving.SaveAsync(db, product, images, cancellationToken);
     }
 }
 
-public sealed class ChangeProductStatusCommandHandler(IAppDbContext db, ProductOwnership ownership, AuditTrail audit, ICurrentUser currentUser, TimeProvider timeProvider)
+public sealed class ChangeProductStatusCommandHandler(
+    IAppDbContext db, ProductOwnership ownership, AuditTrail audit, ICurrentUser currentUser, TimeProvider timeProvider, IPublicImageStorage images)
     : ICommandHandler<ChangeProductStatusCommand, ProductResponse>
 {
     public async Task<Result<ProductResponse>> HandleAsync(ChangeProductStatusCommand command, CancellationToken cancellationToken)
@@ -188,14 +191,14 @@ public sealed class ChangeProductStatusCommandHandler(IAppDbContext db, ProductO
         }
 
         audit.Record(command.Publish ? "product.published" : "product.unpublished", AuditActorType.User, currentUser.UserId, "Product", product.Id);
-        return await ProductSaving.SaveAsync(db, product, cancellationToken);
+        return await ProductSaving.SaveAsync(db, product, images, cancellationToken);
     }
 }
 
 internal static class ProductSaving
 {
     // A concurrent write between loading and saving fails the xmin check. With If-Match supplied that is 412 (section 4.6).
-    public static async Task<Result<ProductResponse>> SaveAsync(IAppDbContext db, Product product, CancellationToken cancellationToken)
+    public static async Task<Result<ProductResponse>> SaveAsync(IAppDbContext db, Product product, IPublicImageStorage images, CancellationToken cancellationToken)
     {
         try
         {
@@ -206,13 +209,13 @@ internal static class ProductSaving
             return ProductErrors.PreconditionFailed;
         }
 
-        return ProductMapping.ToResponse(product, isOwner: true, showFile: true);
+        return ProductMapping.ToResponse(product, isOwner: true, showFile: true, images);
     }
 }
 
 // US-21: Published products are public. Other statuses are visible to the owner, an admin, or a buyer with an
 // active download grant; everyone else gets 404. File metadata is shown only to the owner and admins.
-public sealed class ProductQueryHandler(IAppDbContext db, ProductOwnership ownership, ICurrentUser currentUser)
+public sealed class ProductQueryHandler(IAppDbContext db, ProductOwnership ownership, ICurrentUser currentUser, IPublicImageStorage images)
     : IQueryHandler<ProductQuery, ProductResponse>
 {
     public async Task<Result<ProductResponse>> HandleAsync(ProductQuery query, CancellationToken cancellationToken)
@@ -232,7 +235,7 @@ public sealed class ProductQueryHandler(IAppDbContext db, ProductOwnership owner
             return ProductErrors.NotFound;
         }
 
-        return ProductMapping.ToResponse(product, isOwner, showFile: isOwner || isAdmin);
+        return ProductMapping.ToResponse(product, isOwner, showFile: isOwner || isAdmin, images);
     }
 
     private async Task<bool> HasGrantAsync(Guid productId, CancellationToken cancellationToken)

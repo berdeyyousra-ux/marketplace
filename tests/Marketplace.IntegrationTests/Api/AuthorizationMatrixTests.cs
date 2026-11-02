@@ -40,6 +40,7 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
         { "POST", "/api/v1/products/{draft}/publish", [401, 403, 403, 404, 403, 422] },
         { "POST", "/api/v1/products/{draft}/unpublish", [401, 403, 403, 404, 403, 409] },
         { "POST", "/api/v1/products/{draft}/file", [401, 403, 403, 404, 403, 200] },
+        { "PUT", "/api/v1/products/{draft}/cover", [401, 403, 403, 404, 403, 200] },
         { "POST", "/api/v1/auth/change-password", [401, 422, 422, 422, 422, 422] },
         { "POST", "/api/v1/orders", [401, 201, 201, 201, 201, 409] },
         { "POST", "/api/v1/orders/{order}/payment", [401, 200, 404, 404, 404, 404] },
@@ -133,6 +134,16 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
     private static HttpRequestMessage BuildRequest(string method, string path, string etag, Guid publishedId)
     {
         var request = new HttpRequestMessage(new HttpMethod(method), path);
+        if (path.EndsWith("/cover", StringComparison.Ordinal))
+        {
+            var cover = new MultipartFormDataContent();
+            var image = new ByteArrayContent(Catalog.CoverImageTests.JpegWithExif());
+            image.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            cover.Add(image, "file", "cover.jpg");
+            request.Content = cover;
+            return request;
+        }
+
         if (path.EndsWith("/file", StringComparison.Ordinal))
         {
             var form = new MultipartFormDataContent();

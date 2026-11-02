@@ -60,7 +60,8 @@ public sealed class ProductSearch(AppDbContext db) : IProductSearch
         return await ordered
             .Take(criteria.Take)
             .Select(product => new ProductSearchRow(
-                product.Id, product.Title, product.Price.Amount, product.Price.Currency, product.CategoryId, product.SellerId, product.PublishedAt!.Value))
+                product.Id, product.Title, product.Price.Amount, product.Price.Currency, product.CategoryId, product.SellerId, product.PublishedAt!.Value,
+                product.CoverImageKey, product.CoverImageUpdatedAt))
             .ToListAsync(cancellationToken);
     }
 }

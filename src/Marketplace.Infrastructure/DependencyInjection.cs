@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddOptions<StorageOptions>().BindConfiguration(StorageOptions.SectionName);
         services.AddSingleton<IFileStorage, AzureBlobFileStorage>();
+        services.AddSingleton<IPublicImageStorage, AzureBlobPublicImageStorage>();
         services.AddSingleton<IFileScanner, NoopFileScanner>();
         services.AddScoped<IProductSearch, ProductSearch>();
         services.AddScoped<IIdempotencyStore, Idempotency.IdempotencyStore>();

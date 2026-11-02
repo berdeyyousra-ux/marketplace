@@ -1631,6 +1631,82 @@
         ]
       }
     },
+    /api/v1/products/{id}/cover: {
+      put: {
+        tags: [
+          ProductFiles
+        ],
+        summary:
+Sets the product's cover image from multipart field "file": JPEG, PNG or WebP, at most 5 MB. Metadata such as EXIF is
+    removed before the image is stored, because covers are public (T-085).,
+        parameters: [
+          {
+            name: id,
+            in: path,
+            required: true,
+            schema: {
+              type: string,
+              format: uuid
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/CoverImageResponse
+                }
+              }
+            }
+          },
+          404: {
+            description: Not Found,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          413: {
+            description: Payload Too Large,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          415: {
+            description: Unsupported Media Type,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          422: {
+            description: Unprocessable Entity,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
     /api/v1/products: {
       get: {
         tags: [
@@ -2909,6 +2985,23 @@
           }
         }
       },
+      CoverImageResponse: {
+        required: [
+          coverImageUrl,
+          updatedAt
+        ],
+        type: object,
+        properties: {
+          coverImageUrl: {
+            type: string,
+            format: uri
+          },
+          updatedAt: {
+            type: string,
+            format: date-time
+          }
+        }
+      },
       CreateOrderCommand: {
         required: [
           productIds
@@ -3130,7 +3223,8 @@
           expiresAt,
           downloadCount,
           maxDownloads,
-          status
+          status,
+          coverImageUrl
         ],
         type: object,
         properties: {
@@ -3177,6 +3271,13 @@
           },
           status: {
             type: string
+          },
+          coverImageUrl: {
+            type: [
+              null,
+              string
+            ],
+            format: uri
           }
         }
       },
@@ -3408,7 +3509,8 @@
           productId,
           title,
           unitPrice,
-          status
+          status,
+          coverImageUrl
         ],
         type: object,
         properties: {
@@ -3428,6 +3530,13 @@
           },
           status: {
             type: string
+          },
+          coverImageUrl: {
+            type: [
+              null,
+              string
+            ],
+            format: uri
           }
         }
       },
@@ -4019,7 +4128,8 @@
           createdAt,
           updatedAt,
           publishedAt,
-          file
+          file,
+          coverImageUrl
         ],
         type: object,
         properties: {
@@ -4075,6 +4185,13 @@
                 $ref: #/components/schemas/ProductFileResponse
               }
             ]
+          },
+          coverImageUrl: {
+            type: [
+              null,
+              string
+            ],
+            format: uri
           }
         }
       },
@@ -4088,7 +4205,8 @@
           price,
           categoryId,
           sellerId,
-          publishedAt
+          publishedAt,
+          coverImageUrl
         ],
         type: object,
         properties: {
@@ -4117,6 +4235,13 @@
           publishedAt: {
             type: string,
             format: date-time
+          },
+          coverImageUrl: {
+            type: [
+              null,
+              string
+            ],
+            format: uri
           }
         }
       },
@@ -4393,7 +4518,8 @@
           createdAt,
           updatedAt,
           publishedAt,
-          salesCount
+          salesCount,
+          coverImageUrl
         ],
         type: object,
         properties: {
@@ -4432,6 +4558,13 @@
               string
             ],
             format: int32
+          },
+          coverImageUrl: {
+            type: [
+              null,
+              string
+            ],
+            format: uri
           }
         }
       },
