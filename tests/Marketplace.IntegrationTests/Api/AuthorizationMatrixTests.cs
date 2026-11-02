@@ -56,6 +56,8 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
         { "GET", "/api/v1/admin/outbox/dead-letters", [401, 403, 403, 403, 200, 403] },
         { "POST", "/api/v1/admin/products/{draft}/remove", [401, 403, 403, 403, 200, 403] },
         { "POST", "/api/v1/admin/outbox/{order}/retry", [401, 403, 403, 403, 404, 403] },
+        { "POST", "/api/v1/refund-requests", [401, 404, 404, 404, 404, 404] },
+        { "GET", "/api/v1/refund-requests/mine", [401, 200, 200, 200, 200, 200] },
         { "GET", "/api/v1/products", [200, 200, 200, 200, 200, 200] },
         { "GET", "/api/v1/categories", [200, 200, 200, 200, 200, 200] },
     };
@@ -143,6 +145,7 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
         {
             ("POST", "/api/v1/sellers") => JsonContent.Create(new { displayName = "Matrix Studio", bio = (string?)null, country = "ES" }),
             ("POST", "/api/v1/products") or ("PUT", _) => JsonContent.Create(ProductBody()),
+            ("POST", "/api/v1/refund-requests") => JsonContent.Create(new { orderItemId = Guid.NewGuid(), reason = "Matrix refund request." }),
             ("POST", "/api/v1/orders") => JsonContent.Create(new { productIds = new[] { publishedId } }),
             ("POST", "/api/v1/auth/change-password") => JsonContent.Create(new { currentPassword = "not the current one", newPassword = "a brand new passphrase" }),
             ("POST", _) when path.EndsWith("/remove", StringComparison.Ordinal) => JsonContent.Create(new { reason = "Matrix removal." }),
