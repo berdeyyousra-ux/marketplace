@@ -65,6 +65,20 @@ public sealed class PaymentProviderTests
     }
 
     [Fact]
+    public async Task Fake_AnotherProcessesPayment_IsAdoptedForRefundAndCancel()
+    {
+        // The Api and Worker each hold their own fake provider; the Worker refunds and cancels payments it never saw.
+        var worker = NewFake();
+
+        var refund = await worker.RefundAsync("pi_fake_0123abcd", Money.Eur(19.99m), "refund-1", TestContext.Current.CancellationToken);
+        await worker.CancelPaymentAsync("pi_fake_4567ef01", TestContext.Current.CancellationToken);
+
+        refund.WasAlreadyRefunded.ShouldBeFalse();
+        (await worker.GetPaymentAsync("pi_fake_4567ef01", TestContext.Current.CancellationToken)).Status.ShouldBe(ProviderPaymentStatus.Canceled);
+        await Should.ThrowAsync<InvalidOperationException>(() => worker.RefundAsync("pi_other_1", Money.Eur(1m), "refund-2", TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task Fake_FailNext_ThrowsUnavailableThenRecovers()
     {
         var fake = NewFake();
