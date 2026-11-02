@@ -71,6 +71,9 @@ public sealed class WebhookSignatureException : Exception
 // and once retries are exhausted the request fails with 503 payment_provider_unavailable.
 public sealed class PaymentProviderUnavailableException : Exception
 {
+    // How long a 429 response asked the caller to wait, when it said.
+    public TimeSpan? RetryAfter { get; init; }
+
     public PaymentProviderUnavailableException()
     {
     }

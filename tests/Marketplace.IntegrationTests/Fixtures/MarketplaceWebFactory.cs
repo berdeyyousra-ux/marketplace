@@ -67,6 +67,16 @@ public sealed class MarketplaceWebFactory : WebApplicationFactory<Program>, IAsy
 
         // Every test request shares one address, so limits would leak between tests. RateLimitTests re-enable them.
         builder.UseSetting("RateLimiting:Enabled", "false");
+
+        // Section 10.2 policies with short real-time values, so FM-09 and FM-10 run in well under a second. The breaker
+        // never opens here, because tests that simulate failures share the provider; ResiliencePipelineTests cover it.
+        foreach (var profile in new[] { "PaymentsApi", "PaymentsWorker" })
+        {
+            builder.UseSetting($"Resilience:{profile}:AttemptTimeout", "00:00:00.300");
+            builder.UseSetting($"Resilience:{profile}:TotalTimeout", "00:00:03");
+            builder.UseSetting($"Resilience:{profile}:BaseDelay", "00:00:00.010");
+            builder.UseSetting($"Resilience:{profile}:MinimumThroughput", "100000");
+        }
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<TimeProvider>();
