@@ -1,10 +1,12 @@
 using Marketplace.Application.Abstractions;
 using Marketplace.Application.Catalog;
 using Marketplace.Application.Identity;
+using Marketplace.Application.Payments;
 using Marketplace.Infrastructure.Catalog;
 using Marketplace.Infrastructure.Email;
 using Marketplace.Infrastructure.Identity;
 using Marketplace.Infrastructure.Outbox;
+using Marketplace.Infrastructure.Payments;
 using Marketplace.Infrastructure.Persistence;
 using Marketplace.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +44,26 @@ public static class DependencyInjection
         services.AddSingleton<IFileScanner, NoopFileScanner>();
         services.AddScoped<IProductSearch, ProductSearch>();
         services.AddScoped<IIdempotencyStore, Idempotency.IdempotencyStore>();
+
+        // D-25: the provider comes from Payments:Provider. Fake is the default for development and tests.
+        services.AddOptions<PaymentOptions>().BindConfiguration(PaymentOptions.SectionName);
+        services.AddSingleton<FakePaymentProvider>();
+        services.AddHttpClient(PaymentOptions.StripeName);
+        services.AddSingleton<Stripe.IStripeClient>(provider =>
+        {
+            var key = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<PaymentOptions>>().Value.Stripe.SecretKey
+                ?? throw new InvalidOperationException("Payments:Stripe:SecretKey is not configured.");
+            var http = provider.GetRequiredService<IHttpClientFactory>().CreateClient(PaymentOptions.StripeName);
+            return new Stripe.StripeClient(key, httpClient: new Stripe.SystemNetHttpClient(http));
+        });
+        services.AddSingleton<StripePaymentProvider>();
+        services.AddSingleton<IPaymentProvider>(provider =>
+            provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<PaymentOptions>>().Value.Provider switch
+            {
+                PaymentOptions.StripeName => provider.GetRequiredService<StripePaymentProvider>(),
+                PaymentOptions.FakeName => provider.GetRequiredService<FakePaymentProvider>(),
+                var other => throw new InvalidOperationException($"Unknown Payments:Provider '{other}'."),
+            });
 
         return services;
     }
