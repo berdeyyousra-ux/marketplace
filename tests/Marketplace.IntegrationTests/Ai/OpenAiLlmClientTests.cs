@@ -48,6 +48,25 @@ public sealed class OpenAiLlmClientTests
     }
 
     [Fact]
+    public async Task JsonSchema_IsSentInStrictMode()
+    {
+        var handler = new StubHandler(_ => Completion("{}", "stop"));
+
+        await Client(handler).CompleteAsync(_request with { JsonSchema = SuggestionContract.JsonSchema() }, CancellationToken);
+
+        using var body = JsonDocument.Parse(handler.Requests.Single().Body);
+        var format = body.RootElement.GetProperty("response_format");
+        format.GetProperty("type").GetString().ShouldBe("json_schema");
+        var schema = format.GetProperty("json_schema");
+        schema.GetProperty("strict").GetBoolean().ShouldBeTrue();
+        schema.GetProperty("schema").GetProperty("additionalProperties").GetBoolean().ShouldBeFalse();
+        schema.GetProperty("schema").GetProperty("required").EnumerateArray().Select(item => item.GetString())
+            .ShouldBe(["category", "summary", "recommendedAction", "confidence", "reasons", "flags"]);
+        schema.GetProperty("schema").GetProperty("properties").GetProperty("flags").GetProperty("items").GetProperty("enum").GetArrayLength()
+            .ShouldBe(SuggestionContract.Flags.Count);
+    }
+
+    [Fact]
     public async Task ReasoningEffort_IsLeftOutUnlessConfigured()
     {
         var handler = new StubHandler(_ => Completion("{}", "stop"));

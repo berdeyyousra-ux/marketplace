@@ -1,11 +1,11 @@
 {
   "caseId": "reject-01",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:45.830846+00:00",
   "outputs": [
-    "{\"category\":\"changed_mind\",\"summary\":\"Fixture answer for reject-01: I downloaded everything, used the templates for my client project, and now I don't need them anymore.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer used the templates for a client project and no longer needs them.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The buyer changed their mind after using the product.\u0022,\u0022The refund policy does not cover change of mind after download.\u0022],\u0022flags\u0022:[\u0022possible_abuse\u0022]}"
   ]
 }

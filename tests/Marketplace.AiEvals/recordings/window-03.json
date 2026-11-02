@@ -1,12 +1,11 @@
 {
   "caseId": "window-03",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:58.74781+00:00",
   "outputs": [
-    "```json\n{\"category\":\"changed_mind\",\"summary\":\"Fixture answer for window-03: Changed my mind after a month of use.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}\n```",
-    "{\"category\":\"changed_mind\",\"summary\":\"Fixture answer for window-03: Changed my mind after a month of use.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer changed their mind after a month of use.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The buyer had the product working as described.\u0022,\u0022The request is based on a change of mind.\u0022],\u0022flags\u0022:[\u0022outside_window\u0022]}"
   ]
 }

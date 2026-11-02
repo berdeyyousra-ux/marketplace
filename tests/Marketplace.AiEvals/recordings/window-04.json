@@ -1,11 +1,11 @@
 {
   "caseId": "window-04",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:59.874175+00:00",
   "outputs": [
-    "{\"category\":\"file_defective\",\"summary\":\"Fixture answer for window-04: The ebook has missing chapters, I only noticed now when I got to the end.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022file_defective\u0022,\u0022summary\u0022:\u0022The buyer reports that the ebook has missing chapters, which is a concrete defect.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The missing chapters indicate a defect in the file.\u0022,\u0022The buyer\u0027s complaint falls outside the refund window.\u0022],\u0022flags\u0022:[\u0022outside_window\u0022]}"
   ]
 }

@@ -1,11 +1,11 @@
 {
   "caseId": "info-06",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:36.167152+00:00",
   "outputs": [
-    "{\"category\":\"not_as_described\",\"summary\":\"Fixture answer for info-06: Something is off with the template, it looks weird.\",\"recommendedAction\":\"needs_more_info\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022file_defective\u0022,\u0022summary\u0022:\u0022The buyer reports that something is off with the template and that it looks weird.\u0022,\u0022recommendedAction\u0022:\u0022needs_more_info\u0022,\u0022confidence\u0022:0.6,\u0022reasons\u0022:[\u0022The message indicates a potential issue with the template.\u0022,\u0022More detail is needed to assess the specific nature of the problem.\u0022],\u0022flags\u0022:[\u0022insufficient_detail\u0022]}"
   ]
 }

@@ -46,7 +46,7 @@ public sealed class RefundRequestTests(MarketplaceWebFactory factory) : Integrat
             body.GetProperty("policyVerdict").GetString().ShouldBe("Eligible");
             var suggestion = await WithDbAsync(db => db.AiSuggestions.AsNoTracking().SingleAsync(CancellationToken));
             suggestion.ValidationStatus.ShouldBe(AiSuggestionStatus.Valid);
-            (suggestion.Model, suggestion.PromptVersion).ShouldBe((FakeLlmClient.ModelName, "refund-advisor.v1"));
+            (suggestion.Model, suggestion.PromptVersion).ShouldBe((FakeLlmClient.ModelName, "refund-advisor.v2"));
             using (var facts = JsonDocument.Parse(suggestion.InputFacts))
             {
                 facts.RootElement.GetProperty("policyVerdict").GetString().ShouldBe("Eligible");

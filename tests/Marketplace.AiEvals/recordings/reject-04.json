@@ -1,11 +1,11 @@
 {
   "caseId": "reject-04",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:49.53403+00:00",
   "outputs": [
-    "{\"category\":\"changed_mind\",\"summary\":\"Fixture answer for reject-04: I found a cheaper one elsewhere after downloading and using this one.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer found a cheaper alternative after downloading and using the product.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The buyer changed their mind after using the product.\u0022,\u0022Finding a cheaper option is not a valid reason for a refund.\u0022],\u0022flags\u0022:[\u0022possible_abuse\u0022]}"
   ]
 }

@@ -1,11 +1,11 @@
 {
   "caseId": "reject-08",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:54.651534+00:00",
   "outputs": [
-    "{\"category\":\"changed_mind\",\"summary\":\"Fixture answer for reject-08: Bought, downloaded ten times, shared with my team, now refund.\",\"recommendedAction\":\"reject\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022changed_mind\u0022,\u0022summary\u0022:\u0022The buyer mentions sharing the product with their team after downloading it but now requests a refund.\u0022,\u0022recommendedAction\u0022:\u0022reject\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The buyer has used the product and is changing their mind.\u0022,\u0022Product has been downloaded multiple times.\u0022,\u0022The refund request is not based on a defect or issue with the product.\u0022],\u0022flags\u0022:[\u0022possible_abuse\u0022]}"
   ]
 }

@@ -14,8 +14,9 @@ namespace Marketplace.Infrastructure.Ai;
 
 // The OpenAI Chat Completions API over HttpClient, selected with Ai:Provider=OpenAi (changelog 2026-11-02). Same
 // contract and section 10.2 LLM policies as AnthropicLlmClient: timeouts, network errors, 429 and 5xx are
-// transient; any other error status is not retried. The answer is validated by the same strict parser, so the
-// json_object response format only makes a valid answer more likely; it is not trusted on its own. No temperature
+// transient; any other error status is not retried. When the request carries a JSON schema it is sent in strict
+// mode, so the answer's property names and allowed values are constrained; the answer is still validated by the same
+// strict parser, which also checks lengths and ranges. No temperature
 // is sent: reasoning models accept only the default.
 public sealed class OpenAiLlmClient : ILlmClient
 {
@@ -56,7 +57,9 @@ public sealed class OpenAiLlmClient : ILlmClient
             Model,
             [new ChatMessage("system", request.System), new ChatMessage("user", request.User)],
             request.MaxOutputTokens,
-            new ResponseFormat("json_object"),
+            request.JsonSchema is null
+                ? new ResponseFormat("json_object", null)
+                : new ResponseFormat("json_schema", new JsonSchemaFormat("refund_suggestion", true, JsonSerializer.Deserialize<JsonElement>(request.JsonSchema))),
             string.IsNullOrWhiteSpace(_options.OpenAiReasoningEffort) ? null : _options.OpenAiReasoningEffort);
         try
         {
@@ -121,7 +124,10 @@ public sealed class OpenAiLlmClient : ILlmClient
 
     private sealed record ChatMessage(string Role, string Content);
 
-    private sealed record ResponseFormat(string Type);
+    // Strict structured output: the model can only produce the schema's property names, types and allowed values.
+    private sealed record ResponseFormat(string Type, JsonSchemaFormat? JsonSchema);
+
+    private sealed record JsonSchemaFormat(string Name, bool Strict, JsonElement Schema);
 
     private sealed record ChatResponse(IReadOnlyList<Choice>? Choices, Usage? Usage);
 

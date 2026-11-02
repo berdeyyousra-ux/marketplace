@@ -1,11 +1,11 @@
 {
   "caseId": "approve-01",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:10.790259+00:00",
   "outputs": [
-    "{\"category\":\"file_defective\",\"summary\":\"Fixture answer for approve-01: The ZIP file is corrupted. Windows and macOS both say the archive is invalid, and I re-downloaded once with the same res\",\"recommendedAction\":\"approve\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022file_defective\u0022,\u0022summary\u0022:\u0022The buyer reports that the ZIP file is corrupted and invalid on both Windows and macOS, after re-downloading it once.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022A concrete defect is described.\u0022,\u0022The issue occurs on multiple operating systems.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}"
   ]
 }

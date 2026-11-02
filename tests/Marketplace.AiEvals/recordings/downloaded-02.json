@@ -1,11 +1,11 @@
 {
   "caseId": "downloaded-02",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:23.624603+00:00",
   "outputs": [
-    "{\"category\":\"not_as_described\",\"summary\":\"Fixture answer for downloaded-02: I opened it once and realised it's for Keynote only; I use PowerPoint. The page didn't say.\",\"recommendedAction\":\"approve\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022not_as_described\u0022,\u0022summary\u0022:\u0022The buyer opened the product and found it is only compatible with Keynote, which was not mentioned in the listing.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.85,\u0022reasons\u0022:[\u0022The buyer indicates the product was not as described due to compatibility issues.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}"
   ]
 }

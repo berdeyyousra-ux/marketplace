@@ -1,11 +1,11 @@
 {
   "caseId": "approve-07",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:19.665528+00:00",
   "outputs": [
-    "{\"category\":\"not_as_described\",\"summary\":\"Fixture answer for approve-07: The video files are 480p but the product page says 4K. I checked every clip.\",\"recommendedAction\":\"approve\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022not_as_described\u0022,\u0022summary\u0022:\u0022The buyer reports that the video files are 480p, while the product page claims they are 4K, indicating a mismatch between the product description and the actual files received.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022The buyer describes a concrete issue with file resolution not matching the description.\u0022,\u0022The product was downloaded, and the buyer verified the quality of the clips.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}"
   ]
 }

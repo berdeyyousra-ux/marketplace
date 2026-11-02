@@ -1,11 +1,11 @@
 {
   "caseId": "approve-05",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:16.765232+00:00",
   "outputs": [
-    "{\"category\":\"file_defective\",\"summary\":\"Fixture answer for approve-05: The PDF opens to blank pages after page 2. The rest of the book is missing.\",\"recommendedAction\":\"approve\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022file_defective\u0022,\u0022summary\u0022:\u0022The buyer reports that the PDF opens to blank pages after page 2 and that the rest of the book is missing.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022A concrete defect in the file is described.\u0022,\u0022The issue affects the usability of the product.\u0022],\u0022flags\u0022:[\u0022downloaded\u0022]}"
   ]
 }

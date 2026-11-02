@@ -1,11 +1,11 @@
 {
   "caseId": "approve-04",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:15.329731+00:00",
   "outputs": [
-    "{\"category\":\"accidental_purchase\",\"summary\":\"Fixture answer for approve-04: I clicked buy by mistake on my phone while scrolling and have not downloaded it. Please cancel.\",\"recommendedAction\":\"approve\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022accidental_purchase\u0022,\u0022summary\u0022:\u0022The buyer reports clicking buy by mistake and has not downloaded the product.\u0022,\u0022recommendedAction\u0022:\u0022approve\u0022,\u0022confidence\u0022:0.9,\u0022reasons\u0022:[\u0022Buyer indicated it was an accidental purchase.\u0022,\u0022The product has not been downloaded.\u0022],\u0022flags\u0022:[\u0022prompt_injection_suspected\u0022]}"
   ]
 }

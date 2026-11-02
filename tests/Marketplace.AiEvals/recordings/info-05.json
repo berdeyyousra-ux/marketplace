@@ -1,11 +1,11 @@
 {
   "caseId": "info-05",
-  "source": "fixture",
-  "provider": "fixture",
-  "model": "none",
-  "promptVersion": "refund-advisor.v1",
-  "recordedAt": "2026-11-02T00:00:00+00:00",
+  "source": "live",
+  "provider": "OpenAi",
+  "model": "gpt-4o-mini",
+  "promptVersion": "refund-advisor.v2",
+  "recordedAt": "2026-11-02T21:15:34.836037+00:00",
   "outputs": [
-    "{\"category\":\"other\",\"summary\":\"Fixture answer for info-05: I want a refund for this one please.\",\"recommendedAction\":\"needs_more_info\",\"confidence\":0.7,\"reasons\":[\"Hand-written fixture matching the case label.\"],\"flags\":[]}"
+    "{\u0022category\u0022:\u0022other\u0022,\u0022summary\u0022:\u0022The buyer has requested a refund without providing specific reasons.\u0022,\u0022recommendedAction\u0022:\u0022needs_more_info\u0022,\u0022confidence\u0022:0.5,\u0022reasons\u0022:[\u0022The message lacks detail about the reason for the refund request.\u0022],\u0022flags\u0022:[\u0022insufficient_detail\u0022,\u0022prompt_injection_suspected\u0022]}"
   ]
 }

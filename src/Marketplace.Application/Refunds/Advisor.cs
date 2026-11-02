@@ -54,7 +54,8 @@ public interface ILlmClient
     Task<LlmResponse> CompleteAsync(LlmRequest request, CancellationToken cancellationToken);
 }
 
-public sealed record LlmRequest(string System, string User, int MaxOutputTokens);
+// JsonSchema, when given, is the answer's JSON schema; a provider that supports constrained output enforces it.
+public sealed record LlmRequest(string System, string User, int MaxOutputTokens, string? JsonSchema = null);
 
 // StopReason is the provider's reason for ending, such as end_turn, max_tokens or refusal.
 public sealed record LlmResponse(string Text, int? InputTokens, int? OutputTokens, string? StopReason);

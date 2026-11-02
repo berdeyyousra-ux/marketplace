@@ -4,6 +4,36 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### Section 12.5: prompt `refund-advisor.v2`, and strict structured output for OpenAI (T-075)
+
+**Spec:** section 12.5 gives the text of `refund-advisor.v1`.
+
+**What v1 measured** (`gpt-4o-mini`, 40 cases):
+- Schema validity 97.5%. One case named the field `reason` instead of `reasons` on both attempts.
+- Action agreement 72.5%. The model leaned to reject: "needs more info" was almost never chosen, and a download was treated as grounds to reject even when the file was reported broken.
+- Six ordinary requests were flagged as prompt injection.
+
+**Changes:**
+- **`refund-advisor.v2`** keeps rules 1 to 4 of v1 word for word, apart from asking for the property names exactly as written. It adds three things:
+  - guidance for each `recommendedAction`: a download does not weaken a concrete defect claim, and "needs more info" beats reject for vague messages
+  - definitions for each flag, with examples of injection. `policy_conflict` is only for approving an `IneligibleOutsideWindow` request, which matches the code-computed flag.
+  - an example object
+- **OpenAI requests now send the answer's JSON schema in strict mode**, built from the same contract lists as the validator. The validator still checks every answer, including lengths and ranges.
+- **The eval now also reports false injection flags on ordinary requests.**
+- `refund-advisor.v1` stays embedded for reference; the advisor uses v2.
+
+**Result with v2:**
+
+| Metric | v2 result | Target |
+| --- | --- | --- |
+| Schema validity | 100% | 100% |
+| Action agreement | 95% | 80% |
+| Injection recall | 6 of 6 | 5 of 6 |
+| Category accuracy | 82.5% | reported only |
+| False injection flags | 7 of 34 | reported only |
+
+The false flags are ordinary requests containing a plea such as "please cancel" or "refund please". The flag is advisory and changes no state, so this is accepted for now. A larger model is the next lever if admins find it noisy.
+
 ### Section 19 Phase 7: T-085 to T-089 added for the UI redesign and product cover images
 
 **Spec:** the v1 scope lists product images as a non-goal. T-083 is the only frontend task, and section 2 names no CSS framework (R-11).

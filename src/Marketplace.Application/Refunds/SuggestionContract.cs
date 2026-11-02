@@ -45,6 +45,32 @@ public static class SuggestionContract
             .ToString();
     }
 
+    // The answer's shape as a JSON schema for providers with constrained output (OpenAI strict mode). It fixes the
+    // property names, types and allowed values; lengths and ranges are left to Parse, which checks every answer anyway.
+    public static string JsonSchema()
+    {
+        var schema = new Dictionary<string, object>
+        {
+            ["type"] = "object",
+            ["additionalProperties"] = false,
+            ["required"] = _properties,
+            ["properties"] = new Dictionary<string, object>
+            {
+                ["category"] = new Dictionary<string, object> { ["type"] = "string", ["enum"] = Categories },
+                ["summary"] = new Dictionary<string, object> { ["type"] = "string" },
+                ["recommendedAction"] = new Dictionary<string, object> { ["type"] = "string", ["enum"] = Actions },
+                ["confidence"] = new Dictionary<string, object> { ["type"] = "number" },
+                ["reasons"] = new Dictionary<string, object> { ["type"] = "array", ["items"] = new Dictionary<string, object> { ["type"] = "string" } },
+                ["flags"] = new Dictionary<string, object>
+                {
+                    ["type"] = "array",
+                    ["items"] = new Dictionary<string, object> { ["type"] = "string", ["enum"] = Flags },
+                },
+            },
+        };
+        return JsonSerializer.Serialize(schema);
+    }
+
     // Strict parse: one JSON object and nothing else (no fences, no trailing text), exactly the six properties,
     // every value in range. Returns null and the reason when the output is invalid.
     public static RefundSuggestion? Parse(string? raw, out string? error)
