@@ -11,7 +11,10 @@ permissions:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
+    env:
+      TRIVY_VERSION: 0.76.0
+      TRIVY_SHA256: e24b1c51293c1b15e4ba8d45bbc7891ba053f90278ec2698f3562c993e145fe7
     services:
       postgres:
         image: postgres:17
@@ -75,6 +78,34 @@ jobs:
         run: |
           docker build --file deploy/docker/Api.Dockerfile --tag marketplace-api:${{ github.sha }} .
           docker build --file deploy/docker/Worker.Dockerfile --tag marketplace-worker:${{ github.sha }} .
+
+      # Section 15.3 step 13 and section 11.7: fail on High or Critical findings that have a fix.
+      - name: Install Trivy
+        working-directory: ${{ runner.temp }}
+        run: |
+          archive="trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          curl -fsSL -o "$archive" "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/$archive"
+          echo "${TRIVY_SHA256}  $archive" | sha256sum --check --strict -
+          tar -xzf "$archive" trivy
+
+      - name: Scan images with Trivy
+        run: |
+          for image in marketplace-api marketplace-worker; do
+            "$RUNNER_TEMP/trivy" image --quiet --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 "$image:${{ github.sha }}"
+          done
+
+      # Section 15.3 step 14: fail on a High or Critical advisory in any direct or transitive package.
+      - name: Check packages for known vulnerabilities
+        run: |
+          dotnet list Marketplace.slnx package --vulnerable --include-transitive --format json > vulnerable.json
+          jq -r '[.projects[]?.frameworks[]? | (.topLevelPackages[]?, .transitivePackages[]?)
+                  | . as $package | .vulnerabilities[]? | select(.severity == "High" or .severity == "Critical")
+                  | "\($package.id) \($package.resolvedVersion): \(.severity) \(.advisoryurl)"] | unique | .[]' vulnerable.json > findings.txt
+          if [ -s findings.txt ]; then
+            cat findings.txt
+            exit 1
+          fi
+          echo "No High or Critical package advisories."
 
   secret-scan:
     runs-on: ubuntu-latest

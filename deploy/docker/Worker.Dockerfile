@@ -10,7 +10,7 @@ COPY docs/sql/ docs/sql/
 RUN dotnet publish src/Marketplace.Worker/Marketplace.Worker.csproj \
     -c Release -o /app --no-restore
 
-# The ASP.NET Core runtime image is Debian with ICU, which string normalization needs (InvariantGlobalization is
+# The ASP.NET Core runtime image is Ubuntu 24.04 with ICU, which string normalization needs (InvariantGlobalization is
 # off). It ships without curl, so the health check installs it.
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 RUN apt-get update \

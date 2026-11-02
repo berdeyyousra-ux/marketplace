@@ -9,7 +9,7 @@ Changes to, and resolved contradictions in, the build specification.
 **Spec:** the section 15.2 Dockerfile template creates its user with `addgroup` and `adduser`, and checks health with `curl`. The Worker serves health on port 8081 (section 15.7).
 
 **Changes:**
-- The `aspnet:10.0` image has neither `adduser` nor `curl`. The runtime stage creates the user with `groupadd` and `useradd`, and installs `curl` with `--no-install-recommends` for the `HEALTHCHECK`.
+- The `aspnet:10.0` image (Ubuntu 24.04) has neither `adduser` nor `curl`. The runtime stage creates the user with `groupadd` and `useradd`, and installs `curl` with `--no-install-recommends` for the `HEALTHCHECK`.
 - The build stage also copies `.editorconfig`, which holds the analyzer settings (for example, generated migrations are exempt), and `docs/sql`, which Infrastructure embeds.
 - The Dockerfiles live in `deploy/docker/`, where `docker-compose.override.yml` already points.
 - The Worker now runs on `WebApplication.CreateSlimBuilder`. Kestrel listens only on `Worker:HealthPort` (default 8081) and maps only `/health/live` and `/health/ready`.
