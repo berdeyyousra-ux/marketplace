@@ -4,6 +4,19 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### Section 15.2 Dockerfiles and section 15.7 Worker health (T-060)
+
+**Spec:** the section 15.2 Dockerfile template creates its user with `addgroup` and `adduser`, and checks health with `curl`. The Worker serves health on port 8081 (section 15.7).
+
+**Changes:**
+- The `aspnet:10.0` image has neither `adduser` nor `curl`. The runtime stage creates the user with `groupadd` and `useradd`, and installs `curl` with `--no-install-recommends` for the `HEALTHCHECK`.
+- The build stage also copies `.editorconfig`, which holds the analyzer settings (for example, generated migrations are exempt), and `docs/sql`, which Infrastructure embeds.
+- The Dockerfiles live in `deploy/docker/`, where `docker-compose.override.yml` already points.
+- The Worker now runs on `WebApplication.CreateSlimBuilder`. Kestrel listens only on `Worker:HealthPort` (default 8081) and maps only `/health/live` and `/health/ready`.
+- The Worker registers only background services through the new `AddApplicationBackground()`. Request handlers need the Api's caller and token issuer, so the Worker leaves them out, and Development-mode service validation passes.
+
+**Why:** the template as written does not build or pass its health check on the current base image.
+
 ### Section 13.2 R-10: EP-71 reads completed months from the view and later months live (T-054)
 
 **Spec:** R-10 is `mv_seller_monthly_revenue`, refreshed every 15 minutes, and serves EP-71 when it beats R-01.

@@ -1,0 +1,17 @@
+# Only sources, build props and the embedded report SQL go into the build context.
+**/bin/
+**/obj/
+.git/
+.github/
+.vs/
+.vscode/
+.idea/
+tests/
+deploy/
+docs/*
+!docs/sql/
+*.md
+.env
+.env.*
+docker-compose*.yml
+TestResults/
