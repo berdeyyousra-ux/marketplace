@@ -617,9 +617,6 @@ namespace Marketplace.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ux_ledger_item_type")
                         .HasFilter("order_item_id IS NOT NULL");
 
-                    b.HasIndex("SellerId", "CreatedAt")
-                        .HasDatabaseName("ix_ledger_seller_id_created_at");
-
                     b.ToTable("seller_ledger_entries", null, t =>
                         {
                             t.HasCheckConstraint("ck_ledger_amount_sign", "(entry_type IN ('Sale','FeeRefund') AND amount > 0) OR (entry_type IN ('PlatformFee','Refund','Payout') AND amount < 0)");
@@ -693,6 +690,11 @@ namespace Marketplace.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_orders");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_orders_created_at");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("CreatedAt"), new[] { "Id", "Status", "PaidAt" });
 
                     b.HasIndex("ExpiresAt")
                         .HasDatabaseName("ix_orders_pending_expires_at")

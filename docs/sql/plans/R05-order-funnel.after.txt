@@ -1,0 +1,35 @@
+Merge Left Join  (cost=393416.73..399018.89 rows=414605 width=72) (actual time=57.475..57.488 rows=31 loops=1)
+  Merge Cond: ((generate_series('2026-10-03 00:00:00'::timestamp without time zone, date_trunc('day'::text, (('2026-11-03 00:00:00+00'::timestamp with time zone - '00:00:00.000001'::interval) AT TIME ZONE 'UTC'::text)), '1 day'::interval)) = x.day)
+  Buffers: shared hit=245885
+  ->  Sort  (cost=54.85..57.35 rows=1000 width=8) (actual time=4.048..4.049 rows=31 loops=1)
+        Sort Key: (generate_series('2026-10-03 00:00:00'::timestamp without time zone, date_trunc('day'::text, (('2026-11-03 00:00:00+00'::timestamp with time zone - '00:00:00.000001'::interval) AT TIME ZONE 'UTC'::text)), '1 day'::interval))
+        Sort Method: quicksort  Memory: 25kB
+        ->  ProjectSet  (cost=0.00..5.03 rows=1000 width=8) (actual time=4.035..4.038 rows=31 loops=1)
+              ->  Result  (cost=0.00..0.01 rows=1 width=0) (actual time=4.026..4.027 rows=1 loops=1)
+  ->  Sort  (cost=393361.87..393569.18 rows=82921 width=40) (actual time=53.384..53.385 rows=31 loops=1)
+        Sort Key: x.day
+        Sort Method: quicksort  Memory: 26kB
+        Buffers: shared hit=245885
+        ->  Subquery Scan on x  (cost=380950.79..384319.46 rows=82921 width=40) (actual time=53.269..53.380 rows=31 loops=1)
+              Buffers: shared hit=245885
+              ->  HashAggregate  (cost=380950.79..383490.25 rows=82921 width=40) (actual time=53.268..53.377 rows=31 loops=1)
+                    Group Key: date_trunc('day'::text, (o.created_at AT TIME ZONE 'UTC'::text))
+                    Batches: 1  Memory Usage: 1561kB
+                    Buffers: shared hit=245885
+                    ->  Index Only Scan using ix_orders_created_at on orders o  (cost=0.42..4489.45 rows=82921 width=37) (actual time=0.010..9.718 rows=81763 loops=1)
+                          Index Cond: ((created_at >= '2026-10-03 00:00:00+00'::timestamp with time zone) AND (created_at < '2026-11-03 00:00:00+00'::timestamp with time zone))
+                          Heap Fetches: 0
+                          Buffers: shared hit=595
+                    SubPlan 1
+                      ->  Index Only Scan using ix_payments_order_id on payments p  (cost=0.42..4.44 rows=1 width=0) (actual time=0.000..0.000 rows=1 loops=81763)
+                            Index Cond: (order_id = o.id)
+                            Heap Fetches: 0
+                            Buffers: shared hit=245290
+Planning:
+  Buffers: shared hit=294
+Planning Time: 0.398 ms
+JIT:
+  Functions: 22
+  Options: Inlining false, Optimization false, Expressions true, Deforming true
+  Timing: Generation 0.350 ms (Deform 0.090 ms), Inlining 0.000 ms, Optimization 0.158 ms, Emission 3.884 ms, Total 4.393 ms
+Execution Time: 65.077 ms

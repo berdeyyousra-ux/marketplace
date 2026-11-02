@@ -1,0 +1,51 @@
+Incremental Sort  (cost=47930.93..48589.44 rows=10000 width=93) (actual time=88.530..89.039 rows=40 loops=1)
+  Sort Key: p.category_id, (row_number() OVER (?))
+  Presorted Key: p.category_id
+  Full-sort Groups: 2  Sort Method: quicksort  Average Memory: 28kB  Peak Memory: 28kB
+  Buffers: shared hit=11282 read=28521
+  ->  WindowAgg  (cost=47928.27..48178.25 rows=10000 width=93) (actual time=88.077..89.025 rows=40 loops=1)
+        Run Condition: (row_number() OVER (?) <= 5)
+        Buffers: shared hit=11276 read=28521
+        ->  Sort  (cost=47928.25..47953.25 rows=10000 width=85) (actual time=88.073..88.752 rows=9666 loops=1)
+              Sort Key: p.category_id, (count(*)) DESC, (sum(oi.unit_price)) DESC, p.id
+              Sort Method: quicksort  Memory: 1178kB
+              Buffers: shared hit=11276 read=28521
+              ->  Finalize HashAggregate  (cost=47138.86..47263.86 rows=10000 width=85) (actual time=84.031..85.430 rows=9666 loops=1)
+                    Group Key: p.id
+                    Batches: 1  Memory Usage: 5009kB
+                    Buffers: shared hit=11270 read=28521
+                    ->  Gather  (cost=44813.86..46938.86 rows=20000 width=85) (actual time=75.672..78.666 rows=25342 loops=1)
+                          Workers Planned: 2
+                          Workers Launched: 2
+                          Buffers: shared hit=11270 read=28521
+                          ->  Partial HashAggregate  (cost=43813.86..43938.86 rows=10000 width=85) (actual time=74.609..76.096 rows=8447 loops=3)
+                                Group Key: p.id
+                                Batches: 1  Memory Usage: 4241kB
+                                Buffers: shared hit=11270 read=28521
+                                Worker 0:  Batches: 1  Memory Usage: 3985kB
+                                Worker 1:  Batches: 1  Memory Usage: 4241kB
+                                ->  Hash Join  (cost=4259.49..43502.94 rows=41456 width=52) (actual time=57.848..68.720 rows=33723 loops=3)
+                                      Hash Cond: (oi.product_id = p.id)
+                                      Buffers: shared hit=11270 read=28521
+                                      ->  Parallel Hash Join  (cost=3197.49..42332.07 rows=41456 width=23) (actual time=55.773..62.853 rows=33723 loops=3)
+                                            Hash Cond: (oi.order_id = o.id)
+                                            Buffers: shared hit=8753 read=28521
+                                            ->  Parallel Seq Scan on order_items oi  (cost=0.00..37529.78 rows=611350 width=39) (actual time=0.011..32.227 rows=489537 loops=3)
+                                                  Filter: (status = 'Active'::text)
+                                                  Rows Removed by Filter: 10545
+                                                  Buffers: shared hit=1195 read=28521
+                                            ->  Parallel Hash  (cost=2698.89..2698.89 rows=39888 width=16) (actual time=4.300..4.301 rows=22905 loops=3)
+                                                  Buckets: 131072  Batches: 1  Memory Usage: 4288kB
+                                                  Buffers: shared hit=7558
+                                                  ->  Parallel Index Scan using ix_orders_paid_at on orders o  (cost=0.43..2698.89 rows=39888 width=16) (actual time=0.010..2.292 rows=22905 loops=3)
+                                                        Index Cond: (paid_at >= (now() - '30 days'::interval))
+                                                        Buffers: shared hit=7558
+                                      ->  Hash  (cost=937.00..937.00 rows=10000 width=45) (actual time=2.034..2.035 rows=10000 loops=3)
+                                            Buckets: 16384  Batches: 1  Memory Usage: 886kB
+                                            Buffers: shared hit=2511
+                                            ->  Seq Scan on products p  (cost=0.00..937.00 rows=10000 width=45) (actual time=0.005..1.267 rows=10000 loops=3)
+                                                  Buffers: shared hit=2511
+Planning:
+  Buffers: shared hit=475
+Planning Time: 0.590 ms
+Execution Time: 89.651 ms
