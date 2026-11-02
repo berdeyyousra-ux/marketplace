@@ -32,6 +32,11 @@ public static class ApiProblems
             Detail = error.Message,
         };
         Enrich(context, problem, error.Code);
+        if (error.Fields is not null)
+        {
+            problem.Extensions["errors"] = error.Fields;
+        }
+
         return problem;
     }
 

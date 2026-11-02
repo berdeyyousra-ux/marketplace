@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddSingleton<IFileScanner, NoopFileScanner>();
         services.AddScoped<IProductSearch, ProductSearch>();
         services.AddScoped<IIdempotencyStore, Idempotency.IdempotencyStore>();
+        services.AddOptions<Application.Orders.MarketplaceOptions>().BindConfiguration(Application.Orders.MarketplaceOptions.SectionName);
 
         // D-25: the provider comes from Payments:Provider. Fake is the default for development and tests.
         services.AddOptions<PaymentOptions>().BindConfiguration(PaymentOptions.SectionName);

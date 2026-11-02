@@ -35,6 +35,7 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
         { "POST", "/api/v1/products/{draft}/unpublish", [401, 403, 403, 404, 403, 409] },
         { "POST", "/api/v1/products/{draft}/file", [401, 403, 403, 404, 403, 200] },
         { "POST", "/api/v1/auth/change-password", [401, 422, 422, 422, 422, 422] },
+        { "POST", "/api/v1/orders", [401, 201, 201, 201, 201, 409] },
         { "GET", "/api/v1/products", [200, 200, 200, 200, 200, 200] },
         { "GET", "/api/v1/categories", [200, 200, 200, 200, 200, 200] },
     };
@@ -53,12 +54,13 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
             await AsSellerAsync("matrix-seller@example.test", "Owner Studio"),
         };
         var (draftId, etag) = await CreateDraftAsync(clients[_seller]);
+        var publishedId = await CreatePublishedProductAsync(clients[_seller], "Matrix published");
         var path = pathTemplate.Replace("{draft}", draftId, StringComparison.Ordinal);
 
         var actual = new int[clients.Length];
         foreach (var role in new[] { _anonymous, _buyer, _otherBuyer, _otherSeller, _admin, _seller })
         {
-            using var request = BuildRequest(method, path, etag);
+            using var request = BuildRequest(method, path, etag, publishedId);
             actual[role] = (int)(await clients[role].SendAsync(request, CancellationToken)).StatusCode;
         }
 
@@ -88,7 +90,7 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
         protectedOperations.Where(operation => !covered.Contains(operation)).ShouldBeEmpty();
     }
 
-    private static HttpRequestMessage BuildRequest(string method, string path, string etag)
+    private static HttpRequestMessage BuildRequest(string method, string path, string etag, Guid publishedId)
     {
         var request = new HttpRequestMessage(new HttpMethod(method), path);
         if (path.EndsWith("/file", StringComparison.Ordinal))
@@ -102,10 +104,12 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
         }
 
         request.Headers.TryAddWithoutValidation("If-Match", etag);
+        request.Headers.TryAddWithoutValidation("Idempotency-Key", Guid.NewGuid().ToString("N"));
         request.Content = (method, path) switch
         {
             ("POST", "/api/v1/sellers") => JsonContent.Create(new { displayName = "Matrix Studio", bio = (string?)null, country = "ES" }),
             ("POST", "/api/v1/products") or ("PUT", _) => JsonContent.Create(ProductBody()),
+            ("POST", "/api/v1/orders") => JsonContent.Create(new { productIds = new[] { publishedId } }),
             ("POST", "/api/v1/auth/change-password") => JsonContent.Create(new { currentPassword = "not the current one", newPassword = "a brand new passphrase" }),
             _ => null,
         };
