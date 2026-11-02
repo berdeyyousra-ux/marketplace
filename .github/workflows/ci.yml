@@ -12,6 +12,18 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: marketplace
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: marketplace
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U marketplace"
+          --health-interval 5s
+          --health-retries 10
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -42,6 +54,20 @@ jobs:
       # Exit code 8 means no tests ran. Remove the flag when T-074 adds the eval runner.
       - name: AI evals
         run: dotnet test --project tests/Marketplace.AiEvals/Marketplace.AiEvals.csproj --configuration Release --no-build --ignore-exit-code 8
+
+      # Section 7.5: prove the migrations apply to an empty database. Run twice to show a re-run is a no-op.
+      - name: Build migration bundle
+        run: |
+          dotnet tool restore
+          dotnet ef migrations bundle --project src/Marketplace.Infrastructure --startup-project src/Marketplace.Infrastructure \
+            --configuration Release --self-contained --runtime linux-x64 --output efbundle --force
+
+      - name: Apply migration bundle to empty database
+        env:
+          CONN: Host=localhost;Port=5432;Database=marketplace;Username=marketplace;Password=ci-only-password
+        run: |
+          ./efbundle --connection "$CONN" --no-color
+          ./efbundle --connection "$CONN" --no-color
 
   secret-scan:
     runs-on: ubuntu-latest
