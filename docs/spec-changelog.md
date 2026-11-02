@@ -4,6 +4,18 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### Unassigned endpoints get a task
+
+No backlog task lists EP-09, EP-28, EP-61, EP-65 or EP-99. They are built with the task whose story needs them:
+
+- EP-09 (`GET /me`): with T-021, done.
+- EP-28 (`GET /sellers/me/products`): with T-024, for US-15.
+- EP-61 (`GET /refund-requests/mine`): with T-072.
+- EP-65 (refund retry): with T-073.
+- EP-99 (development fake-payment trigger): with T-034 or T-035.
+
+On EP-28, a sale is an order item that is still Active in an order with a `paid_at`. Refunded items are not counted.
+
 ### Section 15.1: Azurite runs with --skipApiVersionCheck
 
 Azurite rejects requests that use a storage API version newer than it knows, and the Azure SDK pinned in T-003 uses a newer one than current Azurite releases. Local Compose and the test container (pinned to Azurite 3.37.0) therefore pass `--skipApiVersionCheck`. This only affects the local emulator; real Azure Storage is unaffected.

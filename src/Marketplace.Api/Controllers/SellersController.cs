@@ -2,6 +2,7 @@ using Marketplace.Api.Auth;
 using Marketplace.Api.Infrastructure;
 using Marketplace.Application.Abstractions;
 using Marketplace.Application.Catalog;
+using Marketplace.Application.Common;
 using Marketplace.Application.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,6 +37,20 @@ public sealed class SellersController : ControllerBase
     {
         ArgumentNullException.ThrowIfNull(handler);
         return this.ToActionResult(await handler.HandleAsync(new SellerQuery(), cancellationToken), profile => Ok(profile));
+    }
+
+    /// <summary>Lists the caller's products, newest first, with sales counts. Keyset paginated (US-15).</summary>
+    [HttpGet("me/products")]
+    [Authorize(Policy = AuthenticationSetup.RequireSeller)]
+    [ProducesResponseType(typeof(Page<SellerProductSummary>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> ListProductsAsync(
+        [FromQuery] SellerProductsQuery query,
+        [FromServices] IQueryHandler<SellerProductsQuery, Page<SellerProductSummary>> handler,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return this.ToActionResult(await handler.HandleAsync(query, cancellationToken), page => Ok(page));
     }
 }
 
