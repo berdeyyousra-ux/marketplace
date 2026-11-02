@@ -1,5 +1,6 @@
 using Marketplace.Application;
 using Marketplace.Infrastructure;
+using Marketplace.Infrastructure.Jobs;
 using Marketplace.Infrastructure.Logging;
 using Marketplace.Worker.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,9 @@ builder.Services.AddSerilog((services, logger) => logger
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 builder.Services.AddHostedService<OutboxWorker>();
+builder.Services.AddHostedService<ScheduledJobWorker<OrderExpiryJob>>();
+builder.Services.AddHostedService<ScheduledJobWorker<PaymentReconciliationJob>>();
+builder.Services.AddHostedService<ScheduledJobWorker<CleanupJob>>();
 
 // In-flight handlers get up to 30 seconds after shutdown starts (section 10.3), plus a margin.
 builder.Services.Configure<HostOptions>(options => options.ShutdownTimeout = OutboxWorker.ShutdownGrace + TimeSpan.FromSeconds(5));
