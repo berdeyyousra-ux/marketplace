@@ -4,6 +4,24 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### Section 19 Phase 7: T-085 to T-089 added for the UI redesign and product cover images
+
+**Spec:** the v1 scope lists product images as a non-goal. T-083 is the only frontend task, and section 2 names no CSS framework (R-11).
+
+**Addition (repo owner's decision, `docs/frontend-design-plan.md`):** five Phase 7 tasks are added to the backlog in section 19.
+
+| Task | Scope |
+| --- | --- |
+| T-085 | Product cover images, backend: `cover_image_key` and `cover_image_updated_at` on `products`; a public-read blob container separate from the private one holding downloadable files; `PUT /products/{id}/cover` with a magic-byte check, a 5 MB limit and EXIF stripping; `coverImageUrl` on product responses |
+| T-086 | Design foundation: tokens, Tailwind theme extension, Inter through `next/font`, and the component library |
+| T-087 | Catalogue and product detail redesign |
+| T-088 | Library, orders, checkout and auth screen redesign |
+| T-089 | Seller dashboard and admin refund queue redesign |
+
+**This reverses the product-images non-goal.** It also adds Tailwind CSS to the frontend stack, which the plan specifies. EXIF stripping adds no library: metadata blocks are removed from the JPEG, PNG and WebP bytes directly.
+
+**Why:** the client works end to end but carries no visual weight, and a catalogue without product imagery cannot be browsed (see the plan's "What's wrong now").
+
 ### Section 19 backlog order: the frontend (T-083) moves ahead of the Azure, deploy and polish tasks
 
 **Spec:** T-083 (thin Next.js frontend, an optional phase 7 stretch) comes after T-064, and its acceptance is "deployed alongside the API".
