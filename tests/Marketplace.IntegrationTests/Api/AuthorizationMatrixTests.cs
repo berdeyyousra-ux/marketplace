@@ -2,7 +2,9 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using Marketplace.Domain.Fulfillment;
 using Marketplace.IntegrationTests.Fixtures;
+using Microsoft.EntityFrameworkCore;
 using Shouldly;
 
 namespace Marketplace.IntegrationTests.Api;
@@ -40,6 +42,8 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
         { "GET", "/api/v1/orders", [401, 200, 200, 200, 200, 200] },
         { "GET", "/api/v1/orders/{order}", [401, 200, 404, 404, 200, 404] },
         { "POST", "/api/v1/orders/{order}/cancel", [401, 204, 404, 404, 404, 404] },
+        { "POST", "/api/v1/downloads/{item}/link", [401, 200, 404, 404, 404, 404] },
+        { "GET", "/api/v1/library", [401, 200, 200, 200, 200, 200] },
         { "GET", "/api/v1/products", [200, 200, 200, 200, 200, 200] },
         { "GET", "/api/v1/categories", [200, 200, 200, 200, 200, 200] },
     };
@@ -60,7 +64,9 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
         var (draftId, etag) = await CreateDraftAsync(clients[_seller]);
         var publishedId = await CreatePublishedProductAsync(clients[_seller], "Matrix published");
         var orderId = (await (await CreateOrderAsync(clients[_buyer], [publishedId])).Content.ReadFromJsonAsync<JsonElement>(CancellationToken)).GetProperty("id").GetString()!;
-        var path = pathTemplate.Replace("{draft}", draftId, StringComparison.Ordinal).Replace("{order}", orderId, StringComparison.Ordinal);
+        var itemId = pathTemplate.Contains("{item}", StringComparison.Ordinal) ? await GrantDownloadAsync(Guid.Parse(orderId)) : Guid.Empty;
+        var path = pathTemplate.Replace("{draft}", draftId, StringComparison.Ordinal).Replace("{order}", orderId, StringComparison.Ordinal)
+            .Replace("{item}", itemId.ToString(), StringComparison.Ordinal);
 
         var actual = new int[clients.Length];
         foreach (var role in new[] { _anonymous, _buyer, _otherBuyer, _otherSeller, _admin, _seller })
@@ -80,11 +86,22 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
         mismatches.ShouldBeEmpty($"{method} {pathTemplate}");
     }
 
+    // The buyer owns the order's item without the order being paid, so the payment and cancel rows still apply.
+    private async Task<Guid> GrantDownloadAsync(Guid orderId) =>
+        await WithDbAsync(async db =>
+        {
+            var order = await db.Orders.Include(candidate => candidate.Items).SingleAsync(candidate => candidate.Id == orderId, CancellationToken);
+            var item = order.Items.Single();
+            db.DownloadGrants.Add(DownloadGrant.Create(item.Id, order.BuyerId, item.ProductId, Time.GetUtcNow()));
+            await db.SaveChangesAsync(CancellationToken);
+            return item.Id;
+        });
+
     // Guards the matrix itself: a new protected endpoint must be added above.
     [Fact]
     public async Task AuthorizationMatrix_CoversEveryProtectedOperation()
     {
-        var covered = Matrix().Select(row => $"{row.Data.Item1} {row.Data.Item2.Replace("{draft}", "{id}", StringComparison.Ordinal).Replace("{order}", "{id}", StringComparison.Ordinal)}").ToHashSet();
+        var covered = Matrix().Select(row => $"{row.Data.Item1} {row.Data.Item2.Replace("{draft}", "{id}", StringComparison.Ordinal).Replace("{order}", "{id}", StringComparison.Ordinal).Replace("{item}", "{orderItemId}", StringComparison.Ordinal)}").ToHashSet();
         using var document = JsonDocument.Parse(await AsAnonymous().GetStringAsync("/openapi/v1.json", CancellationToken));
 
         var protectedOperations = document.RootElement.GetProperty("paths").EnumerateObject()

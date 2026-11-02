@@ -1,5 +1,7 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
+using Azure.Storage.Sas;
 using Marketplace.Application.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -66,6 +68,37 @@ public sealed class AzureBlobFileStorage : IFileStorage
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(_otherTimeout);
         return await _container.GetBlobClient(key).ExistsAsync(timeout.Token);
+    }
+
+    // Shared-key SAS when the connection string carries an account key (Azurite, dev); otherwise a user
+    // delegation SAS, which works with a managed identity (section 15).
+    public async Task<Uri> CreateDownloadUrlAsync(string key, string fileName, DateTimeOffset expiresAt, CancellationToken cancellationToken)
+    {
+        var blob = _container.GetBlobClient(key);
+        var sas = new BlobSasBuilder(BlobSasPermissions.Read, expiresAt)
+        {
+            BlobContainerName = _container.Name,
+            BlobName = key,
+            Resource = "b",
+            ContentDisposition = ContentDisposition(fileName),
+        };
+        if (blob.CanGenerateSasUri)
+        {
+            return blob.GenerateSasUri(sas);
+        }
+
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(_otherTimeout);
+        var service = _container.GetParentBlobServiceClient();
+        var delegationKey = await service.GetUserDelegationKeyAsync(startsOn: null, expiresAt, timeout.Token);
+        return new BlobUriBuilder(blob.Uri) { Sas = sas.ToSasQueryParameters(delegationKey.Value, service.AccountName) }.ToUri();
+    }
+
+    // RFC 6266: an ASCII fallback plus the UTF-8 name.
+    private static string ContentDisposition(string fileName)
+    {
+        var ascii = new string([.. fileName.Select(character => character is < (char)0x20 or > (char)0x7E or '"' or '\\' ? '_' : character)]);
+        return $"attachment; filename=\"{ascii}\"; filename*=UTF-8''{Uri.EscapeDataString(fileName)}";
     }
 }
 

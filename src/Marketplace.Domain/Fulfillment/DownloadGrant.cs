@@ -50,7 +50,8 @@ public sealed class DownloadGrant : AggregateRoot
         new(orderItemId, buyerId, productId, paidAt);
 
     public static Error Unavailable(DownloadUnavailableReason reason) =>
-        new("download_unavailable", $"This download is unavailable: {reason}.", ErrorType.Conflict);
+        new("download_unavailable", $"This download is unavailable: {reason}.", ErrorType.Conflict,
+            Extensions: new Dictionary<string, string> { ["reason"] = reason.ToString().ToLowerInvariant() });
 
     // Same conditions as the section 9.7 update: not revoked, expires_at > now, download_count < max_downloads.
     public DownloadUnavailableReason? GetUnavailableReason(DateTimeOffset now)
