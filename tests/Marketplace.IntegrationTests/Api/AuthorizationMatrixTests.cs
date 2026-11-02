@@ -37,6 +37,9 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
         { "POST", "/api/v1/auth/change-password", [401, 422, 422, 422, 422, 422] },
         { "POST", "/api/v1/orders", [401, 201, 201, 201, 201, 409] },
         { "POST", "/api/v1/orders/{order}/payment", [401, 200, 404, 404, 404, 404] },
+        { "GET", "/api/v1/orders", [401, 200, 200, 200, 200, 200] },
+        { "GET", "/api/v1/orders/{order}", [401, 200, 404, 404, 200, 404] },
+        { "POST", "/api/v1/orders/{order}/cancel", [401, 204, 404, 404, 404, 404] },
         { "GET", "/api/v1/products", [200, 200, 200, 200, 200, 200] },
         { "GET", "/api/v1/categories", [200, 200, 200, 200, 200, 200] },
     };
