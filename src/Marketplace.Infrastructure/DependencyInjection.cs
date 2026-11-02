@@ -3,6 +3,7 @@ using Marketplace.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Marketplace.Infrastructure;
 
@@ -18,6 +19,8 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention();
         });
 
+        // R-07: time comes only from an injected TimeProvider; tests replace it with FakeTimeProvider.
+        services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
         services.AddSingleton<IDbExceptionTranslator, DbExceptionTranslator>();
 
