@@ -33,9 +33,8 @@ jobs:
       - name: Architecture tests
         run: dotnet test --project tests/Marketplace.ArchitectureTests/Marketplace.ArchitectureTests.csproj --configuration Release --no-build
 
-      # Exit code 8 means no tests ran. Remove the flag when T-010 adds the first unit test.
       - name: Unit tests
-        run: dotnet test --project tests/Marketplace.UnitTests/Marketplace.UnitTests.csproj --configuration Release --no-build --ignore-exit-code 8
+        run: dotnet test --project tests/Marketplace.UnitTests/Marketplace.UnitTests.csproj --configuration Release --no-build
 
       - name: Integration tests
         run: dotnet test --project tests/Marketplace.IntegrationTests/Marketplace.IntegrationTests.csproj --configuration Release --no-build
