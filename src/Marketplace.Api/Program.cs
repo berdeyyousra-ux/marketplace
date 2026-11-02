@@ -27,6 +27,7 @@ builder.Host.UseSerilog((context, services, logger) => logger
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 builder.Services.AddMarketplaceControllers();
+builder.Services.AddMarketplaceRateLimiting(builder.Configuration);
 builder.Services.AddMarketplaceAuthentication(builder.Environment);
 
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
@@ -84,11 +85,15 @@ if (!app.Environment.IsDevelopment())
 
 app.UseCors(CorsPolicyName);
 app.UseAuthentication();
+
+// Section 4.5 places the rate limiter before authentication, but section 11.4's per-user limits need the
+// authenticated user, so it runs straight after authentication (docs/spec-changelog.md).
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
-app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains(ReadinessTag) });
+app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false }).DisableRateLimiting();
+app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains(ReadinessTag) }).DisableRateLimiting();
 
 await app.RunAsync();
 

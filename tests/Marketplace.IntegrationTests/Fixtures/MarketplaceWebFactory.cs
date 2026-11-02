@@ -49,6 +49,9 @@ public sealed class MarketplaceWebFactory : WebApplicationFactory<Program>, IAsy
         builder.UseSetting("ConnectionStrings:Database", _postgres.GetConnectionString());
         builder.UseSetting("ConnectionStrings:BlobStorage", _azurite.GetConnectionString());
         builder.UseSetting("Jwt:SigningKey", TestSigningKey);
+
+        // Every test request shares one address, so limits would leak between tests. RateLimitTests re-enable them.
+        builder.UseSetting("RateLimiting:Enabled", "false");
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<TimeProvider>();
