@@ -28,6 +28,8 @@ public static class DependencyInjection
         }
 
         services.AddScoped<Identity.OneTimeTokenService>();
+        services.AddScoped<Identity.SessionIssuer>();
+        services.AddScoped<Ops.AuditTrail>();
         services.AddValidatorsFromAssembly(assembly, ServiceLifetime.Singleton, includeInternalTypes: true);
         return services;
     }

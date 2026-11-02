@@ -24,6 +24,19 @@ public sealed class AuthController : ControllerBase
         return this.ToActionResult(await handler.HandleAsync(command, cancellationToken), _ => Accepted());
     }
 
+    /// <summary>Signs in with email and password, returning a 15-minute access token and a 14-day refresh token (US-03).</summary>
+    [HttpPost("login")]
+    [ProducesResponseType(typeof(TokenPair), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status423Locked, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> LoginAsync(
+        LoginCommand command, [FromServices] ICommandHandler<LoginCommand, TokenPair> handler, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return this.ToActionResult(await handler.HandleAsync(command, cancellationToken), tokens => Ok(tokens));
+    }
+
     /// <summary>Confirms an email address with the single-use token from the verification email (US-02).</summary>
     [HttpPost("verify-email")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

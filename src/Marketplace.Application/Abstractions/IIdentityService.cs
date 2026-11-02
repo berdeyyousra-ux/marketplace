@@ -14,9 +14,23 @@ public interface IIdentityService
 
     Task ConfirmEmailAsync(Guid userId, CancellationToken cancellationToken);
 
+    Task<LoginAccount?> FindForLoginAsync(string email, CancellationToken cancellationToken);
+
+    Task<bool> CheckPasswordAsync(Guid userId, string password, CancellationToken cancellationToken);
+
+    // Counts a failed sign-in. On the fifth failure the account is locked until lockoutUntil and the count resets.
+    // Returns true when this failure locked the account.
+    Task<bool> RecordFailedSignInAsync(Guid userId, int maxFailures, DateTimeOffset lockoutUntil, CancellationToken cancellationToken);
+
+    Task ResetFailedSignInsAsync(Guid userId, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<string>> GetRolesAsync(Guid userId, CancellationToken cancellationToken);
+
     // Spends the same time as a real password hash, so responses do not reveal whether an account exists (section 9.1).
     void SpendPasswordHashTime(string password);
 }
+
+public sealed record LoginAccount(Guid UserId, string Email, string DisplayName, bool EmailConfirmed, DateTimeOffset? LockoutEnd);
 
 public sealed record AccountSummary(Guid UserId, string Email, string DisplayName, bool EmailConfirmed);
 

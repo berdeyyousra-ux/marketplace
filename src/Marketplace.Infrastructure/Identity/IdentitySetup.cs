@@ -141,7 +141,63 @@ public sealed class IdentityService(UserManager<AppUser> users, IPasswordHasher<
         }
     }
 
+    public async Task<LoginAccount?> FindForLoginAsync(string email, CancellationToken cancellationToken)
+    {
+        var user = await users.FindByEmailAsync(email);
+        return user is null || user.DeletedAt is not null
+            ? null
+            : new LoginAccount(user.Id, user.Email!, user.DisplayName, user.EmailConfirmed, user.LockoutEnd);
+    }
+
+    public async Task<bool> CheckPasswordAsync(Guid userId, string password, CancellationToken cancellationToken)
+    {
+        var user = await RequireAsync(userId);
+        return await users.CheckPasswordAsync(user, password);
+    }
+
+    // Lockout is kept here rather than by UserManager.AccessFailedAsync, which reads the system clock (R-07).
+    public async Task<bool> RecordFailedSignInAsync(Guid userId, int maxFailures, DateTimeOffset lockoutUntil, CancellationToken cancellationToken)
+    {
+        var user = await RequireAsync(userId);
+        user.AccessFailedCount++;
+        var locked = user.AccessFailedCount >= maxFailures;
+        if (locked)
+        {
+            user.LockoutEnd = lockoutUntil;
+            user.AccessFailedCount = 0;
+        }
+
+        await UpdateAsync(user);
+        return locked;
+    }
+
+    public async Task ResetFailedSignInsAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        var user = await RequireAsync(userId);
+        if (user.AccessFailedCount != 0 || user.LockoutEnd is not null)
+        {
+            user.AccessFailedCount = 0;
+            user.LockoutEnd = null;
+            await UpdateAsync(user);
+        }
+    }
+
+    public async Task<IReadOnlyList<string>> GetRolesAsync(Guid userId, CancellationToken cancellationToken) =>
+        [.. await users.GetRolesAsync(await RequireAsync(userId))];
+
     public void SpendPasswordHashTime(string password) => hasher.HashPassword(_timingUser, password);
+
+    private async Task<AppUser> RequireAsync(Guid userId) =>
+        await users.FindByIdAsync(userId.ToString()) ?? throw new InvalidOperationException("The user no longer exists.");
+
+    private async Task UpdateAsync(AppUser user)
+    {
+        var result = await users.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            throw new InvalidOperationException("Updating the user failed: " + string.Join(" ", result.Errors.Select(error => error.Code)));
+        }
+    }
 
     private static Error EmailTaken => new("email_taken", "This email is already registered.", ErrorType.Conflict);
 }

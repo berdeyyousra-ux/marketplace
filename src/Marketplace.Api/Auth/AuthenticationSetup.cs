@@ -37,6 +37,7 @@ public static class AuthenticationSetup
         services.AddSingleton<IAccessTokenIssuer, JwtAccessTokenIssuer>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, HttpCurrentUser>();
+        services.AddScoped<Marketplace.Application.Ops.IClientContext, HttpClientContext>();
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
         services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)

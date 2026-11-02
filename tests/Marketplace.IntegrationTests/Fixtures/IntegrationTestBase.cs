@@ -1,3 +1,5 @@
+using System.Net.Http.Json;
+using Marketplace.Infrastructure.Outbox;
 using Marketplace.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,7 +42,22 @@ public abstract class IntegrationTestBase(MarketplaceWebFactory factory) : IAsyn
         return ValueTask.CompletedTask;
     }
 
+    public const string DefaultPassword = "correct horse battery";
+
     protected HttpClient AsAnonymous() => Factory.CreateClient();
+
+    // Creates a user through the real register and verify-email flow, then returns its ID.
+    protected async Task<Guid> CreateVerifiedUserAsync(string email, string password = DefaultPassword, string displayName = "Test User")
+    {
+        using var client = AsAnonymous();
+        var register = await client.PostAsJsonAsync("/api/v1/auth/register", new { email, password, displayName }, CancellationToken);
+        register.EnsureSuccessStatusCode();
+        await Factory.Services.GetRequiredService<OutboxProcessor>().ProcessBatchAsync(CancellationToken);
+        var token = Factory.Services.GetRequiredService<FakeEmailSender>().LatestToken(email, "verify-email");
+        var verify = await client.PostAsJsonAsync("/api/v1/auth/verify-email", new { token }, CancellationToken);
+        verify.EnsureSuccessStatusCode();
+        return await WithDbAsync(db => db.Users.Where(user => user.Email == email).Select(user => user.Id).SingleAsync(CancellationToken));
+    }
 
     protected async Task ResetDatabaseAsync()
     {
