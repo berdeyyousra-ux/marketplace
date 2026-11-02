@@ -24,6 +24,9 @@ public interface IIdentityService
 
     Task ResetFailedSignInsAsync(Guid userId, CancellationToken cancellationToken);
 
+    // Replaces the password (validators run), rotates the security stamp and clears the failure count and lockout.
+    Task<Result<Unit>> SetPasswordAsync(Guid userId, string newPassword, CancellationToken cancellationToken);
+
     Task<IReadOnlyList<string>> GetRolesAsync(Guid userId, CancellationToken cancellationToken);
 
     // Spends the same time as a real password hash, so responses do not reveal whether an account exists (section 9.1).
