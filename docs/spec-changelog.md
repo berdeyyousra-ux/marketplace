@@ -4,6 +4,12 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### Section 5.3: the Worker references Serilog.Sinks.Console
+
+**Resolves:** a gap. D-30 requires Serilog JSON logging to the console in both processes, but section 5.3's Worker package list has no console sink. The Api gets one only indirectly, through `Serilog.AspNetCore`.
+
+**Decision (repo owner):** the Worker references `Serilog.Sinks.Console` directly, at version 6.1.1, the version the Api already resolves. It is pinned in `Directory.Packages.props`. This adds no new library to the solution, only a direct reference.
+
 ### Sections 10.1 and 10.3: outbox and idempotency SQL take the time from TimeProvider
 
 **Resolves:** a conflict between R-07, which requires all time to come from the injected `TimeProvider`, and the SQL in sections 10.1 and 10.3, which uses the database's `now()`.
