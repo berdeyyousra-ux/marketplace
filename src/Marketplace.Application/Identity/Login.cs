@@ -38,15 +38,17 @@ public sealed class SessionIssuer(IAppDbContext db, IAccessTokenIssuer accessTok
 {
     public static readonly TimeSpan RefreshLifetime = TimeSpan.FromDays(14);
 
-    public async Task<TokenPair> IssueAsync(Guid userId, string email, string displayName, Guid familyId, CancellationToken cancellationToken)
+    // Returns the token pair and the new refresh token's row ID, which rotation records as the successor.
+    public async Task<(TokenPair Tokens, Guid RefreshTokenId)> IssueAsync(Guid userId, string email, string displayName, Guid familyId, CancellationToken cancellationToken)
     {
         var roles = await identity.GetRolesAsync(userId, cancellationToken);
         var access = accessTokens.Issue(new AccessTokenSubject(userId, email, displayName, roles));
         var now = timeProvider.GetUtcNow();
         var (raw, hash) = SecureTokens.Generate();
-        db.RefreshTokens.Add(RefreshToken.Issue(userId, familyId, hash, now, RefreshLifetime, client.IpAddress, client.UserAgent));
+        var refresh = RefreshToken.Issue(userId, familyId, hash, now, RefreshLifetime, client.IpAddress, client.UserAgent);
+        db.RefreshTokens.Add(refresh);
 
-        return new TokenPair(access.Token, (int)(access.ExpiresAt - now).TotalSeconds, raw, "Bearer");
+        return (new TokenPair(access.Token, (int)(access.ExpiresAt - now).TotalSeconds, raw, "Bearer"), refresh.Id);
     }
 }
 
@@ -96,7 +98,7 @@ public sealed class LoginCommandHandler(
         }
 
         await identity.ResetFailedSignInsAsync(account.UserId, cancellationToken);
-        var tokens = await sessions.IssueAsync(account.UserId, account.Email, account.DisplayName, Guid.CreateVersion7(), cancellationToken);
+        var (tokens, _) = await sessions.IssueAsync(account.UserId, account.Email, account.DisplayName, Guid.CreateVersion7(), cancellationToken);
         audit.Record("auth.login_succeeded", AuditActorType.User, account.UserId, "User", account.UserId);
         await db.SaveChangesAsync(cancellationToken);
         return tokens;
