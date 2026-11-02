@@ -1,5 +1,7 @@
 using Marketplace.Application.Abstractions;
+using Marketplace.Application.Catalog;
 using Marketplace.Application.Identity;
+using Marketplace.Infrastructure.Catalog;
 using Marketplace.Infrastructure.Email;
 using Marketplace.Infrastructure.Identity;
 using Marketplace.Infrastructure.Outbox;
@@ -38,6 +40,7 @@ public static class DependencyInjection
         services.AddOptions<StorageOptions>().BindConfiguration(StorageOptions.SectionName);
         services.AddSingleton<IFileStorage, AzureBlobFileStorage>();
         services.AddSingleton<IFileScanner, NoopFileScanner>();
+        services.AddScoped<IProductSearch, ProductSearch>();
 
         return services;
     }
