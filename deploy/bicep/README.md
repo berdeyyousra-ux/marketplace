@@ -45,6 +45,24 @@ Deployment happens in two stages:
 1. **Infrastructure,** with `deployApps=false` (the default). Container Apps won't start while a Key Vault reference points at a missing secret, so the apps come after the secrets exist.
 2. **Secrets, then apps.** Set the secrets (below), then run the CD pipeline (T-062). It publishes the images, runs the migration job, and deploys with `deployApps=true`.
 
+## Continuous deployment (T-062)
+
+`.github/workflows/cd-staging.yml` deploys `main` to staging after CI passes, and can also be started by hand. In order, it:
+1. builds the api, worker, migration and web images and pushes them to GHCR, tagged with the commit
+2. updates the infrastructure and the `marketplace-migrate` job
+3. runs the job, which applies the migrations and grants the app database roles
+4. deploys the apps (`deployApps=true`)
+5. smoke-tests the API and the web client
+6. puts the previous images back if the deployment or the smoke test fails
+
+**Once, after the first run:** GHCR creates each package as private, and Container Apps pulls without credentials. Make the four packages public, then re-run the workflow:
+- `marketplace-api`
+- `marketplace-worker`
+- `marketplace-migrate`
+- `marketplace-web`
+
+To change a package's visibility: GitHub profile, Packages tab, open the package, Package settings, Change visibility. The workflow checks this and says which packages are still private.
+
 ## Key Vault secrets
 
 These are set once by someone with the Key Vault Secrets Officer role on the vault. The vault name is in the deployment output `keyVaultName`.

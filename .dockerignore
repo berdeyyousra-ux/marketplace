@@ -22,3 +22,5 @@ web/node_modules/
 web/.next/
 web/.env*
 web/next-env.d.ts
+# Scratch files the CD workflow passes between steps.
+.cd/
