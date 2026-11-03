@@ -18,6 +18,10 @@ ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
     HOSTNAME=0.0.0.0
+# The server runs on node alone. npm and corepack ship with the base image but are never used here, and they carry
+# their own dependencies (and advisories), so the runtime image drops them.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+    /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
 WORKDIR /app
 COPY --from=build --chown=node:node /web/.next/standalone ./
 COPY --from=build --chown=node:node /web/.next/static ./.next/static

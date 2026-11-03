@@ -99,6 +99,9 @@ resource network 'Microsoft.Network/virtualNetworks@2024-05-01' = {
         properties: {
           addressPrefix: '10.40.2.0/28'
           delegations: [{ name: 'postgres', properties: { serviceName: 'Microsoft.DBforPostgreSQL/flexibleServers' } }]
+          // Azure adds this when it creates the server. Declared so a redeploy, which rewrites the subnets as written
+          // here, doesn't try to remove it.
+          serviceEndpoints: [{ service: 'Microsoft.Storage' }]
         }
       }
     ]
