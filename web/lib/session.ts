@@ -14,8 +14,12 @@ type CookieWriter = { set: (name: string, value: string, options: Record<string,
 
 const base = { httpOnly: true, sameSite: "lax" as const, path: "/", secure: process.env.NODE_ENV === "production" };
 
+// The access cookie expires 30 seconds before the token, so a server render treats a token about to expire as gone
+// and restores the session first, rather than sending it and meeting a 401 mid-render.
+const ACCESS_MARGIN_SECONDS = 30;
+
 export function writeTokens(target: CookieWriter, tokens: TokenPair) {
-  target.set(ACCESS_COOKIE, tokens.accessToken, { ...base, maxAge: tokens.expiresInSeconds });
+  target.set(ACCESS_COOKIE, tokens.accessToken, { ...base, maxAge: Math.max(1, tokens.expiresInSeconds - ACCESS_MARGIN_SECONDS) });
   target.set(REFRESH_COOKIE, tokens.refreshToken, { ...base, maxAge: REFRESH_MAX_AGE });
 }
 
@@ -29,7 +33,8 @@ export async function readTokens() {
   return { access: store.get(ACCESS_COOKIE)?.value, refresh: store.get(REFRESH_COOKIE)?.value };
 }
 
-// Rotates the refresh token (EP-04). Returns null when the session is over.
+// Rotates the refresh token (EP-04). Returns null when the session is over. Only /api/session/refresh calls this,
+// and only browser code calls that, serialized by lib/refresh.ts.
 export async function refreshTokens(refreshToken: string): Promise<TokenPair | null> {
   const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
     method: "POST",

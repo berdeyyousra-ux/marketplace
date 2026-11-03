@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { API_BASE_URL, readTokens, refreshTokens, writeTokens, type TokenPair } from "@/lib/session";
+import { API_BASE_URL, readTokens } from "@/lib/session";
 
-// Browser calls to /api/proxy/<path> go to the API's /api/v1/<path> with the access token from the cookie. On a
-// 401 the tokens are rotated once and the call is repeated, so an expired access token is invisible to the user.
+// Browser calls to /api/proxy/<path> go to the API's /api/v1/<path> with the access token from the cookie. A 401 is
+// passed back unchanged: the browser renews the session through its single-flight refresh (lib/refresh.ts) and
+// retries. Rotating here would let parallel calls send the same refresh token, which the API treats as reuse.
 const FORWARDED_REQUEST_HEADERS = ["content-type", "idempotency-key", "if-match"];
 const FORWARDED_RESPONSE_HEADERS = ["content-type", "etag", "location", "retry-after", "idempotency-replayed"];
 
@@ -10,7 +11,7 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
   const { path } = await context.params;
   const target = `${API_BASE_URL}/api/v1/${path.map(encodeURIComponent).join("/")}${request.nextUrl.search}`;
   const body = request.method === "GET" || request.method === "HEAD" ? undefined : await request.arrayBuffer();
-  const { access, refresh } = await readTokens();
+  const { access } = await readTokens();
 
   const send = (token: string | undefined) => {
     const headers = new Headers();
@@ -28,14 +29,7 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
     return fetch(target, { method: request.method, headers, body, cache: "no-store" });
   };
 
-  let response = await send(access);
-  let rotated: TokenPair | null = null;
-  if (response.status === 401 && refresh) {
-    rotated = await refreshTokens(refresh);
-    if (rotated) {
-      response = await send(rotated.accessToken);
-    }
-  }
+  const response = await send(access);
 
   const result = new NextResponse(response.status === 204 ? null : await response.arrayBuffer(), { status: response.status });
   for (const name of FORWARDED_RESPONSE_HEADERS) {
@@ -43,10 +37,6 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
     if (value) {
       result.headers.set(name, value);
     }
-  }
-
-  if (rotated) {
-    writeTokens(result.cookies, rotated);
   }
 
   return result;

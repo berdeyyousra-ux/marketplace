@@ -1,23 +1,8 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { clearTokens, readTokens, refreshTokens, writeTokens } from "@/lib/session";
 
-// Pages land here when the access token has expired: rotate the tokens and go back, or go to the login page.
-export async function GET(request: NextRequest) {
-  const next = safeNext(request.nextUrl.searchParams.get("next"));
-  const { refresh } = await readTokens();
-  const tokens = refresh ? await refreshTokens(refresh) : null;
-  if (!tokens) {
-    const result = NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(next)}`, request.url));
-    clearTokens(result.cookies);
-    return result;
-  }
-
-  const result = NextResponse.redirect(new URL(next, request.url));
-  writeTokens(result.cookies, tokens);
-  return result;
-}
-
-// Also called by browser code after a change that alters the caller's roles (becoming a seller).
+// EP-04 for the browser. Called only through lib/refresh.ts, which serializes calls across tabs; a failed refresh
+// clears the cookies so the app shows the signed-out state.
 export async function POST() {
   const { refresh } = await readTokens();
   const tokens = refresh ? await refreshTokens(refresh) : null;
@@ -29,9 +14,4 @@ export async function POST() {
   }
 
   return result;
-}
-
-// Only same-site paths, so the redirect cannot be pointed elsewhere.
-function safeNext(value: string | null) {
-  return value && value.startsWith("/") && !value.startsWith("//") ? value : "/";
 }

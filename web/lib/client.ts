@@ -1,6 +1,7 @@
 "use client";
 
 import type { Problem } from "./types";
+import { refreshSession } from "./refresh";
 
 export type ClientResult<T> = { ok: true; data: T; etag: string | null } | { ok: false; status: number; problem: Problem };
 
@@ -24,11 +25,20 @@ export async function call<T>(
     headers["Idempotency-Key"] = crypto.randomUUID().replace(/-/g, "");
   }
 
-  const response = await fetch(`/api/proxy${path}`, {
-    method: init.method ?? "GET",
-    headers,
-    body: init.body === undefined ? undefined : multipart ? (init.body as FormData) : JSON.stringify(init.body),
-  });
+  const send = () =>
+    fetch(`/api/proxy${path}`, {
+      method: init.method ?? "GET",
+      headers,
+      body: init.body === undefined ? undefined : multipart ? (init.body as FormData) : JSON.stringify(init.body),
+    });
+
+  // An expired access token: renew the session through the single-flight refresh and send the same request once more
+  // (same Idempotency-Key, so a retried write still runs at most once). Only when that fails is the user signed out.
+  let response = await send();
+  if (response.status === 401 && (await refreshSession())) {
+    response = await send();
+  }
+
   const text = await response.text();
   let body = null;
   try {
