@@ -9,6 +9,7 @@
  *   --accent-contrast: text on accent surfaces. White on the dark-mode accent is 2.49:1; near-black is 7.94:1.
  *   --border-strong:   form-control borders. --border is 1.26:1 (light) and 1.15:1 (dark) against the surface, fine
  *                      for decorative edges but below the 3:1 a control's boundary needs (WCAG 1.4.11).
+ * In dark mode success and warning are toned down (they inform); danger stays at full strength (it must pull the eye).
  */
 :root,
 [data-theme="light"] {
@@ -41,8 +42,8 @@
     --accent-hover: #2dd4bf;
     --accent-contrast: #0c0a09;
     --danger: #f87171;
-    --success: #4ade80;
-    --warning: #fbbf24;
+    --success: #5db384;
+    --warning: #d4a24c;
     --shadow-raised: 0 4px 16px rgb(0 0 0 / 0.4);
     color-scheme: dark;
   }
@@ -59,33 +60,35 @@
   --accent-hover: #2dd4bf;
   --accent-contrast: #0c0a09;
   --danger: #f87171;
-  --success: #4ade80;
-  --warning: #fbbf24;
+  --success: #5db384;
+  --warning: #d4a24c;
   --shadow-raised: 0 4px 16px rgb(0 0 0 / 0.4);
   color-scheme: dark;
 }
 
 /*
- * Generated-cover gradients: eight hues evenly spaced, at the same lightness and chroma, so no pair clashes and the
- * grid reads as one family. Both modes use them; covers are artwork, not interface.
+ * Generated-cover gradients: eight hues 33 degrees apart from 150 round to 21, each fading 20 degrees, at the same
+ * lightness and chroma so the grid reads as one family. The yellow, olive and yellow-green band (about 41 to 150) is
+ * left out: yellows look lighter than other hues at equal chroma, so at this lightness they turn muddy (changelog).
+ * Both modes use them; covers are artwork, not interface.
  */
 :root {
-  --cover-1-from: oklch(0.66 0.11 25);
-  --cover-1-to: oklch(0.5 0.11 55);
-  --cover-2-from: oklch(0.66 0.11 70);
-  --cover-2-to: oklch(0.5 0.11 100);
-  --cover-3-from: oklch(0.66 0.11 115);
-  --cover-3-to: oklch(0.5 0.11 145);
-  --cover-4-from: oklch(0.66 0.11 160);
-  --cover-4-to: oklch(0.5 0.11 190);
-  --cover-5-from: oklch(0.66 0.11 205);
-  --cover-5-to: oklch(0.5 0.11 235);
-  --cover-6-from: oklch(0.66 0.11 250);
-  --cover-6-to: oklch(0.5 0.11 280);
-  --cover-7-from: oklch(0.66 0.11 295);
-  --cover-7-to: oklch(0.5 0.11 325);
-  --cover-8-from: oklch(0.66 0.11 340);
-  --cover-8-to: oklch(0.5 0.11 10);
+  --cover-1-from: oklch(0.66 0.11 150);
+  --cover-1-to: oklch(0.5 0.11 170);
+  --cover-2-from: oklch(0.66 0.11 183);
+  --cover-2-to: oklch(0.5 0.11 203);
+  --cover-3-from: oklch(0.66 0.11 216);
+  --cover-3-to: oklch(0.5 0.11 236);
+  --cover-4-from: oklch(0.66 0.11 249);
+  --cover-4-to: oklch(0.5 0.11 269);
+  --cover-5-from: oklch(0.66 0.11 282);
+  --cover-5-to: oklch(0.5 0.11 302);
+  --cover-6-from: oklch(0.66 0.11 315);
+  --cover-6-to: oklch(0.5 0.11 335);
+  --cover-7-from: oklch(0.66 0.11 348);
+  --cover-7-to: oklch(0.5 0.11 8);
+  --cover-8-from: oklch(0.66 0.11 21);
+  --cover-8-to: oklch(0.5 0.11 41);
 }
 
 /* Tailwind theme extended from the tokens, so utilities follow the active theme. */
