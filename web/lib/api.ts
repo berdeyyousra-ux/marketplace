@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { API_BASE_URL, readTokens } from "./session";
 import type { Me, Problem } from "./types";
 
-export type ApiResult<T> = { ok: true; status: number; data: T } | { ok: false; status: number; problem: Problem };
+export type ApiResult<T> = { ok: true; status: number; data: T; etag: string | null } | { ok: false; status: number; problem: Problem };
 
 // Server-side GET for pages. A missing or expired access token sends the browser through /api/session/refresh,
 // which rotates the tokens and comes back to `returnTo`; with no session at all it goes to the login page.
@@ -50,7 +50,7 @@ export async function toResult<T>(response: Response): Promise<ApiResult<T>> {
   const text = await response.text();
   const body = text ? JSON.parse(text) : null;
   return response.ok
-    ? { ok: true, status: response.status, data: body as T }
+    ? { ok: true, status: response.status, data: body as T, etag: response.headers.get("ETag") }
     : { ok: false, status: response.status, problem: (body ?? { title: response.statusText }) as Problem };
 }
 

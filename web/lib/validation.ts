@@ -16,9 +16,9 @@ export const passwordHint = "10 to 128 characters. Any characters; very common p
 type Validators<K extends string> = Record<K, (value: string) => string | null>;
 
 // Field values, errors shown after a field is left (blur) or on submit, and server errors merged in by field name.
-export function useForm<K extends string>(validators: Validators<K>) {
+export function useForm<K extends string>(validators: Validators<K>, initial: Partial<Record<K, string>> = {}) {
   const keys = Object.keys(validators) as K[];
-  const [values, setValues] = useState(() => Object.fromEntries(keys.map((key) => [key, ""])) as Record<K, string>);
+  const [values, setValues] = useState(() => Object.fromEntries(keys.map((key) => [key, initial[key] ?? ""])) as Record<K, string>);
   const [errors, setErrors] = useState<Partial<Record<K, string>>>({});
 
   function check(key: K, value: string) {

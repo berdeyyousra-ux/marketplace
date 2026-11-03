@@ -77,6 +77,17 @@ export type MyRefundRequest = {
   createdAt: string;
 };
 
+export type SellerProductSummary = {
+  id: string;
+  title: string;
+  status: string;
+  price: Money;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string | null;
+  salesCount: number;
+  coverImageUrl: string | null;
+};
 export type SellerSummary = { balance: Money; revenueLast30Days: Money; ordersLast30Days: number; refundsLast30Days: number; activeProducts: number };
 export type MonthlyRevenue = { month: string; netSales: Money; platformFees: Money; sellerNet: Money; runningSellerNet: Money };
 export type TopProduct = { productId: string; title: string; units: number; gross: Money };

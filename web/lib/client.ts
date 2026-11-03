@@ -2,13 +2,22 @@
 
 import type { Problem } from "./types";
 
-export type ClientResult<T> = { ok: true; data: T } | { ok: false; status: number; problem: Problem };
+export type ClientResult<T> = { ok: true; data: T; etag: string | null } | { ok: false; status: number; problem: Problem };
 
 // Browser calls go to this app's /api/proxy, which adds the access token from the httpOnly cookie.
-export async function call<T>(path: string, init: { method?: string; body?: unknown; idempotent?: boolean } = {}): Promise<ClientResult<T>> {
+// body may be FormData (uploads), sent as multipart; anything else is sent as JSON. ifMatch carries an ETag (US-13).
+export async function call<T>(
+  path: string,
+  init: { method?: string; body?: unknown; idempotent?: boolean; ifMatch?: string | null } = {},
+): Promise<ClientResult<T>> {
   const headers: Record<string, string> = {};
-  if (init.body !== undefined) {
+  const multipart = init.body instanceof FormData;
+  if (init.body !== undefined && !multipart) {
     headers["Content-Type"] = "application/json";
+  }
+
+  if (init.ifMatch) {
+    headers["If-Match"] = init.ifMatch;
   }
 
   if (init.idempotent) {
@@ -18,15 +27,20 @@ export async function call<T>(path: string, init: { method?: string; body?: unkn
   const response = await fetch(`/api/proxy${path}`, {
     method: init.method ?? "GET",
     headers,
-    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+    body: init.body === undefined ? undefined : multipart ? (init.body as FormData) : JSON.stringify(init.body),
   });
   const text = await response.text();
-  const body = text ? JSON.parse(text) : null;
+  let body = null;
+  try {
+    body = text ? JSON.parse(text) : null;
+  } catch {
+    // A non-JSON error page (a proxy timeout, say) still reads as a failure with a status.
+  }
   if (response.status === 401) {
     window.location.href = `/login?next=${encodeURIComponent(window.location.pathname)}`;
   }
 
-  return response.ok ? { ok: true, data: body as T } : { ok: false, status: response.status, problem: (body ?? {}) as Problem };
+  return response.ok ? { ok: true, data: body as T, etag: response.headers.get("ETag") } : { ok: false, status: response.status, problem: (body ?? {}) as Problem };
 }
 
 // Field errors from a problem, keyed by lower-camel field name ("Email" and "email" both become "email").
