@@ -75,8 +75,10 @@ jobs:
           label="org.opencontainers.image.source=https://github.com/${{ github.repository }}"
           build() {
             local name=$1; shift
-            docker build --label "$label" --tag "$REGISTRY/marketplace-$name:$TAG" "$@" .
-            docker push --quiet "$REGISTRY/marketplace-$name:$TAG"
+            # One plain manifest per image: without provenance or SBOM attestations, GHCR receives a single tagged
+            # manifest instead of an index whose tag push it refused ("denied") on the first run.
+            docker build --provenance=false --sbom=false --label "$label" --tag "$REGISTRY/marketplace-$name:$TAG" "$@" .
+            docker push "$REGISTRY/marketplace-$name:$TAG"
           }
           build api --file deploy/docker/Api.Dockerfile
           build worker --file deploy/docker/Worker.Dockerfile
@@ -84,8 +86,8 @@ jobs:
           build web --file deploy/docker/Web.Dockerfile --build-arg COVER_IMAGE_BASE_URL="$(cat .cd/cover-base)"
           docker logout ghcr.io
 
-      # GHCR creates a package as private the first time it is pushed. Container Apps pulls anonymously, so each package
-      # is made public once, by hand (the repository is public and the images hold no secrets).
+      # Container Apps pulls anonymously. A package pushed from this public repository with the source label inherits its
+      # public visibility; this check catches one that was made private.
       - name: Check the images are public
         run: |
           private=()
@@ -99,7 +101,7 @@ jobs:
             [ "$status" = 200 ] || private+=("marketplace-$name")
           done
           if [ ${#private[@]} -gt 0 ]; then
-            echo "::error::These GHCR packages are private, so Azure can't pull them: ${private[*]}. Make each public once (github.com/${{ github.repository_owner }}?tab=packages, package settings, Change visibility), then re-run this workflow."
+            echo "::error::These GHCR packages are private, so Azure can't pull them: ${private[*]}. Make each public (github.com/${{ github.repository_owner }}?tab=packages, package settings, Change visibility), then re-run this workflow."
             exit 1
           fi
 

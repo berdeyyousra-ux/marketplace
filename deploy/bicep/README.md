@@ -55,13 +55,7 @@ Deployment happens in two stages:
 5. smoke-tests the API and the web client
 6. puts the previous images back if the deployment or the smoke test fails
 
-**Once, after the first run:** GHCR creates each package as private, and Container Apps pulls without credentials. Make the four packages public, then re-run the workflow:
-- `marketplace-api`
-- `marketplace-worker`
-- `marketplace-migrate`
-- `marketplace-web`
-
-To change a package's visibility: GitHub profile, Packages tab, open the package, Package settings, Change visibility. The workflow checks this and says which packages are still private.
+**Image visibility:** Container Apps pulls from GHCR without credentials, so the packages must be public. Packages pushed from this public repository with its source label inherit public visibility, and the workflow checks it. If one was made private, open it from the Packages tab on the GitHub profile and change its visibility in Package settings.
 
 ## Key Vault secrets
 
