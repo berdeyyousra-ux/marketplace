@@ -4,6 +4,23 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-03
 
+### Section 15.5: the Azure infrastructure as built (T-061b)
+
+**Spec:** `main.bicep` creates the resource group `rg-marketplace-{env}`, two Container Apps, PostgreSQL with "firewall: Container Apps subnet only", a storage account with `product-files`, Key Vault and an identity per app, plus a 20 EUR budget alert.
+
+**Changes:**
+1. **Existing resource groups.** The template deploys into `marketplace-staging-rg` and `marketplace-prod-rg`, which the repository owner created and on which the deployment identity holds Contributor and User Access Administrator. The pipeline then needs no subscription-wide rights.
+2. **PostgreSQL in a private network.** A Flexible Server's firewall can't be limited to a subnet, so it uses private access: a delegated subnet and a private DNS zone, with no public endpoint. Authentication is Microsoft Entra only, so no database password exists.
+   - A third identity, `id-marketplace-migrate-*`, is the database's Entra administrator.
+   - The migration job (T-062) runs inside the network as that identity, because a GitHub runner can't reach a private database. It also creates the api and worker database roles.
+3. **Storage.**
+   - The public `product-covers` container is added (T-085), which needs blob public access allowed on the account.
+   - Shared-key access is disabled, since the apps use their identities (T-061a).
+4. **The web client** is a third Container App, `marketplace-web`, because T-083's done-when is "deployed alongside the API".
+5. **Two stages.** The apps are created only with `deployApps=true`, after the Key Vault secrets exist, because Container Apps won't start with an unresolved secret reference.
+6. **Budget alert recipient.** Budgets at resource-group scope need a contact email. It comes from the `BUDGET_ALERT_EMAIL` GitHub environment variable, so no address is committed. Without it, the budget is skipped.
+7. **Cost is above the budget.** The estimate is about $31 to $35 a month for staging and about $70 for production (`deploy/bicep/README.md`), mostly PostgreSQL and the always-on Worker. The 20 EUR alert will fire in a normal month, which is left for the owner to decide.
+
 ### Section 16: `Azure:ManagedIdentityClientId`, and a blob endpoint URL in place of a connection string (T-061a)
 
 **Spec:** section 15.5 builds connection strings "from the managed identity and server FQDN", and Key Vault holds no database password or storage key. Section 16 lists `ConnectionStrings:BlobStorage` as "no (managed identity)" but names no key that selects an identity.
