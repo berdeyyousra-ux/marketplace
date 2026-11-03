@@ -32,6 +32,11 @@ jobs:
     name: what-if (staging)
     runs-on: ubuntu-latest
     environment: staging
+    # An explicit bash shell runs every step with -eo pipefail. Without it, "az ... | tee" takes tee's exit code,
+    # and a failed deployment showed as a green step.
+    defaults:
+      run:
+        shell: bash
     env:
       RESOURCE_GROUP: marketplace-staging-rg
       PARAMETERS: deploy/bicep/parameters.staging.json
@@ -89,6 +94,9 @@ jobs:
             --parameters "@$PARAMETERS" \
             --parameters budgetContactEmail="${{ vars.BUDGET_ALERT_EMAIL }}" \
             --output json 2>&1 | grep -o '"message": "[^"]*"' | sort -u || true
+          # Resource-provider registration is not checked by validate or what-if; a failed apply's operations are.
+          az deployment operation group list --resource-group "$RESOURCE_GROUP" --name "marketplace-${{ github.run_id }}" \
+            --query "[?properties.provisioningState=='Failed'].properties.statusMessage.error.details[].message" --output tsv 2>/dev/null | sort -u || true
 
       - name: Upload the what-if
         if: always()
