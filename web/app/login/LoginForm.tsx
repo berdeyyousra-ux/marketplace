@@ -2,42 +2,65 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { describe } from "@/lib/client";
+import { describe, fieldErrors } from "@/lib/client";
+import { rules, useForm } from "@/lib/validation";
+import type { Problem } from "@/lib/types";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Field";
+import { FormAlert } from "@/components/FormAlert";
+
+// The API's login failures in words a person can act on (section 11.2: one answer for unknown email or wrong password).
+function loginMessage(status: number, problem: Problem) {
+  if (status === 401) return "That email and password don't match an account.";
+  if (status === 403) return "Confirm your email first: open the link we sent when you registered.";
+  if (status === 423) return "Too many failed attempts. The account is locked for 15 minutes; try again then, or reset your password.";
+  if (status === 429) return "Too many attempts from here. Wait a minute and try again.";
+  return describe(problem);
+}
 
 export function LoginForm({ next }: { next: string }) {
+  const form = useForm({ email: rules.email, password: rules.required("Enter your password.") });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function submit(form: FormData) {
-    setBusy(true);
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
     setError(null);
+    if (!form.validateAll()) return;
+
+    setBusy(true);
     const response = await fetch("/api/session/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: form.get("email"), password: form.get("password") }),
+      body: JSON.stringify({ email: form.values.email.trim(), password: form.values.password }),
     });
     if (response.ok) {
       window.location.href = next;
       return;
     }
 
-    setError(describe(await response.json().catch(() => ({}))));
+    const problem: Problem = await response.json().catch(() => ({}));
+    if (response.status === 400 && problem.errors) {
+      form.setServerErrors(fieldErrors(problem));
+    } else {
+      setError(loginMessage(response.status, problem));
+    }
+
     setBusy(false);
   }
 
   return (
-    <form className="stack" action={submit}>
-      {error && <p className="error">{error}</p>}
-      <div>
-        <label htmlFor="email">Email</label>
-        <input id="email" name="email" type="email" autoComplete="email" required />
+    <form className="flex flex-col gap-4" onSubmit={submit} noValidate>
+      {error && <FormAlert>{error}</FormAlert>}
+      <Input label="Email" type="email" autoComplete="email" {...form.field("email")} />
+      <div className="flex flex-col gap-1">
+        <Input label="Password" type="password" autoComplete="current-password" {...form.field("password")} />
+        <Link href="/forgot-password" className="self-end type-label text-accent hover:underline">Forgot your password?</Link>
       </div>
-      <div>
-        <label htmlFor="password">Password</label>
-        <input id="password" name="password" type="password" autoComplete="current-password" required />
-      </div>
-      <button type="submit" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
-      <p className="small muted">No account yet? <Link href="/register">Create one</Link>.</p>
+      <Button type="submit" loading={busy} fullWidth>Sign in</Button>
+      <p className="m-0 text-center type-label text-muted">
+        New here? <Link href="/register" className="text-accent hover:underline">Create an account</Link>
+      </p>
     </form>
   );
 }

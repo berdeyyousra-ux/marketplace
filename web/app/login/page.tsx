@@ -1,12 +1,18 @@
+import { AuthShell, StatusPanel } from "@/components/AuthShell";
 import { LoginForm } from "./LoginForm";
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; verified?: string }> }) {
-  const { next, verified } = await searchParams;
+const notices: Record<string, string> = {
+  verified: "Your email is confirmed. Sign in to continue.",
+  reset: "Your password is changed and every device that was signed in has been signed out. Sign in with the new password.",
+};
+
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; verified?: string; reset?: string }> }) {
+  const { next, verified, reset } = await searchParams;
+  const notice = verified ? notices.verified : reset ? notices.reset : null;
   return (
-    <div className="stack">
-      <h1>Sign in</h1>
-      {verified && <p className="notice">Your email is confirmed. You can sign in now.</p>}
+    <AuthShell title="Sign in">
+      {notice && <StatusPanel tone="success">{notice}</StatusPanel>}
       <LoginForm next={next && next.startsWith("/") && !next.startsWith("//") ? next : "/"} />
-    </div>
+    </AuthShell>
   );
 }

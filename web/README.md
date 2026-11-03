@@ -2,7 +2,7 @@
 
 A thin Next.js (App Router, TypeScript) client for the Marketplace API. It has these pages:
 
-- create an account, confirm the email, and sign in
+- create an account, confirm the email, sign in, and reset a forgotten password
 - browse and search the catalogue, and view a product
 - buy a product and pay for it (checkout)
 - the order list
