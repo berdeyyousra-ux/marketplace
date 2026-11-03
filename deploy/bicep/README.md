@@ -1,18 +1,15 @@
 # Azure infrastructure (T-061)
 
-`main.bicep` creates one environment in an existing resource group:
+`main.bicep` creates one environment in an existing resource group. Only **staging** is deployed, into `marketplace-staging-rg` with `parameters.staging.json`.
 
-| Environment | Resource group | Parameters |
-| --- | --- | --- |
-| staging | `marketplace-staging-rg` | `parameters.staging.json` |
-| production | `marketplace-prod-rg` | `parameters.prod.json` |
+Production is deferred to keep the cost down; one live environment is enough for now (T-063, see `docs/spec-changelog.md`). The template still supports it: when it's wanted, add a `parameters.prod.json` (`postgresSku` `Standard_B2s`, `keyVaultPurgeProtection` `true`) and a production job to the workflow. Its resource group, role grants and federated credential already exist.
 
 What it creates:
 
 | Resource | Notes |
 | --- | --- |
 | Virtual network | One subnet for Container Apps, one delegated to PostgreSQL |
-| PostgreSQL 17 Flexible Server | Burstable B1ms (staging) or B2s (production). Private network only, Microsoft Entra authentication only (no passwords), database `marketplace` |
+| PostgreSQL 17 Flexible Server | Burstable B1ms, the smallest tier. Private network only, Microsoft Entra authentication only (no passwords), database `marketplace` |
 | Private DNS zone | Resolves the database inside the network |
 | Storage account | `product-files` (private) and `product-covers` (public read, T-085). Shared-key access is disabled |
 | Key Vault | RBAC. Holds the six secrets below |
@@ -25,8 +22,8 @@ What it creates:
 
 The `Infrastructure` workflow (`.github/workflows/infra.yml`) signs in through GitHub OIDC, using the federated credentials on the app registration. It never uses a stored secret.
 
-- **Pull requests:** a pull request that touches `deploy/bicep` gets a what-if for both environments in the job summary. Nothing is applied.
-- **Applying:** a manual run with `apply: true` applies one environment. Production runs wait for the `production` environment's required reviewer.
+- **Pull requests:** a pull request that touches `deploy/bicep` gets a staging what-if in the job summary. Nothing is applied.
+- **Applying:** a manual run with `apply: true` applies staging.
 
 Deployment happens in two stages:
 
@@ -35,7 +32,7 @@ Deployment happens in two stages:
 
 ## Key Vault secrets
 
-These are set once per environment by someone with the Key Vault Secrets Officer role on the vault. The vault name is in the deployment output `keyVaultName`.
+These are set once by someone with the Key Vault Secrets Officer role on the vault. The vault name is in the deployment output `keyVaultName`.
 
 ```sh
 VAULT=<keyVaultName>
@@ -53,14 +50,34 @@ Notes:
 
 ## Monthly cost
 
-These are estimates from West Europe list prices. They are not quotes.
+These are estimates for staging from West Europe list prices. They are not quotes.
 
-| | Staging | Production |
+| | Running | Database stopped |
 | --- | --- | --- |
-| PostgreSQL compute and 32 GB storage | about $16 (B1ms) | about $54 (B2s) |
-| Worker, always on (0.25 vCPU, 0.5 GiB), after the Container Apps free grant | about $14 | about $14 |
-| Api and web | close to $0 at demo traffic (both scale to zero) | close to $0 at demo traffic |
-| Log Analytics, Key Vault, storage, private DNS | about $1 to $4 | about $1 to $4 |
-| **Total** | **about $31 to $35** | **about $70** |
+| PostgreSQL B1ms compute | about $12 to $13 | $0 |
+| PostgreSQL storage, 32 GB (the minimum) | about $4 | about $4 |
+| Worker, always on (0.25 vCPU, 0.5 GiB) | about $3 to $5 if billed at the idle rate, up to about $14 if not | the same |
+| Api and web | close to $0 at demo traffic (both scale to zero) | $0 |
+| Log Analytics, Key Vault, storage, private DNS | about $1 to $3 | about $1 to $3 |
+| **Total** | **about $20 to $24** | **about $8 to $10** |
 
-Both totals are above the 20-per-month budget in section 15.5, so the budget alert will fire in a normal month.
+About the Worker:
+- **It can't scale to zero.** It turns payment webhooks into paid orders, sends email, executes refunds and expires orders. Nothing could wake it without delaying a payment confirmation by minutes.
+- **Idle rate:** Container Apps bills a replica at a lower rate while it uses under 0.01 vCPU and under 1,000 bytes a second of network traffic. The Worker backs off its polling when the outbox is empty, to stay under that line. The first bill's meter data will show which rate applies.
+
+## Stopping the database between demos
+
+A stopped Flexible Server bills storage only. Azure starts it again automatically after 7 days, so stop it again if it should stay off.
+
+```sh
+SERVER=$(az postgres flexible-server list --resource-group marketplace-staging-rg --query "[0].name" --output tsv)
+az postgres flexible-server stop  --resource-group marketplace-staging-rg --name "$SERVER"
+az postgres flexible-server start --resource-group marketplace-staging-rg --name "$SERVER"   # takes a few minutes
+az postgres flexible-server show  --resource-group marketplace-staging-rg --name "$SERVER" --query state
+```
+
+While the database is stopped:
+- the Api's readiness check fails, so the site answers 503
+- the Worker's readiness check fails, and it retries until the database is back
+
+Start the database about five minutes before a demo. The apps recover on their own once it's back.

@@ -1,9 +1,10 @@
-# T-061: the Azure infrastructure (deploy/bicep). Pull requests that touch it get a what-if for staging and
-# production: what would be created, changed or deleted. Nothing is applied by a pull request. Applying is a manual
-# run (workflow_dispatch with apply: true), so the first billable deployment happens only when someone starts it.
+# T-061: the Azure infrastructure (deploy/bicep), staging only for now: production is deferred (T-063, see
+# docs/spec-changelog.md). Pull requests that touch it get a what-if: what would be created, changed or deleted.
+# Nothing is applied by a pull request. Applying is a manual run (workflow_dispatch with apply: true), so a billable
+# deployment happens only when someone starts it.
 #
-# Sign-in is GitHub OIDC (section 15.5): a federated credential per GitHub environment, no stored secrets. The
-# AZURE_* values and BUDGET_ALERT_EMAIL are environment variables, not secrets.
+# Sign-in is GitHub OIDC (section 15.5): a federated credential on the staging GitHub environment, no stored secrets.
+# The AZURE_* values and BUDGET_ALERT_EMAIL are environment variables, not secrets.
 name: Infrastructure
 
 on:
@@ -13,11 +14,6 @@ on:
       - .github/workflows/infra.yml
   workflow_dispatch:
     inputs:
-      environment:
-        description: Environment
-        type: choice
-        options: [staging, production]
-        default: staging
       apply:
         description: Apply the deployment after the what-if (creates billable resources)
         type: boolean
@@ -28,21 +24,17 @@ permissions:
   id-token: write
 
 concurrency:
-  group: infra-${{ github.event.inputs.environment || 'pr' }}-${{ github.ref }}
+  group: infra-staging
   cancel-in-progress: false
 
 jobs:
   what-if:
-    name: what-if (${{ matrix.environment }})
+    name: what-if (staging)
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        environment: ${{ github.event_name == 'workflow_dispatch' && fromJSON(format('["{0}"]', github.event.inputs.environment)) || fromJSON('["staging","production"]') }}
-    environment: ${{ matrix.environment }}
+    environment: staging
     env:
-      RESOURCE_GROUP: ${{ matrix.environment == 'production' && 'marketplace-prod-rg' || 'marketplace-staging-rg' }}
-      PARAMETERS: deploy/bicep/parameters.${{ matrix.environment == 'production' && 'prod' || 'staging' }}.json
+      RESOURCE_GROUP: marketplace-staging-rg
+      PARAMETERS: deploy/bicep/parameters.staging.json
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -82,7 +74,7 @@ jobs:
           print(", ".join(f"{n} {kind}" for kind, n in sorted(counts.items())))
           PY
           {
-            echo "### What-if: ${{ matrix.environment }} ($RESOURCE_GROUP)"
+            echo "### What-if: staging ($RESOURCE_GROUP)"
             echo '```'
             cat what-if.txt
             echo '```'
@@ -91,7 +83,7 @@ jobs:
       - name: Upload the what-if
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: what-if-${{ matrix.environment }}
+          name: what-if-staging
           path: what-if.*
 
       - name: Apply

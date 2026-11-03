@@ -4,6 +4,17 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-03
 
+### Section 17: production deferred, T-063 postponed
+
+**Spec:** T-061 to T-063 stand up staging and production, and T-063 deploys production through a manual trigger with an approval gate.
+
+**Change:** only staging is deployed. The infrastructure workflow and parameters cover staging alone, and T-063 is postponed until a production environment is wanted.
+- The template still supports production.
+- Its resource group (`marketplace-prod-rg`), role grants, federated credential and GitHub environment already exist.
+- Turning it on needs a `parameters.prod.json`, a production job in the workflow and T-063's pipeline.
+
+**Why:** production would add about $70 a month (B2s PostgreSQL and a second always-on Worker), and one live environment is enough for now. Decided by the repository owner on 2026-11-03.
+
 ### Section 15.5: the Azure infrastructure as built (T-061b)
 
 **Spec:** `main.bicep` creates the resource group `rg-marketplace-{env}`, two Container Apps, PostgreSQL with "firewall: Container Apps subnet only", a storage account with `product-files`, Key Vault and an identity per app, plus a 20 EUR budget alert.
@@ -19,7 +30,7 @@ Changes to, and resolved contradictions in, the build specification.
 4. **The web client** is a third Container App, `marketplace-web`, because T-083's done-when is "deployed alongside the API".
 5. **Two stages.** The apps are created only with `deployApps=true`, after the Key Vault secrets exist, because Container Apps won't start with an unresolved secret reference.
 6. **Budget alert recipient.** Budgets at resource-group scope need a contact email. It comes from the `BUDGET_ALERT_EMAIL` GitHub environment variable, so no address is committed. Without it, the budget is skipped.
-7. **Cost is above the budget.** The estimate is about $31 to $35 a month for staging and about $70 for production (`deploy/bicep/README.md`), mostly PostgreSQL and the always-on Worker. The 20 EUR alert will fire in a normal month, which is left for the owner to decide.
+7. **Staging only, sized for cost.** Only staging is deployed (see the T-063 entry below), on the smallest PostgreSQL tier, B1ms. The estimate is about $20 to $24 a month while running, and about $8 to $10 with the database stopped between demos (`deploy/bicep/README.md`). That is at or just under the 20 EUR budget alert.
 
 ### Section 16: `Azure:ManagedIdentityClientId`, and a blob endpoint URL in place of a connection string (T-061a)
 
