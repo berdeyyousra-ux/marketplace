@@ -54,7 +54,8 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Check the sign-in
-        run: az account show --query "{subscription: name, user: user.type}" --output table
+        run: |
+          az account show --query "{subscription: name, user: user.type}" --output table
 
       - name: Build and lint the Bicep
         run: az bicep build --file deploy/bicep/main.bicep --stdout > /dev/null
