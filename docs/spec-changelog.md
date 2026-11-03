@@ -4,18 +4,25 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
-### T-086: two tokens added to the design plan's set
+### T-086: corrections to `docs/frontend-design-plan.md` after rendering the token set
 
-**Plan:** `docs/frontend-design-plan.md` defines ten colour tokens and states that every pairing meets WCAG AA.
+**Plan:** `docs/frontend-design-plan.md` defines ten colour tokens, states that every pairing meets WCAG AA, and asks for generated covers from eight hues at similar saturation and lightness.
 
-**Change:** contrast measurements found two gaps, so two tokens were added.
+**Corrections (approved by the repo owner after reviewing the rendered `/design-system` page):**
 
-| Token | Value | Why |
-| --- | --- | --- |
-| `--accent-contrast` | `#ffffff` in light mode, `#0c0a09` in dark | The text colour on accent surfaces. White on the dark-mode accent `#14b8a6` is 2.49:1; near-black is 7.94:1. |
-| `--border-strong` | `#78716c` in both modes | The border for form controls. `--border` is 1.26:1 (light) and 1.15:1 (dark) against the surface, which is below the 3:1 a control's boundary needs (WCAG 1.4.11). The new border gives 4.80:1 (light) and 3.65:1 (dark). |
+1. **Text on the accent.** `--accent-contrast` is added: `#ffffff` in light mode, `#0c0a09` in dark. White on the dark-mode accent `#14b8a6` is 2.49:1; near-black is 7.94:1.
+2. **Form-control borders.** `--border-strong` (`#78716c` in both modes) is added for inputs, textareas and selects.
+   - `--border` is 1.26:1 (light) and 1.15:1 (dark) against the surface, below the 3:1 a control's boundary needs (WCAG 1.4.11). The new border gives 4.80:1 and 3.65:1.
+   - `--border` stays for decorative card edges and dividers.
+3. **Generated-cover hues.** The yellow, olive and yellow-green band (about 41° to 150° in OKLCH hue) is dropped.
+   - The eight hues sit 33° apart, from 150° round to 21°, each pair fading 20°, at the same lightness and chroma.
+   - Yellows look lighter than other hues at equal chroma, so at this lightness that band renders muddy and cannot be made clean. Nudging only the two muddy pairs would have left the spacing uneven.
+4. **Dark-mode status colours.** Success becomes `#5db384` (was `#4ade80`) and warning `#d4a24c` (was `#fbbf24`). Danger stays `#f87171`.
+   - Green and amber are informational, so they are toned down. Red must still pull the eye, so the three are not flattened equally.
+   - Saturation: success 0.69 → 0.36, warning 0.96 → 0.61, danger stays at 0.91.
+   - Contrast on the dark surface: success 6.87:1, warning 7.55:1, danger 6.32:1.
 
-`--border` stays for decorative card edges and dividers. CI now fails if a raw colour value appears outside `web/app/globals.css`.
+CI fails if a raw colour value appears outside `web/app/globals.css`, so these values change in one place.
 
 ### Section 12.5: prompt `refund-advisor.v2`, and strict structured output for OpenAI (T-075)
 
