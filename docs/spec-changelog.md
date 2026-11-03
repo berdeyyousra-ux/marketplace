@@ -4,6 +4,17 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-03
 
+### Section 10.3: the outbox poll backs off while idle
+
+**Spec:** after an empty poll the Worker waits 2 seconds (plus jitter) before polling again.
+
+**Change:** consecutive empty polls wait 2, 4, 8 and then at most 10 seconds. Any claimed message resets the wait to 2 seconds, and a full batch still polls again at once. A failed poll counts as empty.
+
+**Why:**
+- **Cost:** the Worker can't scale to zero, since it turns payment webhooks into paid orders. Polling less often while idle keeps its database traffic under the threshold at which Container Apps bills a replica at the cheaper idle rate (staging cost, see the T-061b entry).
+- **Effect on users:** a message queued after a quiet spell is picked up up to 10 seconds later, instead of 2.
+- **Stopped database:** with the staging database stopped, the Worker retries every 10 seconds instead of every 2.
+
 ### Section 17: production deferred, T-063 postponed
 
 **Spec:** T-061 to T-063 stand up staging and production, and T-063 deploys production through a manual trigger with an approval gate.
@@ -30,7 +41,7 @@ Changes to, and resolved contradictions in, the build specification.
 4. **The web client** is a third Container App, `marketplace-web`, because T-083's done-when is "deployed alongside the API".
 5. **Two stages.** The apps are created only with `deployApps=true`, after the Key Vault secrets exist, because Container Apps won't start with an unresolved secret reference.
 6. **Budget alert recipient.** Budgets at resource-group scope need a contact email. It comes from the `BUDGET_ALERT_EMAIL` GitHub environment variable, so no address is committed. Without it, the budget is skipped.
-7. **Staging only, sized for cost.** Only staging is deployed (see the T-063 entry below), on the smallest PostgreSQL tier, B1ms. The estimate is about $20 to $24 a month while running, and about $8 to $10 with the database stopped between demos (`deploy/bicep/README.md`). That is at or just under the 20 EUR budget alert.
+7. **Staging only, sized for cost.** Only staging is deployed (see the T-063 entry above), on the smallest PostgreSQL tier, B1ms. The estimate is about $20 to $24 a month while running, and about $8 to $10 with the database stopped between demos (`deploy/bicep/README.md`). That is at or just under the 20 EUR budget alert.
 8. **Region: North Europe.** West Europe, the region chosen first, rejects new resources for this subscription ("not accepting new customers"). The resources are placed in North Europe, the nearest equivalent; the resource group keeps West Europe as its metadata location.
 
 ### Section 16: `Azure:ManagedIdentityClientId`, and a blob endpoint URL in place of a connection string (T-061a)

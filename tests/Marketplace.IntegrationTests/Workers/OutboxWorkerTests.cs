@@ -45,6 +45,53 @@ public sealed class OutboxWorkerTests(MarketplaceWebFactory factory) : Integrati
         processedBeforeDelay.ShouldBe(0);
     }
 
+    [Theory]
+    [InlineData(0, 2)]
+    [InlineData(1, 2)]
+    [InlineData(2, 4)]
+    [InlineData(3, 8)]
+    [InlineData(4, 10)]
+    [InlineData(50, 10)]
+    public void DelayAfter_EmptyPolls_DoublesUpToTenSeconds(int emptyPolls, int seconds)
+    {
+        OutboxWorker.DelayAfter(emptyPolls).ShouldBe(TimeSpan.FromSeconds(seconds));
+    }
+
+    [Fact]
+    public async Task Worker_LongIdle_BacksOff_ThenResetsAfterWork()
+    {
+        using var worker = NewWorker();
+        await worker.StartAsync(CancellationToken);
+
+        // Four empty polls: the waits after them are 2, 4, 8 and then 10 seconds (each plus up to 0.5 s of jitter).
+        await SettleAsync();
+        foreach (var seconds in new[] { 2.5, 4.5, 8.5 })
+        {
+            Time.Advance(TimeSpan.FromSeconds(seconds));
+            await SettleAsync();
+        }
+
+        await EnqueueAsync(Guid.CreateVersion7().ToString());
+        Time.Advance(TimeSpan.FromSeconds(5));
+        await SettleAsync();
+        var processedMidWait = await ProcessedCountAsync();
+
+        Time.Advance(TimeSpan.FromSeconds(6));
+        await WaitUntilAsync(() => ProcessedCountAsync(), 1);
+
+        // The poll claimed a message, so the next wait is back to 2 seconds.
+        await SettleAsync();
+        await EnqueueAsync(Guid.CreateVersion7().ToString());
+        Time.Advance(TimeSpan.FromSeconds(2.5));
+        await WaitUntilAsync(() => ProcessedCountAsync(), 2);
+        await worker.StopAsync(CancellationToken);
+
+        processedMidWait.ShouldBe(0);
+    }
+
+    // Lets the loop finish its poll and reach its next wait before fake time moves on.
+    private static Task SettleAsync() => Task.Delay(TimeSpan.FromMilliseconds(300), CancellationToken);
+
     [Fact]
     public async Task Worker_Stopped_ReturnsPromptly()
     {

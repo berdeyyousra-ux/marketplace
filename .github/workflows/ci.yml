@@ -163,4 +163,4 @@ jobs:
           tar -xzf "$archive" gitleaks
 
       - name: Scan repository history
-        run: '"$RUNNER_TEMP/gitleaks" git . --config .gitleaks.toml --redact --no-banner --exit-code 1'
+        run: '"$RUNNER_TEMP/gitleaks" git . --config .gitleaks.toml --redact --verbose --no-banner --exit-code 1'
