@@ -6,7 +6,12 @@ import { SearchField } from "./SearchField";
 
 const link = "type-label text-text hover:text-accent";
 
-function Links({ me }: { me: Me | null }) {
+function Links({ me, restoring }: { me: Me | null; restoring: boolean }) {
+  // While the session is being restored, a quiet placeholder: neither "Sign in" nor the account, so nothing flips.
+  if (!me && restoring) {
+    return <span aria-label="Restoring your session" role="status" className="inline-block h-5 w-40 animate-pulse rounded-control bg-border" />;
+  }
+
   if (!me) {
     return (
       <>
@@ -35,7 +40,7 @@ function Links({ me }: { me: Me | null }) {
 }
 
 // Sticky 64px bar (docs/frontend-design-plan.md, Shell). Below 768px the links collapse into a sheet.
-export function TopBar({ me }: { me: Me | null }) {
+export function TopBar({ me, restoring = false }: { me: Me | null; restoring?: boolean }) {
   return (
     <header className="sticky z-30 border-b border-border bg-surface" style={{ top: "env(safe-area-inset-top, 0px)" }}>
       <div className="container-page flex h-16 items-center gap-3 md:gap-6">
@@ -46,12 +51,12 @@ export function TopBar({ me }: { me: Me | null }) {
           </Suspense>
         </div>
         <nav aria-label="Main" className="hidden items-center gap-5 md:flex">
-          <Links me={me} />
+          <Links me={me} restoring={restoring} />
         </nav>
         <details className="shrink-0 md:hidden">
           <summary className="cursor-pointer list-none rounded-control border border-border-strong px-3 py-2 type-label text-text">Menu</summary>
           <nav aria-label="Main" className="absolute inset-x-0 top-16 z-40 flex flex-col gap-4 border-b border-border bg-surface px-6 py-4 shadow-raised">
-            <Links me={me} />
+            <Links me={me} restoring={restoring} />
           </nav>
         </details>
       </div>

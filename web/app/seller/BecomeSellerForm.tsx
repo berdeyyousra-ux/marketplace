@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { call, describe, fieldErrors } from "@/lib/client";
+import { refreshSession } from "@/lib/refresh";
 import { rules, useForm } from "@/lib/validation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Field";
@@ -28,7 +29,7 @@ export function BecomeSellerForm({ defaultName }: { defaultName: string }) {
       body: { displayName: form.values.displayName.trim(), bio: bio.trim() || null, country: form.values.country.trim().toUpperCase() },
     });
     if (result.ok) {
-      await fetch("/api/session/refresh", { method: "POST" });
+      await refreshSession();
       window.location.reload();
       return;
     }

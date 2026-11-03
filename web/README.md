@@ -17,7 +17,12 @@ The browser never calls the API and never sees a token.
 - **Sign-in:** this app's server makes the call and stores the access and refresh tokens in httpOnly cookies (section 11.2).
 - **Pages:** they render on the server with the access token.
 - **Browser actions:** they go to `/api/proxy/...`, which adds the token and forwards the call to the API's `/api/v1/...`.
-- **Expired tokens:** when the access token has expired, the proxy and pages rotate the tokens once with the refresh token. If that fails, the user goes to the sign-in page.
+- **Expired tokens:** only the browser renews a session, through `lib/refresh.ts`. The API has no grace period for a reused refresh token, so two refreshes sent with the same token would sign the user out everywhere.
+  - Refreshes are single-flight: one shared promise within a tab, and a Web Lock across tabs, so each refresh sends the newest token.
+  - The API proxy passes a 401 back. `call()` refreshes and retries the request once.
+  - A signed-in page without a usable token goes to `/session/refresh`, which renews the session and returns.
+  - A public page shows a neutral header and restores the session in the background, so a signed-in user never appears signed out.
+  - If the refresh fails, the cookies are cleared and the user is signed out.
 
 Because every API call comes from the server, the API needs no CORS entry for the client.
 
