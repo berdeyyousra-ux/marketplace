@@ -20,12 +20,18 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
+        services.AddSingleton<Cloud.ManagedIdentityDatabase>();
         services.AddDbContext<AppDbContext>((provider, options) =>
         {
-            var connectionString = provider.GetRequiredService<IConfiguration>().GetConnectionString("Database")
+            var configuration = provider.GetRequiredService<IConfiguration>();
+            var connectionString = configuration.GetConnectionString("Database")
                 ?? throw new InvalidOperationException("ConnectionStrings:Database is not configured.");
 
-            options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention();
+            // In Azure the password is a managed-identity token from a shared data source (Cloud/ManagedIdentity.cs).
+            var builder = Cloud.ManagedIdentity.FromConfiguration(configuration) is null
+                ? options.UseNpgsql(connectionString)
+                : options.UseNpgsql(provider.GetRequiredService<Cloud.ManagedIdentityDatabase>().DataSource);
+            builder.UseSnakeCaseNamingConvention();
         });
 
         // R-07: time comes only from an injected TimeProvider; tests replace it with FakeTimeProvider.

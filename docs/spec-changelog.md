@@ -4,6 +4,19 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-03
 
+### Section 16: `Azure:ManagedIdentityClientId`, and a blob endpoint URL in place of a connection string (T-061a)
+
+**Spec:** section 15.5 builds connection strings "from the managed identity and server FQDN", and Key Vault holds no database password or storage key. Section 16 lists `ConnectionStrings:BlobStorage` as "no (managed identity)" but names no key that selects an identity.
+
+**Change:**
+- **The switch:** a new key, `Azure:ManagedIdentityClientId`, holds the client id of the app's user-assigned identity. When it is set:
+  - `ConnectionStrings:Database` carries no password. Npgsql's password is a Microsoft Entra token for that identity, renewed every 30 minutes.
+  - `ConnectionStrings:BlobStorage` is the account's blob endpoint URL (`https://<account>.blob.core.windows.net/`), reached with the identity. Download links are then user-delegation SAS URLs, which the storage code already supported.
+- **Unchanged when unset:** local development and tests use the connection strings exactly as before.
+- **Package:** adds `Azure.Identity` 1.21.0.
+
+**Why:** an Azure deployment then holds no database password or storage key at all. Each app's identity is granted only its own database role and blob data access.
+
 ### EP-22: the public product page shows the file's type and size (T-087)
 
 **Spec:** EP-22 returns `file` metadata only to the product's owner or an admin.
