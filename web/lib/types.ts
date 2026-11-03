@@ -110,6 +110,8 @@ export type AdminRefundSummary = {
   downloadCount: number;
   createdAt: string;
   ai: AiSummary | null;
+  buyerName: string | null;
+  amount: Money | null;
 };
 export type AdminRefundDetail = {
   id: string;
@@ -138,4 +140,11 @@ export type AdminRefundDetail = {
     createdAt: string;
   } | null;
   history: { action: string; actorType: string; occurredAt: string }[];
+  buyer: {
+    id: string;
+    displayName: string | null;
+    email: string | null;
+    paidOrders: number;
+    otherRequests: { id: string; productTitle: string; status: string; createdAt: string }[];
+  } | null;
 };

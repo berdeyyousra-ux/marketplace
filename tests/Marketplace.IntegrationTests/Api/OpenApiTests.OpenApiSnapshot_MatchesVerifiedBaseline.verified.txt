@@ -2702,6 +2702,16 @@ Sets the product's cover image from multipart field "file": JPEG, PNG or WebP, a
             items: {
               $ref: #/components/schemas/RefundHistoryEntry
             }
+          },
+          buyer: {
+            oneOf: [
+              {
+                type: null
+              },
+              {
+                $ref: #/components/schemas/RefundBuyer
+              }
+            ]
           }
         }
       },
@@ -2754,6 +2764,22 @@ Sets the product's cover image from multipart field "file": JPEG, PNG or WebP, a
               },
               {
                 $ref: #/components/schemas/AiSummary
+              }
+            ]
+          },
+          buyerName: {
+            type: [
+              null,
+              string
+            ]
+          },
+          amount: {
+            oneOf: [
+              {
+                type: null
+              },
+              {
+                $ref: #/components/schemas/MoneyDto
               }
             ]
           }
@@ -2943,6 +2969,31 @@ Sets the product's cover image from multipart field "file": JPEG, PNG or WebP, a
           },
           country: {
             type: string
+          }
+        }
+      },
+      BuyerRefundEntry: {
+        required: [
+          id,
+          productTitle,
+          status,
+          createdAt
+        ],
+        type: object,
+        properties: {
+          id: {
+            type: string,
+            format: uuid
+          },
+          productTitle: {
+            type: string
+          },
+          status: {
+            type: string
+          },
+          createdAt: {
+            type: string,
+            format: date-time
           }
         }
       },
@@ -4327,6 +4378,48 @@ Sets the product's cover image from multipart field "file": JPEG, PNG or WebP, a
         properties: {
           refreshToken: {
             type: string
+          }
+        }
+      },
+      RefundBuyer: {
+        required: [
+          id,
+          displayName,
+          email,
+          paidOrders,
+          otherRequests
+        ],
+        type: object,
+        properties: {
+          id: {
+            type: string,
+            format: uuid
+          },
+          displayName: {
+            type: [
+              null,
+              string
+            ]
+          },
+          email: {
+            type: [
+              null,
+              string
+            ]
+          },
+          paidOrders: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              integer,
+              string
+            ],
+            format: int32
+          },
+          otherRequests: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/BuyerRefundEntry
+            }
           }
         }
       },

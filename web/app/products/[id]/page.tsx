@@ -50,7 +50,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   ].filter((fact): fact is [string, string] => Boolean(fact[1]));
 
   return (
-    <article className="grid gap-10 lg:grid-cols-2">
+    <article className="container-page grid gap-10 py-8 lg:grid-cols-2">
       <Cover id={data.id} title={data.title} url={data.coverImageUrl} sizes="(min-width: 1024px) 576px, 100vw" priority className="rounded-card border border-border" />
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
@@ -59,7 +59,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         </div>
         <Money value={data.price} className="type-price text-[24px] text-text" />
         {isSeller ? (
-          <Link href="/seller" className="block rounded-control border border-border-strong px-4 py-3 text-center type-label text-accent hover:border-accent">Edit listing</Link>
+          <Link href={`/seller/products/${data.id}`} className="block rounded-control border border-border-strong px-4 py-3 text-center type-label text-accent hover:border-accent">Edit listing</Link>
         ) : data.viewerOwns ? (
           <Link href="/library" className="block rounded-control border border-accent bg-accent px-4 py-3 text-center type-label text-accent-contrast hover:bg-accent-hover">Go to library</Link>
         ) : (

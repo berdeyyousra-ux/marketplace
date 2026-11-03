@@ -73,7 +73,7 @@ public sealed class RefundRequestTests
     {
         var request = Submitted(RefundPolicyVerdict.Eligible);
 
-        request.Reject(_adminId, "", _now).Error.Code.ShouldBe("validation_failed");
+        request.Reject(_adminId, "", null, _now).Error.Code.ShouldBe("validation_failed");
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public sealed class RefundRequestTests
     private static Result Apply(RefundRequest request, RefundRequestStatus to) => to switch
     {
         RefundRequestStatus.Approved => request.Approve(_adminId, "Approved.", null, _now),
-        RefundRequestStatus.Rejected => request.Reject(_adminId, "Rejected.", _now),
+        RefundRequestStatus.Rejected => request.Reject(_adminId, "Rejected.", null, _now),
         RefundRequestStatus.Executing => request.StartExecution(_now),
         RefundRequestStatus.Completed => request.Complete(_now),
         RefundRequestStatus.Failed => request.Fail("Provider unavailable.", _now),
@@ -142,5 +142,15 @@ public sealed class RefundRequestTests
         }
 
         return request;
+    }
+
+    [Fact]
+    public void Reject_KeepsAnOverrideReason_WhenTheAdminGivesOne()
+    {
+        var request = Submitted(RefundPolicyVerdict.Eligible);
+
+        request.Reject(_adminId, "Not eligible.", "The AI suggested approving, but the file was downloaded twice.", _now).IsSuccess.ShouldBeTrue();
+
+        request.OverrideReason.ShouldBe("The AI suggested approving, but the file was downloaded twice.");
     }
 }

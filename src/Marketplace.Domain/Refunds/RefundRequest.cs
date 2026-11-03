@@ -131,7 +131,8 @@ public sealed class RefundRequest : AggregateRoot
         return Result.Success();
     }
 
-    public Result Reject(Guid adminId, string note, DateTimeOffset now)
+    // overrideReason is optional here: the admin may record why they rejected against an AI suggestion to approve (T-089).
+    public Result Reject(Guid adminId, string note, string? overrideReason, DateTimeOffset now)
     {
         var error = ValidateDecision(adminId, note);
         if (error is not null)
@@ -139,7 +140,13 @@ public sealed class RefundRequest : AggregateRoot
             return error;
         }
 
+        if (overrideReason is { Length: > NoteMaxLength })
+        {
+            return DomainErrors.Validation($"Override reason must be at most {NoteMaxLength} characters.");
+        }
+
         Decide(RefundDecision.Rejected, RefundRequestStatus.Rejected, adminId, note, now);
+        OverrideReason = string.IsNullOrWhiteSpace(overrideReason) ? null : overrideReason;
         return Result.Success();
     }
 

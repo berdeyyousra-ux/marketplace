@@ -1,7 +1,7 @@
-// The narrow centred column every account screen uses (400px).
+// The narrow centred column every account screen uses: 400px of content inside a 24px gutter.
 export function AuthShell({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
-    <div className="mx-auto flex w-full max-w-[400px] flex-col gap-6 py-8">
+    <div className="mx-auto flex w-full max-w-[448px] flex-col gap-6 px-6 py-8">
       <div className="flex flex-col gap-2">
         <h1 className="type-page-title m-0 text-text">{title}</h1>
         {description && <p className="m-0 type-body text-muted">{description}</p>}
