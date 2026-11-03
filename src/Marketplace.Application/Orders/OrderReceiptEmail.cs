@@ -55,5 +55,7 @@ public sealed class OrderReceiptEmailHandler(IAppDbContext db, IIdentityService 
 
     private static string Format(Domain.Common.Money money) => string.Create(CultureInfo.InvariantCulture, $"{money.Amount:0.00} {money.Currency}");
 
-    private static string ShortId(Guid id) => id.ToString("N")[..8].ToUpperInvariant();
+    // The last eight hex digits, as the web client shows them. Order ids are UUIDv7, whose leading digits are a
+    // timestamp shared by orders placed within the same minute; the trailing ones are random.
+    private static string ShortId(Guid id) => id.ToString("N")[^8..].ToUpperInvariant();
 }

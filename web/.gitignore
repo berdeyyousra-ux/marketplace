@@ -3,3 +3,6 @@ node_modules/
 next-env.d.ts
 *.tsbuildinfo
 .env*.local
+
+# Written by next dev on every start (node_modules/next/dist/server/lib/generate-agent-files.js)
+AGENTS.md

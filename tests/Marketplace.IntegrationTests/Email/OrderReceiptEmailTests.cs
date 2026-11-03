@@ -24,7 +24,7 @@ public sealed class OrderReceiptEmailTests(MarketplaceWebFactory factory) : Inte
             await PayOrderAsync(buyer, orderId);
 
             var receipt = Emails.To("receipt-buyer@example.test").Where(message => message.Subject.StartsWith("Your receipt", StringComparison.Ordinal)).ShouldHaveSingleItem();
-            receipt.Subject.ShouldBe($"Your receipt for order {orderId.ToString("N")[..8].ToUpperInvariant()}");
+            receipt.Subject.ShouldBe($"Your receipt for order {orderId.ToString("N")[^8..].ToUpperInvariant()}");
             receipt.TextBody.ShouldContain(orderId.ToString());
             receipt.TextBody.ShouldContain("- Notion Budget Template: 19.99 EUR");
             receipt.TextBody.ShouldContain("Total: 19.99 EUR");

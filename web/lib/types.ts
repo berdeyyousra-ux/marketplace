@@ -41,7 +41,7 @@ export type Product = {
   viewerOwns?: boolean;
 };
 
-export type OrderItem = { id: string; productId: string; title: string; unitPrice: Money; status: string };
+export type OrderItem = { id: string; productId: string; title: string; unitPrice: Money; status: string; coverImageUrl: string | null };
 export type OrderSummary = { id: string; status: string; total: Money; itemCount: number; createdAt: string; paidAt: string | null };
 export type OrderDetail = {
   id: string;
@@ -65,6 +65,7 @@ export type LibraryItem = {
   downloadCount: number;
   maxDownloads: number;
   status: string;
+  coverImageUrl: string | null;
 };
 export type MyRefundRequest = {
   id: string;
