@@ -4192,6 +4192,30 @@ Sets the product's cover image from multipart field "file": JPEG, PNG or WebP, a
               string
             ],
             format: uri
+          },
+          sellerName: {
+            type: [
+              null,
+              string
+            ]
+          },
+          fileType: {
+            type: [
+              null,
+              string
+            ]
+          },
+          fileSizeBytes: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              null,
+              integer,
+              string
+            ],
+            format: int64
+          },
+          viewerOwns: {
+            type: boolean
           }
         }
       },
@@ -4206,7 +4230,8 @@ Sets the product's cover image from multipart field "file": JPEG, PNG or WebP, a
           categoryId,
           sellerId,
           publishedAt,
-          coverImageUrl
+          coverImageUrl,
+          sellerName
         ],
         type: object,
         properties: {
@@ -4242,6 +4267,12 @@ Sets the product's cover image from multipart field "file": JPEG, PNG or WebP, a
               string
             ],
             format: uri
+          },
+          sellerName: {
+            type: [
+              null,
+              string
+            ]
           }
         }
       },
