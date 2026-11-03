@@ -20,6 +20,19 @@ What it creates:
 | Container apps, when `deployApps=true` | `marketplace-api`, `marketplace-worker` and `marketplace-web` |
 | Budget | 20 per month in the billing currency, with alerts at 80 percent actual and 100 percent forecast. Created only when the `BUDGET_ALERT_EMAIL` GitHub environment variable is set |
 
+## Before the first deployment
+
+A new subscription has most resource providers unregistered, and deployments then fail with `MissingSubscriptionRegistration`. Neither validate nor what-if checks registration. The deployment identity can't register providers, because it only holds rights on the resource group. Someone with subscription rights registers them once:
+
+```sh
+for ns in Microsoft.Network Microsoft.KeyVault Microsoft.ManagedIdentity Microsoft.OperationalInsights \
+          Microsoft.Storage Microsoft.DBforPostgreSQL Microsoft.App; do
+  az provider register --namespace $ns
+done
+```
+
+`Microsoft.Consumption`, used for the budget, is registered by default.
+
 ## How it is deployed
 
 The `Infrastructure` workflow (`.github/workflows/infra.yml`) signs in through GitHub OIDC, using the federated credentials on the app registration. It never uses a stored secret.
