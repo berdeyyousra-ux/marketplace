@@ -4,6 +4,47 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-03
 
+### Operations: staging paused, and its resource group deleted (2026-11-03)
+
+**What happened:** to stop all charges for a week, the repository owner deleted `marketplace-staging-rg` (`az group delete --name marketplace-staging-rg --yes`). Every staging resource went with it, including the staging data and the budget alert.
+
+**What remains:**
+- the Entra app registration `marketplace-github-deploy` and its two federated credentials
+- the `staging` and `production` GitHub environments and their variables
+- the production resource group and its role assignments
+- the GHCR images
+
+**What does not:**
+- **Role assignments:** the deployment identity's Contributor and User Access Administrator grants on the staging resource group, and the owner's Key Vault Secrets Officer grant on the vault, were deleted with the group.
+- **Key Vault:** `kv-mkt-staging-fndsuo` is soft-deleted, with its secrets, and can be recovered until 2027-02-01. Purge protection is off for staging. While soft-deleted it holds its name, and the template asks for that same name.
+
+**To resume,** in this order:
+
+1. **Re-create the resource group,** in the same region as before. Its region only holds metadata; the resources still go to North Europe.
+   ```sh
+   az group create --name marketplace-staging-rg --location westeurope
+   ```
+2. **Grant the deployment identity its roles again.** Role assignments scoped to a resource group are deleted with it.
+   ```sh
+   RG_ID=$(az group show --name marketplace-staging-rg --query id --output tsv)
+   az role assignment create --assignee 4cac444d-f6ce-491e-b5d1-2ba346592a37 --role Contributor --scope "$RG_ID"
+   az role assignment create --assignee 4cac444d-f6ce-491e-b5d1-2ba346592a37 --role "User Access Administrator" --scope "$RG_ID"
+   ```
+3. **Recover the Key Vault, before 2027-02-01.** It is soft-deleted, not gone. Recovering it brings back all six secrets. The template uses the same vault name, so applying while the name is still held in soft delete would fail. Then grant yourself Key Vault Secrets Officer on the vault again.
+   ```sh
+   az keyvault recover --name kv-mkt-staging-fndsuo
+   az role assignment create --assignee "$(az ad signed-in-user show --query id --output tsv)" --role "Key Vault Secrets Officer" \
+     --scope "$(az keyvault show --name kv-mkt-staging-fndsuo --query id --output tsv)"
+   ```
+   If the vault can no longer be recovered (after 2027-02-01, or purged), skip this step. The apply then creates an empty vault, and all six secrets are set again (commands under "Key Vault secrets").
+4. **Apply the infrastructure:** run the Infrastructure workflow with `apply: true`.
+   - The managed identities are new, so the template creates fresh vault and storage role assignments for them.
+   - If the apply reports `RoleAssignmentUpdateNotPermitted`, the recovered vault kept an assignment for the deleted identity. List the vault's assignments with `az role assignment list --scope <vault id>`, delete the one whose principal no longer exists, then re-run.
+5. **Deploy the apps:** re-enable CD if it was disabled (`gh workflow enable "CD staging"`), then start it by hand or merge to `main`.
+   - The database is new, so the migration job recreates the schema and the app roles.
+   - The API seeds the admin account from `SeedAdminPassword` on its first start.
+6. **Stripe webhook.** The Container Apps environment is new, so the app URLs change. Create a webhook endpoint in the Stripe dashboard at the new API URL plus `/api/v1/webhooks/payments`, set its signing secret as `StripeWebhookSecret`, and delete the old endpoint.
+
 ### Section 10.3: the outbox poll backs off while idle
 
 **Spec:** after an empty poll the Worker waits 2 seconds (plus jitter) before polling again.

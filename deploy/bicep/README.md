@@ -92,6 +92,37 @@ About the Worker:
 - **It can't scale to zero.** It turns payment webhooks into paid orders, sends email, executes refunds and expires orders. Nothing could wake it without delaying a payment confirmation by minutes.
 - **Idle rate:** Container Apps bills a replica at a lower rate while it uses under 0.01 vCPU and under 1,000 bytes a second of network traffic. The Worker backs off its polling when the outbox is empty, to stay under that line. The first bill's meter data will show which rate applies.
 
+## Pausing and resuming staging
+
+Stopping the database (below) only pauses its compute; the Worker and storage still bill. To stop all charges, delete the resource group: `az group delete --name marketplace-staging-rg --yes`. Staging was paused this way on 2026-11-03 (see the spec changelog).
+
+Deleting the group also removes the role assignments scoped to it, and the Key Vault is only soft-deleted. To resume, in this order:
+
+1. **Re-create the resource group,** in the same region as before. Its region only holds metadata; the resources still go to North Europe.
+   ```sh
+   az group create --name marketplace-staging-rg --location westeurope
+   ```
+2. **Grant the deployment identity its roles again.** Role assignments scoped to a resource group are deleted with it.
+   ```sh
+   RG_ID=$(az group show --name marketplace-staging-rg --query id --output tsv)
+   az role assignment create --assignee 4cac444d-f6ce-491e-b5d1-2ba346592a37 --role Contributor --scope "$RG_ID"
+   az role assignment create --assignee 4cac444d-f6ce-491e-b5d1-2ba346592a37 --role "User Access Administrator" --scope "$RG_ID"
+   ```
+3. **Recover the Key Vault, before 2027-02-01.** It is soft-deleted, not gone. Recovering it brings back all six secrets. The template uses the same vault name, so applying while the name is still held in soft delete would fail. Then grant yourself Key Vault Secrets Officer on the vault again.
+   ```sh
+   az keyvault recover --name kv-mkt-staging-fndsuo
+   az role assignment create --assignee "$(az ad signed-in-user show --query id --output tsv)" --role "Key Vault Secrets Officer" \
+     --scope "$(az keyvault show --name kv-mkt-staging-fndsuo --query id --output tsv)"
+   ```
+   If the vault can no longer be recovered (after 2027-02-01, or purged), skip this step. The apply then creates an empty vault, and all six secrets are set again (commands under "Key Vault secrets").
+4. **Apply the infrastructure:** run the Infrastructure workflow with `apply: true`.
+   - The managed identities are new, so the template creates fresh vault and storage role assignments for them.
+   - If the apply reports `RoleAssignmentUpdateNotPermitted`, the recovered vault kept an assignment for the deleted identity. List the vault's assignments with `az role assignment list --scope <vault id>`, delete the one whose principal no longer exists, then re-run.
+5. **Deploy the apps:** re-enable CD if it was disabled (`gh workflow enable "CD staging"`), then start it by hand or merge to `main`.
+   - The database is new, so the migration job recreates the schema and the app roles.
+   - The API seeds the admin account from `SeedAdminPassword` on its first start.
+6. **Stripe webhook.** The Container Apps environment is new, so the app URLs change. Create a webhook endpoint in the Stripe dashboard at the new API URL plus `/api/v1/webhooks/payments`, set its signing secret as `StripeWebhookSecret`, and delete the old endpoint.
+
 ## Stopping the database between demos
 
 A stopped Flexible Server bills storage only. Azure starts it again automatically after 7 days, so stop it again if it should stay off.
