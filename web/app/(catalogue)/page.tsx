@@ -86,7 +86,7 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
 
   const title = search.q ? `Results for “${search.q}”` : activeCategory?.name ?? "Browse";
   return (
-    <div className="flex flex-col">
+    <div className="container-page flex flex-col py-8">
       <PageHeader title={title} description={search.q ? undefined : "Digital products from independent sellers."} />
       <div className="flex flex-col gap-8 lg:flex-row">
         <aside className="hidden w-60 shrink-0 lg:block" aria-label="Filters">{filters}</aside>

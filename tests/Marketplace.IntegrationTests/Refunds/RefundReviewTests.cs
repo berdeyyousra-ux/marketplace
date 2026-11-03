@@ -47,6 +47,14 @@ public sealed class RefundReviewTests(MarketplaceWebFactory factory) : Integrati
         detail.GetProperty("aiSuggestion").GetProperty("model").GetString().ShouldBe(FakeLlmClient.ModelName);
         detail.GetProperty("aiSuggestion").GetProperty("facts").GetProperty("policyVerdict").GetString().ShouldBe("Eligible");
         detail.GetProperty("history").EnumerateArray().Select(entry => entry.GetProperty("action").GetString()).ShouldBe(["refund.requested", "refund.ai_analyzed"]);
+
+        // T-089: who asked and for how much, and the buyer's record for the facts column.
+        row.GetProperty("buyerName").GetString().ShouldBe("Test User");
+        row.GetProperty("amount").GetProperty("amount").GetString().ShouldNotBeNullOrEmpty();
+        var buyer = detail.GetProperty("buyer");
+        buyer.GetProperty("email").GetString().ShouldBe("queue-buyer@example.test");
+        buyer.GetProperty("paidOrders").GetInt32().ShouldBe(1);
+        buyer.GetProperty("otherRequests").GetArrayLength().ShouldBe(0);
         (await admin.GetAsync("/api/v1/admin/refund-requests?status=Nope", CancellationToken)).StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
     }
 

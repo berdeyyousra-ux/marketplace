@@ -129,6 +129,20 @@ public sealed class IdentityService(UserManager<AppUser> users, IPasswordHasher<
             : new AccountSummary(user.Id, user.Email!, user.DisplayName, user.EmailConfirmed);
     }
 
+    public async Task<IReadOnlyDictionary<Guid, AccountSummary>> GetAccountsAsync(IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(userIds);
+        if (userIds.Count == 0)
+        {
+            return new Dictionary<Guid, AccountSummary>();
+        }
+
+        return await users.Users
+            .Where(user => userIds.Contains(user.Id) && user.DeletedAt == null)
+            .Select(user => new AccountSummary(user.Id, user.Email!, user.DisplayName, user.EmailConfirmed))
+            .ToDictionaryAsync(account => account.UserId, cancellationToken);
+    }
+
     public async Task ConfirmEmailAsync(Guid userId, CancellationToken cancellationToken)
     {
         var user = await users.FindByIdAsync(userId.ToString())

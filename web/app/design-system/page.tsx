@@ -37,7 +37,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Gallery() {
   const product = { id: "0192710a-56c5-7437-95f6-574a6466ba2a", title: "Minimal Notion Budget Template with a long title that wraps", price: { amount: "19.99", currency: "EUR" } };
   return (
-    <div className="flex flex-col gap-8">
+    <div className="container-page flex flex-col gap-8 py-8">
       <Section title="Tokens">
         <div className="grid grid-cols-2 gap-2">
           {tokens.map(([name, use]) => (

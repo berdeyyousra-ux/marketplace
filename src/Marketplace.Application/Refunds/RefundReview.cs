@@ -19,7 +19,13 @@ public sealed record AdminRefundRequestsQuery(string? Status = null, int Limit =
 public sealed record AiSummary(string Status, string? Category, string? RecommendedAction, string? Summary, IReadOnlyList<string> Flags);
 
 public sealed record AdminRefundSummary(
-    Guid Id, Guid OrderItemId, string ProductTitle, string Status, string PolicyVerdict, int DownloadCount, DateTimeOffset CreatedAt, AiSummary? Ai);
+    Guid Id, Guid OrderItemId, string ProductTitle, string Status, string PolicyVerdict, int DownloadCount, DateTimeOffset CreatedAt, AiSummary? Ai)
+{
+    // T-089: the queue shows who asked and for how much. Null when the buyer's account was deleted.
+    public string? BuyerName { get; init; }
+
+    public MoneyDto? Amount { get; init; }
+}
 
 public sealed record AdminRefundRequestQuery(Guid RefundRequestId);
 
@@ -28,10 +34,18 @@ public sealed record AiSuggestionDetail(
 
 public sealed record RefundHistoryEntry(string Action, string ActorType, DateTimeOffset OccurredAt);
 
+// T-089: the buyer, for the facts column. Their other refund requests show a pattern the admin should see.
+public sealed record RefundBuyer(Guid Id, string? DisplayName, string? Email, int PaidOrders, IReadOnlyList<BuyerRefundEntry> OtherRequests);
+
+public sealed record BuyerRefundEntry(Guid Id, string ProductTitle, string Status, DateTimeOffset CreatedAt);
+
 public sealed record AdminRefundDetail(
     Guid Id, Guid OrderItemId, Guid OrderId, Guid ProductId, string ProductTitle, MoneyDto UnitPrice, string BuyerMessage, string Status,
     string PolicyVerdict, int DownloadCountAtRequest, DateTimeOffset CreatedAt, string? Decision, string? DecisionNote, string? OverrideReason,
-    DateTimeOffset? DecidedAt, DateTimeOffset? ExecutedAt, string? FailureReason, AiSuggestionDetail? AiSuggestion, IReadOnlyList<RefundHistoryEntry> History);
+    DateTimeOffset? DecidedAt, DateTimeOffset? ExecutedAt, string? FailureReason, AiSuggestionDetail? AiSuggestion, IReadOnlyList<RefundHistoryEntry> History)
+{
+    public RefundBuyer? Buyer { get; init; }
+}
 
 public sealed record RefundDecisionRequest(string Decision, string Note, string? OverrideReason);
 
@@ -85,7 +99,7 @@ internal static class SuggestionReader
 
 // US-30: oldest first, so the queue is worked in order; keyset on (created_at, id). Each row carries the latest
 // suggestion, or none.
-public sealed class AdminRefundRequestsQueryHandler(IAppDbContext db) : IQueryHandler<AdminRefundRequestsQuery, Page<AdminRefundSummary>>
+public sealed class AdminRefundRequestsQueryHandler(IAppDbContext db, IIdentityService identity) : IQueryHandler<AdminRefundRequestsQuery, Page<AdminRefundSummary>>
 {
     public async Task<Result<Page<AdminRefundSummary>>> HandleAsync(AdminRefundRequestsQuery query, CancellationToken cancellationToken)
     {
@@ -114,7 +128,7 @@ public sealed class AdminRefundRequestsQueryHandler(IAppDbContext db) : IQueryHa
             .Select(request => new
             {
                 Request = request,
-                Title = db.OrderItems.Where(item => item.Id == request.OrderItemId).Select(item => item.ProductTitle).Single(),
+                Item = db.OrderItems.Where(item => item.Id == request.OrderItemId).Select(item => new { item.ProductTitle, item.UnitPrice }).Single(),
                 Latest = db.AiSuggestions.Where(suggestion => suggestion.RefundRequestId == request.Id)
                     .OrderByDescending(suggestion => suggestion.CreatedAt)
                     .Select(suggestion => new { suggestion.ValidationStatus, suggestion.ParsedOutput })
@@ -122,17 +136,22 @@ public sealed class AdminRefundRequestsQueryHandler(IAppDbContext db) : IQueryHa
             })
             .ToListAsync(cancellationToken);
 
+        var buyers = await identity.GetAccountsAsync(rows.Select(row => row.Request.RequestedBy).Distinct().ToList(), cancellationToken);
         var items = rows.ConvertAll(row => new AdminRefundSummary(
-            row.Request.Id, row.Request.OrderItemId, row.Title, row.Request.Status.ToString(), row.Request.PolicyVerdict.ToString(),
+            row.Request.Id, row.Request.OrderItemId, row.Item.ProductTitle, row.Request.Status.ToString(), row.Request.PolicyVerdict.ToString(),
             row.Request.DownloadCountAtRequest, row.Request.CreatedAt,
-            SuggestionReader.Summarize(row.Latest?.ValidationStatus, row.Latest?.ParsedOutput)));
+            SuggestionReader.Summarize(row.Latest?.ValidationStatus, row.Latest?.ParsedOutput))
+        {
+            BuyerName = buyers.GetValueOrDefault(row.Request.RequestedBy)?.DisplayName,
+            Amount = MoneyDto.From(row.Item.UnitPrice),
+        });
         return Paging.ToPage(items, query.Limit, item => new CreatedCursor(item.CreatedAt, item.Id));
     }
 }
 
 // Section 12.6: the facts sent, the verdict, the suggestion with its flags, the model and prompt version, or a
 // clear absence. History is the request's audit trail.
-public sealed class AdminRefundRequestQueryHandler(IAppDbContext db) : IQueryHandler<AdminRefundRequestQuery, AdminRefundDetail>
+public sealed class AdminRefundRequestQueryHandler(IAppDbContext db, IIdentityService identity) : IQueryHandler<AdminRefundRequestQuery, AdminRefundDetail>
 {
     private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
 
@@ -157,6 +176,22 @@ public sealed class AdminRefundRequestQueryHandler(IAppDbContext db) : IQueryHan
             .Select(entry => new RefundHistoryEntry(entry.Action, entry.ActorType.ToString(), entry.OccurredAt))
             .ToListAsync(cancellationToken);
 
+        var buyer = await identity.GetAccountAsync(request.RequestedBy, cancellationToken);
+        var paidOrders = await db.Orders.AsNoTracking()
+            .CountAsync(order => order.BuyerId == request.RequestedBy && order.PaidAt != null, cancellationToken);
+        var otherRequests = await db.RefundRequests.AsNoTracking()
+            .Where(other => other.RequestedBy == request.RequestedBy && other.Id != request.Id)
+            .OrderByDescending(other => other.CreatedAt)
+            .Take(20)
+            .Select(other => new
+            {
+                other.Id,
+                Title = db.OrderItems.Where(orderItem => orderItem.Id == other.OrderItemId).Select(orderItem => orderItem.ProductTitle).Single(),
+                other.Status,
+                other.CreatedAt,
+            })
+            .ToListAsync(cancellationToken);
+
         return new AdminRefundDetail(
             request.Id, item.Id, item.OrderId, item.ProductId, item.ProductTitle, MoneyDto.From(item.UnitPrice), request.ReasonText, request.Status.ToString(),
             request.PolicyVerdict.ToString(), request.DownloadCountAtRequest, request.CreatedAt, request.Decision?.ToString(), request.DecisionNote,
@@ -168,7 +203,12 @@ public sealed class AdminRefundRequestQueryHandler(IAppDbContext db) : IQueryHan
                     JsonSerializer.Deserialize<JsonElement>(suggestion.InputFacts, _json),
                     suggestion.ParsedOutput is null ? null : JsonSerializer.Deserialize<JsonElement>(suggestion.ParsedOutput, _json),
                     suggestion.Error, suggestion.LatencyMs, suggestion.CreatedAt),
-            history);
+            history)
+        {
+            Buyer = new RefundBuyer(
+                request.RequestedBy, buyer?.DisplayName, buyer?.Email, paidOrders,
+                otherRequests.ConvertAll(other => new BuyerRefundEntry(other.Id, other.Title, other.Status.ToString(), other.CreatedAt))),
+        };
     }
 }
 
@@ -190,7 +230,7 @@ public sealed class DecideRefundCommandHandler(IAppDbContext db, ICurrentUser cu
 
         var now = timeProvider.GetUtcNow();
         var approve = command.Decision == nameof(RefundDecision.Approved);
-        var decided = approve ? request.Approve(adminId, command.Note, command.OverrideReason, now) : request.Reject(adminId, command.Note, now);
+        var decided = approve ? request.Approve(adminId, command.Note, command.OverrideReason, now) : request.Reject(adminId, command.Note, command.OverrideReason, now);
         if (decided.IsFailure)
         {
             return decided.Error;

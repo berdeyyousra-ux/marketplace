@@ -12,6 +12,9 @@ public interface IIdentityService
 
     Task<AccountSummary?> GetAccountAsync(Guid userId, CancellationToken cancellationToken);
 
+    // Display names and emails of several users in one query, for admin lists (T-089). Deleted users are left out.
+    Task<IReadOnlyDictionary<Guid, AccountSummary>> GetAccountsAsync(IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken);
+
     Task ConfirmEmailAsync(Guid userId, CancellationToken cancellationToken);
 
     Task<LoginAccount?> FindForLoginAsync(string email, CancellationToken cancellationToken);

@@ -14,14 +14,16 @@ Changes to, and resolved contradictions in, the build specification.
 
 **Why:** `docs/frontend-design-plan.md` asks the product page for category, file type and size, the way marketplaces describe what you are buying. It also asks that a viewer who already owns the product sees "Go to library" instead of Buy. The type and size reveal nothing about the file itself.
 
-### T-089: a chart series token, and a listing editor for the plan's "edit actions"
+### T-089: a chart series token, a listing editor, and admin refund fields
 
 **Plan:** the seller dashboard's revenue chart follows the dataviz rules; the listings section has "status badges and edit actions".
 
 **Changes:**
 1. **`--chart-1`** is added for data marks: `#0d9488` in light mode, `#14a394` in dark. The accent fails the dataviz validator as a chart mark: in light mode its OKLCH chroma (0.086) is under the 0.10 floor, so the line reads grey, and in dark mode its lightness (0.70) is above the 0.48 to 0.67 band. Both replacements are the nearest passing steps of the same teal and pass contrast against their surface.
 2. **Listing editor.** The web client had no way to create or edit a product, so "edit actions" become `/seller/products/new` and `/seller/products/{id}`: details (EP-23, EP-24 with `If-Match`), the file (EP-25), the cover (T-085), and publish or unpublish (EP-26, EP-27). The listing rows also publish and unpublish in place.
-3. **Refund rate** on the stat tile is refunds divided by orders over 30 days, both from R-07. R-07 counts refunded items against distinct orders, so a multi-item order refunded in full counts more than once; the tile shows both counts under the rate.
+3. **Admin refund responses (EP-62, EP-63).** The queue rows add `buyerName` and `amount`; the detail adds `buyer` (display name, email, paid order count, and up to 20 of the buyer's other refund requests). The plan's queue columns and "buyer refund history" need them. Admin-only endpoints, so no new exposure.
+4. **Override reason on reject (EP-64).** `overrideReason` is now kept when rejecting, as well as when approving. The plan asks for the field whenever the admin's decision contradicts the AI, which includes rejecting a suggestion to approve. It stays optional there; it is still required only to approve outside the window.
+5. **Refund rate** on the stat tile is refunds divided by orders over 30 days, both from R-07. R-07 counts refunded items against distinct orders, so a multi-item order refunded in full counts more than once; the tile shows both counts under the rate.
 
 ## 2026-11-02
 
