@@ -8,7 +8,8 @@ using Microsoft.Extensions.Options;
 
 namespace Marketplace.Infrastructure.Storage;
 
-// Section 16 "Storage" configuration. The connection string is ConnectionStrings:BlobStorage.
+// Section 16 "Storage" configuration. ConnectionStrings:BlobStorage is a connection string, or in Azure the blob
+// endpoint URL reached with the managed identity (Cloud/ManagedIdentity.cs).
 public sealed class StorageOptions
 {
     public const string SectionName = "Storage";
@@ -40,9 +41,7 @@ public sealed class AzureBlobFileStorage : IFileStorage
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(options);
 
-        var connectionString = configuration.GetConnectionString("BlobStorage")
-            ?? throw new InvalidOperationException("ConnectionStrings:BlobStorage is not configured.");
-        _container = new BlobServiceClient(connectionString).GetBlobContainerClient(options.Value.ContainerName);
+        _container = Cloud.BlobServices.Create(configuration).GetBlobContainerClient(options.Value.ContainerName);
         _ensureContainer = new Lazy<Task>(() => _container.CreateIfNotExistsAsync(PublicAccessType.None));
     }
 
@@ -134,9 +133,7 @@ public sealed class AzureBlobPublicImageStorage : IPublicImageStorage
             throw new InvalidOperationException("Storage:CoverContainerName must differ from the private Storage:ContainerName.");
         }
 
-        var connectionString = configuration.GetConnectionString("BlobStorage")
-            ?? throw new InvalidOperationException("ConnectionStrings:BlobStorage is not configured.");
-        _container = new BlobServiceClient(connectionString).GetBlobContainerClient(options.Value.CoverContainerName);
+        _container = Cloud.BlobServices.Create(configuration).GetBlobContainerClient(options.Value.CoverContainerName);
         _publicBase = options.Value.CoverPublicBaseUrl;
         _ensureContainer = new Lazy<Task>(() => _container.CreateIfNotExistsAsync(PublicAccessType.Blob));
     }
