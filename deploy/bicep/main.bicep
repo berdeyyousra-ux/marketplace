@@ -163,11 +163,11 @@ resource postgres 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = {
   dependsOn: [postgresDnsLink]
 }
 
-resource postgresAdmin 'Microsoft.DBforPostgreSQL/flexibleServers/administrators@2024-08-01' = {
-  parent: postgres
-  name: migrateIdentity.properties.principalId
-  properties: {
-    principalType: 'ServicePrincipal'
+module postgresAdmin 'modules/postgres-admin.bicep' = {
+  name: 'postgres-admin'
+  params: {
+    serverName: postgres.name
+    principalId: migrateIdentity.properties.principalId
     principalName: migrateIdentity.name
     tenantId: subscription().tenantId
   }
