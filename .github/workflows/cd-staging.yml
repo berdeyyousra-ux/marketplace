@@ -1,0 +1,186 @@
+# T-062 (section 15.4): deploy main to staging after CI passes.
+#   1. Build the api, worker, migration and web images from the CI-tested commit and push them to GHCR.
+#   2. Check that each image can be pulled anonymously: Container Apps pulls from GHCR without credentials.
+#   3. Update the infrastructure and the migration job (deploy/bicep, apps unchanged), then run the job: it applies the
+#      migration bundle and grants the app database roles (section 15.6). A failed migration stops the deployment.
+#   4. Deploy the three apps with the new images.
+#   5. Smoke test: the API's readiness and one public endpoint, and the web client's home page.
+#   6. If the deployment or the smoke test fails, put the previous images back and fail the run.
+# Sign-in is GitHub OIDC on the staging environment (section 15.5). Production is deferred (T-063).
+name: CD staging
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+concurrency:
+  group: cd-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: deploy (staging)
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: staging
+    defaults:
+      run:
+        shell: bash
+    env:
+      RESOURCE_GROUP: marketplace-staging-rg
+      PARAMETERS: deploy/bicep/parameters.staging.json
+      REGISTRY: ghcr.io/${{ github.repository_owner }}
+      TAG: ${{ github.event.workflow_run.head_sha || github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: Sign in to Azure (OIDC)
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Read the environment
+        run: |
+          az config set extension.use_dynamic_install=yes_without_prompt --only-show-errors
+          blob=$(az storage account list --resource-group "$RESOURCE_GROUP" --query "[0].primaryEndpoints.blob" --output tsv)
+          [ -n "$blob" ] || { echo "::error::No storage account in $RESOURCE_GROUP. Apply the infrastructure first (Infrastructure workflow)."; exit 1; }
+          echo "COVER_BASE=${blob}product-covers/" >> "$GITHUB_ENV"
+          # The images currently deployed, for a rollback. Empty on the first deployment.
+          for app in api worker web; do
+            image=$(az containerapp show --name "marketplace-$app" --resource-group "$RESOURCE_GROUP" \
+              --query "properties.template.containers[0].image" --output tsv 2>/dev/null || true)
+            echo "PREVIOUS_${app^^}=$image" >> "$GITHUB_ENV"
+            echo "marketplace-$app now runs: ${image:-nothing yet}"
+          done
+
+      - name: Build and push the images
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io --username "${{ github.actor }}" --password-stdin
+          label="org.opencontainers.image.source=https://github.com/${{ github.repository }}"
+          build() {
+            local name=$1; shift
+            docker build --label "$label" --tag "$REGISTRY/marketplace-$name:$TAG" "$@" .
+            docker push --quiet "$REGISTRY/marketplace-$name:$TAG"
+          }
+          build api --file deploy/docker/Api.Dockerfile
+          build worker --file deploy/docker/Worker.Dockerfile
+          build migrate --file deploy/docker/Migrate.Dockerfile
+          build web --file deploy/docker/Web.Dockerfile --build-arg COVER_IMAGE_BASE_URL="$COVER_BASE"
+          docker logout ghcr.io
+
+      # GHCR creates a package as private the first time it is pushed. Container Apps pulls anonymously, so each package
+      # is made public once, by hand (the repository is public and the images hold no secrets).
+      - name: Check the images are public
+        run: |
+          private=()
+          for name in api worker migrate web; do
+            repo="${{ github.repository_owner }}/marketplace-$name"
+            token=$(curl --silent "https://ghcr.io/token?scope=repository:$repo:pull" | jq -r '.token // empty')
+            status=$(curl --silent --output /dev/null --write-out '%{http_code}' \
+              --header "Authorization: Bearer $token" \
+              --header "Accept: application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json" \
+              "https://ghcr.io/v2/$repo/manifests/$TAG")
+            [ "$status" = 200 ] || private+=("marketplace-$name")
+          done
+          if [ ${#private[@]} -gt 0 ]; then
+            echo "::error::These GHCR packages are private, so Azure can't pull them: ${private[*]}. Make each public once (github.com/${{ github.repository_owner }}?tab=packages, package settings, Change visibility), then re-run this workflow."
+            exit 1
+          fi
+
+      - name: Update the infrastructure and the migration job
+        run: |
+          az deployment group create \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "cd-infra-${{ github.run_id }}" \
+            --template-file deploy/bicep/main.bicep \
+            --parameters "@$PARAMETERS" \
+            --parameters budgetContactEmail="${{ vars.BUDGET_ALERT_EMAIL }}" migrateImage="$REGISTRY/marketplace-migrate:$TAG" \
+            --output none
+
+      - name: Run the migrations
+        run: |
+          execution=$(az containerapp job start --name marketplace-migrate --resource-group "$RESOURCE_GROUP" --query name --output tsv)
+          echo "Started $execution"
+          for _ in $(seq 1 80); do
+            status=$(az containerapp job execution show --name marketplace-migrate --resource-group "$RESOURCE_GROUP" \
+              --job-execution-name "$execution" --query properties.status --output tsv)
+            case "$status" in
+              Succeeded) echo "Migrations applied"; exit 0 ;;
+              Failed|Stopped|Degraded)
+                echo "::error::The migration job ended with status $status; nothing was deployed."
+                az containerapp job logs show --name marketplace-migrate --resource-group "$RESOURCE_GROUP" \
+                  --execution "$execution" --container migrate --format text 2>/dev/null || true
+                exit 1 ;;
+            esac
+            sleep 15
+          done
+          echo "::error::The migration job did not finish within 20 minutes."
+          exit 1
+
+      - name: Deploy the apps
+        id: deploy
+        run: |
+          az deployment group create \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "cd-apps-${{ github.run_id }}" \
+            --template-file deploy/bicep/main.bicep \
+            --parameters "@$PARAMETERS" \
+            --parameters budgetContactEmail="${{ vars.BUDGET_ALERT_EMAIL }}" deployApps=true \
+              apiImage="$REGISTRY/marketplace-api:$TAG" workerImage="$REGISTRY/marketplace-worker:$TAG" \
+              webImage="$REGISTRY/marketplace-web:$TAG" migrateImage="$REGISTRY/marketplace-migrate:$TAG" \
+            --query "properties.outputs.{api: apiUrl.value, web: webUrl.value}" --output json > urls.json
+          cat urls.json
+          echo "API_URL=$(jq -r .api urls.json)" >> "$GITHUB_ENV"
+          echo "WEB_URL=$(jq -r .web urls.json)" >> "$GITHUB_ENV"
+
+      # The API scales to zero, so the first request can wait for a cold start: each check retries for up to 4 minutes.
+      - name: Smoke test
+        id: smoke
+        run: |
+          check() {
+            local url=$1
+            for _ in $(seq 1 24); do
+              status=$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 20 "$url" || true)
+              [ "$status" = 200 ] && { echo "200 $url"; return 0; }
+              sleep 10
+            done
+            echo "::error::$url answered $status"
+            return 1
+          }
+          check "$API_URL/health/ready"
+          check "$API_URL/api/v1/categories"
+          check "$WEB_URL/"
+          {
+            echo "### Staging deployed: \`${TAG:0:7}\`"
+            echo "- API: $API_URL"
+            echo "- Web: $WEB_URL"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Roll back to the previous images
+        if: failure() && (steps.deploy.outcome == 'failure' || steps.smoke.outcome == 'failure')
+        run: |
+          rolled=0
+          for app in api worker web; do
+            var="PREVIOUS_${app^^}"
+            image="${!var}"
+            if [ -n "$image" ] && [[ "$image" == "$REGISTRY/"* ]]; then
+              echo "marketplace-$app: back to $image"
+              az containerapp update --name "marketplace-$app" --resource-group "$RESOURCE_GROUP" --image "$image" --output none
+              rolled=1
+            fi
+          done
+          [ $rolled = 1 ] || echo "::warning::Nothing to roll back to: this was the first deployment of these apps."
+          echo "### Staging deployment of \`${TAG:0:7}\` failed and was rolled back" >> "$GITHUB_STEP_SUMMARY"
