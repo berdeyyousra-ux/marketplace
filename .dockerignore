@@ -8,6 +8,7 @@
 .idea/
 tests/
 deploy/
+!deploy/docker/migrate/
 docs/*
 !docs/sql/
 *.md
@@ -15,3 +16,9 @@ docs/*
 .env.*
 docker-compose*.yml
 TestResults/
+# The web client (Web.Dockerfile) installs its own dependencies and builds inside the image; local builds,
+# dependencies and environment files never enter the context.
+web/node_modules/
+web/.next/
+web/.env*
+web/next-env.d.ts

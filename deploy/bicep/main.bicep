@@ -31,6 +31,9 @@ param apiImage string = 'mcr.microsoft.com/k8se/quickstart:latest'
 param workerImage string = 'mcr.microsoft.com/k8se/quickstart:latest'
 param webImage string = 'mcr.microsoft.com/k8se/quickstart:latest'
 
+@description('The migration job image (deploy/docker/Migrate.Dockerfile). CD sets it before starting the job.')
+param migrateImage string = 'mcr.microsoft.com/k8se/quickstart:latest'
+
 @allowed(['Fake', 'Anthropic', 'OpenAi'])
 param aiProvider string = 'OpenAi'
 param aiModel string = 'gpt-4o-mini'
@@ -96,6 +99,9 @@ resource network 'Microsoft.Network/virtualNetworks@2024-05-01' = {
         properties: {
           addressPrefix: '10.40.2.0/28'
           delegations: [{ name: 'postgres', properties: { serviceName: 'Microsoft.DBforPostgreSQL/flexibleServers' } }]
+          // Azure adds this when it creates the server. Declared so a redeploy, which rewrites the subnets as written
+          // here, doesn't try to remove it.
+          serviceEndpoints: [{ service: 'Microsoft.Storage' }]
         }
       }
     ]
@@ -300,6 +306,44 @@ resource appsEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' = {
   }
 }
 
+// Section 15.6: the migration job. Started by the CD pipeline before each deployment, inside the network (the
+// database has no public endpoint), as the database's Entra administrator. It applies the migration bundle and
+// creates and grants the api and worker database roles (deploy/docker/migrate). It costs nothing between runs.
+resource migrateJob 'Microsoft.App/jobs@2024-03-01' = {
+  name: 'marketplace-migrate'
+  location: location
+  tags: tags
+  identity: { type: 'UserAssigned', userAssignedIdentities: { '${migrateIdentity.id}': {} } }
+  properties: {
+    environmentId: appsEnvironment.id
+    workloadProfileName: 'Consumption'
+    configuration: {
+      triggerType: 'Manual'
+      replicaTimeout: 1800
+      replicaRetryLimit: 0
+      manualTriggerConfig: { parallelism: 1, replicaCompletionCount: 1 }
+    }
+    template: {
+      containers: [
+        {
+          name: 'migrate'
+          image: migrateImage
+          resources: { cpu: json('0.5'), memory: '1Gi' }
+          env: [
+            { name: 'PGHOST', value: postgres.properties.fullyQualifiedDomainName }
+            { name: 'PGDATABASE', value: 'marketplace' }
+            { name: 'PGUSER', value: migrateIdentity.name }
+            { name: 'AZURE_CLIENT_ID', value: migrateIdentity.properties.clientId }
+            { name: 'API_ROLE', value: apiIdentity.name }
+            { name: 'WORKER_ROLE', value: workerIdentity.name }
+          ]
+        }
+      ]
+    }
+  }
+  dependsOn: [postgresAdmin, database]
+}
+
 // App addresses are known before the apps exist, so the api and web can each name the other without a cycle.
 var apiFqdn = 'marketplace-api.${appsEnvironment.properties.defaultDomain}'
 var webFqdn = 'marketplace-web.${appsEnvironment.properties.defaultDomain}'
@@ -489,6 +533,7 @@ resource budget 'Microsoft.Consumption/budgets@2023-11-01' = if (!empty(budgetCo
 output keyVaultName string = vault.name
 output postgresServer string = postgres.properties.fullyQualifiedDomainName
 output postgresAdminIdentity string = migrateIdentity.name
+output migrateJobName string = migrateJob.name
 output storageAccount string = storage.name
 output apiUrl string = 'https://${apiFqdn}'
 output webUrl string = 'https://${webFqdn}'
