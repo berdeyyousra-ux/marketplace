@@ -31,6 +31,7 @@ Changes to, and resolved contradictions in, the build specification.
 5. **Two stages.** The apps are created only with `deployApps=true`, after the Key Vault secrets exist, because Container Apps won't start with an unresolved secret reference.
 6. **Budget alert recipient.** Budgets at resource-group scope need a contact email. It comes from the `BUDGET_ALERT_EMAIL` GitHub environment variable, so no address is committed. Without it, the budget is skipped.
 7. **Staging only, sized for cost.** Only staging is deployed (see the T-063 entry below), on the smallest PostgreSQL tier, B1ms. The estimate is about $20 to $24 a month while running, and about $8 to $10 with the database stopped between demos (`deploy/bicep/README.md`). That is at or just under the 20 EUR budget alert.
+8. **Region: North Europe.** West Europe, the region chosen first, rejects new resources for this subscription ("not accepting new customers"). The resources are placed in North Europe, the nearest equivalent; the resource group keeps West Europe as its metadata location.
 
 ### Section 16: `Azure:ManagedIdentityClientId`, and a blob endpoint URL in place of a connection string (T-061a)
 

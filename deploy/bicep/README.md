@@ -2,6 +2,8 @@
 
 `main.bicep` creates one environment in an existing resource group. Only **staging** is deployed, into `marketplace-staging-rg` with `parameters.staging.json`.
 
+The resources are in **North Europe**: West Europe, the resource group's region, isn't accepting new customers for this subscription (https://aka.ms/locationineligible). A resource group's region is only where its metadata lives.
+
 Production is deferred to keep the cost down; one live environment is enough for now (T-063, see `docs/spec-changelog.md`). The template still supports it: when it's wanted, add a `parameters.prod.json` (`postgresSku` `Standard_B2s`, `keyVaultPurgeProtection` `true`) and a production job to the workflow. Its resource group, role grants and federated credential already exist.
 
 What it creates:

@@ -80,7 +80,18 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Explain a rejected deployment
+        if: failure()
+        run: |
+          az deployment group validate \
+            --resource-group "$RESOURCE_GROUP" \
+            --template-file deploy/bicep/main.bicep \
+            --parameters "@$PARAMETERS" \
+            --parameters budgetContactEmail="${{ vars.BUDGET_ALERT_EMAIL }}" \
+            --output json 2>&1 | grep -o '"message": "[^"]*"' | sort -u || true
+
       - name: Upload the what-if
+        if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: what-if-staging
