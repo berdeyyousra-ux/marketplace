@@ -131,6 +131,9 @@ jobs:
       - name: Install
         run: npm ci --no-audit --no-fund
 
+      - name: No raw colours outside the tokens
+        run: npm run check:tokens
+
       - name: Build
         env:
           NEXT_TELEMETRY_DISABLED: "1"

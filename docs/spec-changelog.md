@@ -4,6 +4,19 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-02
 
+### T-086: two tokens added to the design plan's set
+
+**Plan:** `docs/frontend-design-plan.md` defines ten colour tokens and states that every pairing meets WCAG AA.
+
+**Change:** contrast measurements found two gaps, so two tokens were added.
+
+| Token | Value | Why |
+| --- | --- | --- |
+| `--accent-contrast` | `#ffffff` in light mode, `#0c0a09` in dark | The text colour on accent surfaces. White on the dark-mode accent `#14b8a6` is 2.49:1; near-black is 7.94:1. |
+| `--border-strong` | `#78716c` in both modes | The border for form controls. `--border` is 1.26:1 (light) and 1.15:1 (dark) against the surface, which is below the 3:1 a control's boundary needs (WCAG 1.4.11). The new border gives 4.80:1 (light) and 3.65:1 (dark). |
+
+`--border` stays for decorative card edges and dividers. CI now fails if a raw colour value appears outside `web/app/globals.css`.
+
 ### Section 12.5: prompt `refund-advisor.v2`, and strict structured output for OpenAI (T-075)
 
 **Spec:** section 12.5 gives the text of `refund-advisor.v1`.
