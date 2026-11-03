@@ -10,6 +10,10 @@
  *   --border-strong:   form-control borders. --border is 1.26:1 (light) and 1.15:1 (dark) against the surface, fine
  *                      for decorative edges but below the 3:1 a control's boundary needs (WCAG 1.4.11).
  * In dark mode success and warning are toned down (they inform); danger stays at full strength (it must pull the eye).
+ *
+ * --chart-1 is the data-series colour (T-089). The accent itself fails the dataviz checks as a chart mark: its chroma
+ * is under the 0.10 floor in light mode (it reads grey) and its lightness is above the dark-mode band. These are the
+ * nearest passing steps of the same teal, checked with the dataviz validator against each mode's surface.
  */
 :root,
 [data-theme="light"] {
@@ -26,6 +30,7 @@
   --success: #15803d;
   --warning: #a16207;
   --shadow-raised: 0 4px 16px rgb(0 0 0 / 0.08);
+  --chart-1: #0d9488;
   --cover-letter: rgb(255 255 255 / 0.82);
   color-scheme: light;
 }
@@ -45,6 +50,7 @@
     --success: #5db384;
     --warning: #d4a24c;
     --shadow-raised: 0 4px 16px rgb(0 0 0 / 0.4);
+    --chart-1: #14a394;
     color-scheme: dark;
   }
 }
@@ -63,6 +69,7 @@
   --success: #5db384;
   --warning: #d4a24c;
   --shadow-raised: 0 4px 16px rgb(0 0 0 / 0.4);
+  --chart-1: #14a394;
   color-scheme: dark;
 }
 
@@ -105,6 +112,7 @@
   --color-danger: var(--danger);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-chart-1: var(--chart-1);
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
