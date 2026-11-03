@@ -7,6 +7,8 @@ const coverBase = new URL(process.env.COVER_IMAGE_BASE_URL ?? "http://127.0.0.1:
 const local = ["127.0.0.1", "localhost", "::1"].includes(coverBase.hostname);
 
 const config: NextConfig = {
+  // A self-contained server (.next/standalone) for the container image (deploy/docker/Web.Dockerfile, T-062).
+  output: "standalone",
   poweredByHeader: false,
   reactStrictMode: true,
   images: {

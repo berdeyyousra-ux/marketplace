@@ -76,11 +76,15 @@ jobs:
           ./efbundle --connection "$CONN" --no-color
           ./efbundle --connection "$CONN" --no-color
 
-      # Section 15.3 step 12: both production images build. Publishing them is the CD pipeline's job (T-062).
+      # Section 15.3 step 12: the production images build (api, worker, migration job, web). Publishing them is the CD
+      # pipeline's job (T-062).
       - name: Build Docker images
         run: |
           docker build --file deploy/docker/Api.Dockerfile --tag marketplace-api:${{ github.sha }} .
           docker build --file deploy/docker/Worker.Dockerfile --tag marketplace-worker:${{ github.sha }} .
+          docker build --file deploy/docker/Migrate.Dockerfile --tag marketplace-migrate:${{ github.sha }} .
+          docker build --file deploy/docker/Web.Dockerfile --tag marketplace-web:${{ github.sha }} \
+            --build-arg COVER_IMAGE_BASE_URL=https://example.blob.core.windows.net/product-covers/ .
 
       # Section 15.3 step 13 and section 11.7: fail on High or Critical findings that have a fix.
       - name: Install Trivy
@@ -93,7 +97,7 @@ jobs:
 
       - name: Scan images with Trivy
         run: |
-          for image in marketplace-api marketplace-worker; do
+          for image in marketplace-api marketplace-worker marketplace-migrate marketplace-web; do
             "$RUNNER_TEMP/trivy" image --quiet --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 "$image:${{ github.sha }}"
           done
 
