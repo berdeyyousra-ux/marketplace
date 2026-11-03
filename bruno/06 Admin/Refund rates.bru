@@ -1,0 +1,29 @@
+meta {
+  name: Refund rates
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v1/admin/reports/refund-rates
+  body: none
+  auth: bearer
+}
+
+params:query {
+  days: 90
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  EP-76.
+}

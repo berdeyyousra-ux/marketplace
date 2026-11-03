@@ -1,0 +1,25 @@
+meta {
+  name: Product
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v1/products/{{anyProductId}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.id).to.equal(bru.getVar("anyProductId"));
+  });
+}
+
+docs {
+  EP-22.
+}

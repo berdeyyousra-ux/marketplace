@@ -1,0 +1,29 @@
+meta {
+  name: Current user
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/v1/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{buyerToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.email).to.equal(bru.getEnvVar("buyerEmail"));
+  });
+}
+
+docs {
+  EP-09.
+}

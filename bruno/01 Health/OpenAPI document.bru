@@ -1,0 +1,25 @@
+meta {
+  name: OpenAPI document
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/openapi/v1.json
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.openapi).to.match(/^3\./);
+  });
+}
+
+docs {
+  The OpenAPI document behind EP-92. The interactive reference is at /docs in a browser.
+}

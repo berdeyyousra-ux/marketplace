@@ -1,0 +1,33 @@
+meta {
+  name: Upload cover
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/api/v1/products/{{productId}}/cover
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{sellerToken}}
+}
+
+body:multipart-form {
+  file: @file(fixtures/cover.png)
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.coverImageUrl).to.contain("product-covers");
+  });
+}
+
+docs {
+  T-085. JPEG, PNG or WebP, at most 5 MB. Metadata such as EXIF is stripped, and the image goes to the public product-covers container, never the private file container.
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Recent orders
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{baseUrl}}/api/v1/sellers/me/dashboard/recent-orders
+  body: none
+  auth: bearer
+}
+
+params:query {
+  limit: 10
+}
+
+auth:bearer {
+  token: {{sellerToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  EP-73.
+}

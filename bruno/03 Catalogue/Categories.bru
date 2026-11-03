@@ -1,0 +1,30 @@
+meta {
+  name: Categories
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/categories
+  body: none
+  auth: none
+}
+
+script:post-response {
+  bru.setVar("categoryId", res.body[0].id);
+  bru.setVar("categorySlug", res.body[0].slug);
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.length).to.be.greaterThan(0);
+  });
+}
+
+docs {
+  EP-20. Cacheable for 5 minutes.
+}

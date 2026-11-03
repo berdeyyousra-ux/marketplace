@@ -1,0 +1,27 @@
+meta {
+  name: Log out
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/v1/auth/logout
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "refreshToken": "{{buyerRefresh}}"
+  }
+}
+
+tests {
+  test("status is 204", function () {
+    expect(res.status).to.equal(204);
+  });
+}
+
+docs {
+  EP-05. Revokes the refresh token's family. Always 204.
+}

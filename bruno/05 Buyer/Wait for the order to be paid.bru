@@ -1,0 +1,41 @@
+meta {
+  name: Wait for the order to be paid
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/v1/orders/{{orderId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{buyerToken}}
+}
+
+script:post-response {
+  const attempts = (bru.getVar("paidAttempts") || 0) + 1;
+  bru.setVar("paidAttempts", attempts);
+  if (res.body.status !== "Paid" && attempts < 30) {
+    await bru.sleep(1000);
+    bru.setNextRequest("Wait for the order to be paid");
+  } else {
+    bru.setVar("paidAttempts", 0);
+    bru.setVar("paidChecked", true);
+  }
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    if (bru.getVar("paidChecked")) expect(res.body.status).to.equal("Paid");
+  });
+}
+
+docs {
+  Polls EP-32 once a second, up to 30 times, until the Worker has processed the webhook.
+}

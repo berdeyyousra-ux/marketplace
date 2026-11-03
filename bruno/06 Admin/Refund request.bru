@@ -1,0 +1,29 @@
+meta {
+  name: Refund request
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/v1/admin/refund-requests/{{refundRequestId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.buyer.email).to.equal(bru.getEnvVar("buyerEmail"));
+  });
+}
+
+docs {
+  EP-63: facts, policy verdict, the AI suggestion when the Worker has analysed it, and history.
+}

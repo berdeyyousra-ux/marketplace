@@ -1,0 +1,33 @@
+meta {
+  name: Upload file
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v1/products/{{productId}}/file
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{sellerToken}}
+}
+
+body:multipart-form {
+  file: @file(fixtures/sample.pdf)
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.contentType).to.equal("application/pdf");
+  });
+}
+
+docs {
+  EP-25. Multipart field "file", at most 100 MB. The type comes from the extension and must match the file's magic bytes.
+}

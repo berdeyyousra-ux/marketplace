@@ -1,0 +1,28 @@
+meta {
+  name: Unsigned payment webhook
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/v1/webhooks/payments
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "payment.succeeded",
+    "data": {}
+  }
+}
+
+tests {
+  test("status is 400", function () {
+    expect(res.status).to.equal(400);
+  });
+}
+
+docs {
+  EP-40 (section 9.11). Webhooks must carry the provider's signature; an unsigned one is refused.
+}

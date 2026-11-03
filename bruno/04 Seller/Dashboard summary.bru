@@ -1,0 +1,25 @@
+meta {
+  name: Dashboard summary
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/api/v1/sellers/me/dashboard/summary
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{sellerToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  EP-70 (R-07).
+}

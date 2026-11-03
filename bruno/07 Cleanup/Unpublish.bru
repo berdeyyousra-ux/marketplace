@@ -1,0 +1,33 @@
+meta {
+  name: Unpublish
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/products/{{productId}}/unpublish
+  body: none
+  auth: bearer
+}
+
+headers {
+  If-Match: {{productEtag}}
+}
+
+auth:bearer {
+  token: {{sellerToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.status).to.equal("Unpublished");
+  });
+}
+
+docs {
+  EP-27. Buyers keep their access; the listing leaves the catalogue.
+}

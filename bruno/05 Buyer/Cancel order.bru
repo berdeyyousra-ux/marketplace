@@ -1,0 +1,25 @@
+meta {
+  name: Cancel order
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/api/v1/orders/{{cancelOrderId}}/cancel
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{buyerToken}}
+}
+
+tests {
+  test("status is 204", function () {
+    expect(res.status).to.equal(204);
+  });
+}
+
+docs {
+  EP-34. Only a Pending order can be cancelled. No body; the order is read back below.
+}

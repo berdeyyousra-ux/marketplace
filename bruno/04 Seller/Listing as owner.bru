@@ -1,0 +1,33 @@
+meta {
+  name: Listing as owner
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/v1/products/{{productId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{sellerToken}}
+}
+
+script:post-response {
+  bru.setVar("productEtag", res.headers.etag);
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.file.name).to.equal("sample.pdf");
+  });
+}
+
+docs {
+  EP-22 as the owner: includes the file object and the ETag. Uploads moved the version on, so the ETag is read again here.
+}

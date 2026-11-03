@@ -1,0 +1,41 @@
+meta {
+  name: Create an order to cancel
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/api/v1/orders
+  body: json
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{$randomUUID}}
+}
+
+auth:bearer {
+  token: {{buyerToken}}
+}
+
+body:json {
+  {
+    "productIds": [
+      "{{anyProductId}}"
+    ]
+  }
+}
+
+script:post-response {
+  bru.setVar("cancelOrderId", res.body.id);
+}
+
+tests {
+  test("status is 201", function () {
+    expect(res.status).to.equal(201);
+  });
+}
+
+docs {
+  EP-30 again, for the cancel request below. If the buyer already owns this product the answer is 409 already_owned; pick another product id.
+}

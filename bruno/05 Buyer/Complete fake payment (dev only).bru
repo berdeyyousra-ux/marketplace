@@ -1,0 +1,21 @@
+meta {
+  name: Complete fake payment (dev only)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/dev/fake-payments/{{providerPaymentId}}/complete
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  EP-99, development only: sends the signed webhook a real provider would. Answers 404 outside Development or with any provider but Fake.
+}

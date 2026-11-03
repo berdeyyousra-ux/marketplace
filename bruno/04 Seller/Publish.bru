@@ -1,0 +1,37 @@
+meta {
+  name: Publish
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/api/v1/products/{{productId}}/publish
+  body: none
+  auth: bearer
+}
+
+headers {
+  If-Match: {{productEtag}}
+}
+
+auth:bearer {
+  token: {{sellerToken}}
+}
+
+script:post-response {
+  bru.setVar("productEtag", res.headers.etag);
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.status).to.equal("Published");
+  });
+}
+
+docs {
+  EP-26. Needs an uploaded file.
+}

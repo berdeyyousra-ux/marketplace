@@ -1,0 +1,31 @@
+meta {
+  name: Remove listing (admin)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/admin/products/{{productId}}/remove
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+body:json {
+  {
+    "reason": "Created by the Bruno collection run."
+  }
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  EP-80. Moderation removal, audited with the reason.
+}

@@ -1,0 +1,42 @@
+meta {
+  name: Create order again (same key)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/orders
+  body: json
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{orderKey}}
+}
+
+auth:bearer {
+  token: {{buyerToken}}
+}
+
+body:json {
+  {
+    "productIds": [
+      "{{productId}}"
+    ]
+  }
+}
+
+tests {
+  test("status is 201", function () {
+    expect(res.status).to.equal(201);
+  });
+
+  test("response", function () {
+    expect(res.body.id).to.equal(bru.getVar("orderId"));
+    expect(res.headers["idempotent-replayed"]).to.equal("true");
+  });
+}
+
+docs {
+  EP-30 replayed: the stored response comes back with Idempotent-Replayed: true, and no second order is made.
+}
