@@ -36,7 +36,19 @@ public sealed record ProductResponse(
     ProductFileResponse? File,
     Uri? CoverImageUrl,
     [property: JsonIgnore] uint Version,
-    [property: JsonIgnore] bool IsOwner);
+    [property: JsonIgnore] bool IsOwner)
+{
+    // T-087, on the detail endpoint (EP-22) only: what a buyer needs before buying. The file's type and size are
+    // public; its name and hash stay in File, for the owner and admins (changelog 2026-11-03).
+    public string? SellerName { get; init; }
+
+    public string? FileType { get; init; }
+
+    public long? FileSizeBytes { get; init; }
+
+    // True when the signed-in caller already has an active download grant for this product.
+    public bool ViewerOwns { get; init; }
+}
 
 public static class ProductErrors
 {
@@ -235,7 +247,17 @@ public sealed class ProductQueryHandler(IAppDbContext db, ProductOwnership owner
             return ProductErrors.NotFound;
         }
 
-        return ProductMapping.ToResponse(product, isOwner, showFile: isOwner || isAdmin, images);
+        var userId = currentUser.UserId;
+        var viewerOwns = userId is not null
+            && await db.DownloadGrants.AnyAsync(grant => grant.ProductId == product.Id && grant.BuyerId == userId && grant.RevokedAt == null, cancellationToken);
+        var sellerName = await db.SellerProfiles.Where(seller => seller.Id == product.SellerId).Select(seller => seller.DisplayName).SingleOrDefaultAsync(cancellationToken);
+        return ProductMapping.ToResponse(product, isOwner, showFile: isOwner || isAdmin, images) with
+        {
+            SellerName = sellerName,
+            FileType = product.File?.ContentType,
+            FileSizeBytes = product.File?.SizeBytes,
+            ViewerOwns = viewerOwns,
+        };
     }
 
     private async Task<bool> HasGrantAsync(Guid productId, CancellationToken cancellationToken)

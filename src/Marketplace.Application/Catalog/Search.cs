@@ -23,7 +23,8 @@ public sealed record SearchProductsQuery(
     int Limit = Paging.DefaultLimit,
     string? Cursor = null);
 
-public sealed record ProductSummary(Guid Id, string Title, MoneyDto Price, int CategoryId, Guid SellerId, DateTimeOffset PublishedAt, Uri? CoverImageUrl);
+public sealed record ProductSummary(
+    Guid Id, string Title, MoneyDto Price, int CategoryId, Guid SellerId, DateTimeOffset PublishedAt, Uri? CoverImageUrl, string? SellerName);
 
 // One cursor shape for every keyset sort; the sort is stored so a cursor cannot be replayed under another sort.
 public sealed record SearchCursor(ProductSort Sort, DateTimeOffset? PublishedAt, decimal? Price, Guid Id);
@@ -33,7 +34,7 @@ public sealed record ProductSearchCriteria(
 
 public sealed record ProductSearchRow(
     Guid Id, string Title, decimal Price, string Currency, int CategoryId, Guid SellerId, DateTimeOffset PublishedAt, string? CoverImageKey,
-    DateTimeOffset? CoverImageUpdatedAt);
+    DateTimeOffset? CoverImageUpdatedAt, string? SellerName);
 
 // Full-text search uses PostgreSQL functions, which Application must not reference (section 4.3), so the query
 // itself lives in Infrastructure.
@@ -95,5 +96,5 @@ public sealed class SearchProductsQueryHandler(IProductSearch search, IPublicIma
 
     private ProductSummary ToSummary(ProductSearchRow row) =>
         new(row.Id, row.Title, MoneyDto.From(new Money(row.Price, row.Currency)), row.CategoryId, row.SellerId, row.PublishedAt,
-            CoverUrls.For(images, row.CoverImageKey, row.CoverImageUpdatedAt));
+            CoverUrls.For(images, row.CoverImageKey, row.CoverImageUpdatedAt), row.SellerName);
 }

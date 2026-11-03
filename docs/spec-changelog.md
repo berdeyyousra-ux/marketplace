@@ -2,6 +2,18 @@
 
 Changes to, and resolved contradictions in, the build specification.
 
+## 2026-11-03
+
+### EP-22: the public product page shows the file's type and size (T-087)
+
+**Spec:** EP-22 returns `file` metadata only to the product's owner or an admin.
+
+**Change:**
+- **Public fields:** the detail response adds `fileType`, `fileSizeBytes` and `sellerName` for everyone, plus `viewerOwns`, which is true when the signed-in caller has an active download grant. The catalogue list adds `sellerName`.
+- **Unchanged:** the `file` object, with the file's name and SHA-256, still goes only to the owner or an admin.
+
+**Why:** `docs/frontend-design-plan.md` asks the product page for category, file type and size, the way marketplaces describe what you are buying. It also asks that a viewer who already owns the product sees "Go to library" instead of Buy. The type and size reveal nothing about the file itself.
+
 ## 2026-11-02
 
 ### T-086: corrections to `docs/frontend-design-plan.md` after rendering the token set

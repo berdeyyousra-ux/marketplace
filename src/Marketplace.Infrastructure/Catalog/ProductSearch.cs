@@ -61,7 +61,8 @@ public sealed class ProductSearch(AppDbContext db) : IProductSearch
             .Take(criteria.Take)
             .Select(product => new ProductSearchRow(
                 product.Id, product.Title, product.Price.Amount, product.Price.Currency, product.CategoryId, product.SellerId, product.PublishedAt!.Value,
-                product.CoverImageKey, product.CoverImageUpdatedAt))
+                product.CoverImageKey, product.CoverImageUpdatedAt,
+                db.SellerProfiles.Where(seller => seller.Id == product.SellerId).Select(seller => seller.DisplayName).FirstOrDefault()))
             .ToListAsync(cancellationToken);
     }
 }

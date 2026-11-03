@@ -1,16 +1,23 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { call, describe } from "@/lib/client";
 import type { OrderDetail } from "@/lib/types";
+import { Button } from "@/components/ui/Button";
 
-// EP-30: one-item order at today's price, then on to checkout.
+// EP-30: a one-item order at today's price, then checkout. The button stays busy until the page changes, so it
+// cannot be pressed twice.
 export function BuyButton({ productId, signedIn }: { productId: string; signedIn: boolean }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   if (!signedIn) {
-    return <a className="button" href={`/login?next=/products/${productId}`}>Sign in to buy</a>;
+    return (
+      <Link href={`/login?next=/products/${productId}`} className="block rounded-control border border-accent bg-accent px-4 py-3 text-center type-label text-accent-contrast hover:bg-accent-hover">
+        Sign in to buy
+      </Link>
+    );
   }
 
   async function buy() {
@@ -27,9 +34,9 @@ export function BuyButton({ productId, signedIn }: { productId: string; signedIn
   }
 
   return (
-    <div className="stack">
-      {error && <p className="error">{error}</p>}
-      <button onClick={buy} disabled={busy}>{busy ? "Creating order…" : "Buy now"}</button>
+    <div className="flex flex-col gap-2">
+      <Button onClick={buy} loading={busy} fullWidth className="py-3">Buy now</Button>
+      <p aria-live="polite" className="m-0 type-label text-danger">{error}</p>
     </div>
   );
 }

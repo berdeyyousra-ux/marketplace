@@ -4,8 +4,8 @@ import { Money, type MoneyValue } from "./Money";
 
 export type ProductCardData = { id: string; title: string; price: MoneyValue; coverImageUrl?: string | null; sellerName?: string | null };
 
-// Grid sizes: 1 column below 640px, 2 to 1024px, 3 to 1280px, then 4 within the 1200px container.
-export const productGridSizes = "(min-width: 1280px) 290px, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw";
+// Grid sizes: 1 column below 640px, 2 to 1024px, then 3 and 4 beside the 240px filter rail in the 1200px container.
+export const productGridSizes = "(min-width: 1280px) 230px, (min-width: 1024px) 28vw, (min-width: 640px) 50vw, 100vw";
 
 // Fixed 4:3 cover, title clamped to two lines, price bottom-left. Hover changes only the border.
 export function ProductCard({ product }: { product: ProductCardData }) {

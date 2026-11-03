@@ -14,7 +14,16 @@ export type Me = {
 };
 
 export type Category = { id: number; slug: string; name: string };
-export type ProductSummary = { id: string; title: string; price: Money; categoryId: number; sellerId: string; publishedAt: string };
+export type ProductSummary = {
+  id: string;
+  title: string;
+  price: Money;
+  categoryId: number;
+  sellerId: string;
+  publishedAt: string;
+  coverImageUrl: string | null;
+  sellerName: string | null;
+};
 export type Product = {
   id: string;
   sellerId: string;
@@ -25,6 +34,11 @@ export type Product = {
   status: string;
   publishedAt: string | null;
   file: { name: string; sizeBytes: number; contentType: string } | null;
+  coverImageUrl: string | null;
+  sellerName?: string | null;
+  fileType?: string | null;
+  fileSizeBytes?: number | null;
+  viewerOwns?: boolean;
 };
 
 export type OrderItem = { id: string; productId: string; title: string; unitPrice: Money; status: string };

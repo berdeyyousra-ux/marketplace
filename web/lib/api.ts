@@ -24,9 +24,14 @@ export async function serverGet<T>(path: string, returnTo: string): Promise<ApiR
   return toResult<T>(response);
 }
 
-// Anonymous GET, for the public catalogue.
-export async function publicGet<T>(path: string): Promise<ApiResult<T>> {
-  const response = await fetch(`${API_BASE_URL}/api/v1${path}`, { cache: "no-store" });
+// GET for public pages. With authenticated, the signed-in caller's token is sent when there is one, so the answer can
+// include viewer-specific fields (viewerOwns); it never redirects, and an expired token simply reads as anonymous.
+export async function publicGet<T>(path: string, options: { authenticated?: boolean } = {}): Promise<ApiResult<T>> {
+  const { access } = options.authenticated ? await readTokens() : { access: undefined };
+  const response = await fetch(`${API_BASE_URL}/api/v1${path}`, {
+    headers: access ? { Authorization: `Bearer ${access}` } : undefined,
+    cache: "no-store",
+  });
   return toResult<T>(response);
 }
 
