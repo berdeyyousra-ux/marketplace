@@ -4,6 +4,17 @@ Changes to, and resolved contradictions in, the build specification.
 
 ## 2026-11-03
 
+### Section 10.3: the outbox poll backs off while idle
+
+**Spec:** after an empty poll the Worker waits 2 seconds (plus jitter) before polling again.
+
+**Change:** consecutive empty polls wait 2, 4, 8 and then at most 10 seconds. Any claimed message resets the wait to 2 seconds, and a full batch still polls again at once. A failed poll counts as empty.
+
+**Why:**
+- **Cost:** the Worker can't scale to zero, since it turns payment webhooks into paid orders. Polling less often while idle keeps its database traffic under the threshold at which Container Apps bills a replica at the cheaper idle rate (staging cost, see the T-061b entry).
+- **Effect on users:** a message queued after a quiet spell is picked up up to 10 seconds later, instead of 2.
+- **Stopped database:** with the staging database stopped, the Worker retries every 10 seconds instead of every 2.
+
 ### Section 16: `Azure:ManagedIdentityClientId`, and a blob endpoint URL in place of a connection string (T-061a)
 
 **Spec:** section 15.5 builds connection strings "from the managed identity and server FQDN", and Key Vault holds no database password or storage key. Section 16 lists `ConnectionStrings:BlobStorage` as "no (managed identity)" but names no key that selects an identity.
