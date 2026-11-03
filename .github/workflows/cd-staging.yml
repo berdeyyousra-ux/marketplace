@@ -55,14 +55,17 @@ jobs:
       - name: Read the environment
         run: |
           az config set extension.use_dynamic_install=yes_without_prompt --only-show-errors
+          # Values pass between steps as files in the workspace, never through $GITHUB_ENV (CodeQL
+          # actions/envvar-injection: a value with a newline could define other variables).
+          mkdir -p .cd
           blob=$(az storage account list --resource-group "$RESOURCE_GROUP" --query "[0].primaryEndpoints.blob" --output tsv)
           [ -n "$blob" ] || { echo "::error::No storage account in $RESOURCE_GROUP. Apply the infrastructure first (Infrastructure workflow)."; exit 1; }
-          echo "COVER_BASE=${blob}product-covers/" >> "$GITHUB_ENV"
+          printf '%sproduct-covers/' "$blob" > .cd/cover-base
           # The images currently deployed, for a rollback. Empty on the first deployment.
           for app in api worker web; do
             image=$(az containerapp show --name "marketplace-$app" --resource-group "$RESOURCE_GROUP" \
               --query "properties.template.containers[0].image" --output tsv 2>/dev/null || true)
-            echo "PREVIOUS_${app^^}=$image" >> "$GITHUB_ENV"
+            printf '%s' "$image" > ".cd/previous-$app"
             echo "marketplace-$app now runs: ${image:-nothing yet}"
           done
 
@@ -78,7 +81,7 @@ jobs:
           build api --file deploy/docker/Api.Dockerfile
           build worker --file deploy/docker/Worker.Dockerfile
           build migrate --file deploy/docker/Migrate.Dockerfile
-          build web --file deploy/docker/Web.Dockerfile --build-arg COVER_IMAGE_BASE_URL="$COVER_BASE"
+          build web --file deploy/docker/Web.Dockerfile --build-arg COVER_IMAGE_BASE_URL="$(cat .cd/cover-base)"
           docker logout ghcr.io
 
       # GHCR creates a package as private the first time it is pushed. Container Apps pulls anonymously, so each package
@@ -141,15 +144,15 @@ jobs:
             --parameters budgetContactEmail="${{ vars.BUDGET_ALERT_EMAIL }}" deployApps=true \
               apiImage="$REGISTRY/marketplace-api:$TAG" workerImage="$REGISTRY/marketplace-worker:$TAG" \
               webImage="$REGISTRY/marketplace-web:$TAG" migrateImage="$REGISTRY/marketplace-migrate:$TAG" \
-            --query "properties.outputs.{api: apiUrl.value, web: webUrl.value}" --output json > urls.json
-          cat urls.json
-          echo "API_URL=$(jq -r .api urls.json)" >> "$GITHUB_ENV"
-          echo "WEB_URL=$(jq -r .web urls.json)" >> "$GITHUB_ENV"
+            --query "properties.outputs.{api: apiUrl.value, web: webUrl.value}" --output json > .cd/urls.json
+          cat .cd/urls.json
 
       # The API scales to zero, so the first request can wait for a cold start: each check retries for up to 4 minutes.
       - name: Smoke test
         id: smoke
         run: |
+          api=$(jq -r .api .cd/urls.json)
+          web=$(jq -r .web .cd/urls.json)
           check() {
             local url=$1
             for _ in $(seq 1 24); do
@@ -160,13 +163,13 @@ jobs:
             echo "::error::$url answered $status"
             return 1
           }
-          check "$API_URL/health/ready"
-          check "$API_URL/api/v1/categories"
-          check "$WEB_URL/"
+          check "$api/health/ready"
+          check "$api/api/v1/categories"
+          check "$web/"
           {
             echo "### Staging deployed: \`${TAG:0:7}\`"
-            echo "- API: $API_URL"
-            echo "- Web: $WEB_URL"
+            echo "- API: $api"
+            echo "- Web: $web"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Roll back to the previous images
@@ -174,8 +177,7 @@ jobs:
         run: |
           rolled=0
           for app in api worker web; do
-            var="PREVIOUS_${app^^}"
-            image="${!var}"
+            image=$(cat ".cd/previous-$app" 2>/dev/null || true)
             if [ -n "$image" ] && [[ "$image" == "$REGISTRY/"* ]]; then
               echo "marketplace-$app: back to $image"
               az containerapp update --name "marketplace-$app" --resource-group "$RESOURCE_GROUP" --image "$image" --output none
