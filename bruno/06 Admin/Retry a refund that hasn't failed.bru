@@ -1,0 +1,25 @@
+meta {
+  name: Retry a refund that hasn't failed
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/api/v1/admin/refund-requests/{{refundRequestId}}/retry
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+tests {
+  test("status is 409", function () {
+    expect(res.status).to.equal(409);
+  });
+}
+
+docs {
+  EP-65 only retries a Failed refund; anything else is 409.
+}

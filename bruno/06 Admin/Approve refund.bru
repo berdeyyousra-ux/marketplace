@@ -1,0 +1,41 @@
+meta {
+  name: Approve refund
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/v1/admin/refund-requests/{{refundRequestId}}/decision
+  body: json
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{$randomUUID}}
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+body:json {
+  {
+    "decision": "Approved",
+    "note": "Refunded from the Bruno collection.",
+    "overrideReason": null
+  }
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.status).to.equal("Approved");
+  });
+}
+
+docs {
+  EP-64. Approved or Rejected, with a note for the buyer. overrideReason is required to approve outside the refund window. The Worker then executes the refund.
+}

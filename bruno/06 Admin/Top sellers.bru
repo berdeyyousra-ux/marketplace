@@ -1,0 +1,30 @@
+meta {
+  name: Top sellers
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/admin/reports/top-sellers
+  body: none
+  auth: bearer
+}
+
+params:query {
+  days: 30
+  limit: 5
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  EP-75.
+}

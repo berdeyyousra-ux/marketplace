@@ -1,0 +1,40 @@
+meta {
+  name: Refresh tokens
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/v1/auth/refresh
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "refreshToken": "{{buyerRefresh}}"
+  }
+}
+
+script:pre-request {
+  bru.setVar("previousRefresh", bru.getVar("buyerRefresh"));
+}
+
+script:post-response {
+  bru.setVar("buyerToken", res.body.accessToken);
+  bru.setVar("buyerRefresh", res.body.refreshToken);
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.refreshToken).to.not.equal(bru.getVar("previousRefresh"));
+  });
+}
+
+docs {
+  EP-04. Rotates the refresh token: the old one is now used, and sending it again revokes the whole family (reuse detection). Keep the returned pair.
+}

@@ -1,0 +1,40 @@
+meta {
+  name: Request refund
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/v1/refund-requests
+  body: json
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{$randomUUID}}
+}
+
+auth:bearer {
+  token: {{buyerToken}}
+}
+
+body:json {
+  {
+    "orderItemId": "{{orderItemId}}",
+    "reason": "The PDF would not open in any of my apps."
+  }
+}
+
+script:post-response {
+  bru.setVar("refundRequestId", res.body.id);
+}
+
+tests {
+  test("status is 201", function () {
+    expect(res.status).to.equal(201);
+  });
+}
+
+docs {
+  EP-60. The reason is 10 to 2000 characters.
+}

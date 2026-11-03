@@ -1,0 +1,37 @@
+meta {
+  name: Become a seller (already one)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/sellers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{sellerToken}}
+}
+
+body:json {
+  {
+    "displayName": "Bruno Shop",
+    "bio": null,
+    "country": "ES"
+  }
+}
+
+tests {
+  test("status is 409", function () {
+    expect(res.status).to.equal(409);
+  });
+
+  test("response", function () {
+    expect(res.body.code).to.equal("already_seller");
+  });
+}
+
+docs {
+  EP-10. A buyer gets 201 and the Seller role from the next token; the seeded seller already has a profile.
+}

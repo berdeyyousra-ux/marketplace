@@ -1,0 +1,34 @@
+meta {
+  name: Audit log
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/api/v1/admin/audit-log
+  body: none
+  auth: bearer
+}
+
+params:query {
+  entityType: RefundRequest
+  entityId: {{refundRequestId}}
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.items.length).to.be.greaterThan(0);
+  });
+}
+
+docs {
+  EP-81, filtered to one entity.
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Top products
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/api/v1/sellers/me/dashboard/top-products
+  body: none
+  auth: bearer
+}
+
+params:query {
+  days: 90
+  limit: 5
+}
+
+auth:bearer {
+  token: {{sellerToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  EP-72.
+}

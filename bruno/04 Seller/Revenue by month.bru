@@ -1,0 +1,33 @@
+meta {
+  name: Revenue by month
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/api/v1/sellers/me/dashboard/revenue-by-month
+  body: none
+  auth: bearer
+}
+
+params:query {
+  months: 12
+}
+
+auth:bearer {
+  token: {{sellerToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.items.length).to.equal(12);
+  });
+}
+
+docs {
+  EP-71 (R-01), oldest month first.
+}

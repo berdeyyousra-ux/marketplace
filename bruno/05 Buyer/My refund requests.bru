@@ -1,0 +1,29 @@
+meta {
+  name: My refund requests
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/api/v1/refund-requests/mine
+  body: none
+  auth: bearer
+}
+
+params:query {
+  limit: 10
+}
+
+auth:bearer {
+  token: {{buyerToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  EP-61.
+}

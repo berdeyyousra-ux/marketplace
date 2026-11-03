@@ -1,0 +1,47 @@
+meta {
+  name: Create draft listing
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/v1/products
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{sellerToken}}
+}
+
+body:json {
+  {
+    "title": "Bruno Field Notes {{$timestamp}}",
+    "description": "A printable notebook made by the Bruno collection.",
+    "price": {
+      "amount": "4.50",
+      "currency": "EUR"
+    },
+    "categoryId": {{categoryId}}
+  }
+}
+
+script:post-response {
+  bru.setVar("productId", res.body.id);
+  bru.setVar("productEtag", res.headers.etag);
+}
+
+tests {
+  test("status is 201", function () {
+    expect(res.status).to.equal(201);
+  });
+
+  test("response", function () {
+    expect(res.body.status).to.equal("Draft");
+    expect(res.headers.etag).to.be.a("string");
+  });
+}
+
+docs {
+  EP-23. The ETag is the product's version; updates and status changes need it as If-Match.
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Retry an unknown outbox message
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/api/v1/admin/outbox/00000000-0000-0000-0000-000000000000/retry
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+tests {
+  test("status is 404", function () {
+    expect(res.status).to.equal(404);
+  });
+}
+
+docs {
+  EP-83 requeues a dead-lettered message; an unknown id is 404.
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Repeat buyers
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/v1/admin/reports/repeat-buyers
+  body: none
+  auth: bearer
+}
+
+params:query {
+  months: 6
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  EP-77.
+}

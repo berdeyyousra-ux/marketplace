@@ -1,0 +1,33 @@
+meta {
+  name: Library
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/v1/library
+  body: none
+  auth: bearer
+}
+
+params:query {
+  limit: 20
+}
+
+auth:bearer {
+  token: {{buyerToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.items.some(item => item.orderItemId === bru.getVar("orderItemId"))).to.equal(true);
+  });
+}
+
+docs {
+  EP-51.
+}

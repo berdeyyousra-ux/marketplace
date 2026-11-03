@@ -1,0 +1,37 @@
+meta {
+  name: Start payment
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/v1/orders/{{orderId}}/payment
+  body: none
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{$randomUUID}}
+}
+
+auth:bearer {
+  token: {{buyerToken}}
+}
+
+script:post-response {
+  bru.setVar("providerPaymentId", res.body.clientSecret.replace("_secret_fake", ""));
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.provider).to.equal("Fake");
+  });
+}
+
+docs {
+  EP-33. Returns the provider's client secret for its checkout form. With the fake provider the secret is <providerPaymentId>_secret_fake.
+}

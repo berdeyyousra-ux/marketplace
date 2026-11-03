@@ -1,0 +1,30 @@
+meta {
+  name: Refund queue
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/v1/admin/refund-requests
+  body: none
+  auth: bearer
+}
+
+params:query {
+  status: Submitted
+  limit: 25
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  EP-62, oldest first. Status is Submitted, Approved, Rejected, Executing, Completed or Failed.
+}

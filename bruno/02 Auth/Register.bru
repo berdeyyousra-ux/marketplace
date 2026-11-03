@@ -1,0 +1,29 @@
+meta {
+  name: Register
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "bruno-{{$timestamp}}@example.test",
+    "password": "a long bruno password",
+    "displayName": "Bruno Tester"
+  }
+}
+
+tests {
+  test("status is 202", function () {
+    expect(res.status).to.equal(202);
+  });
+}
+
+docs {
+  EP-01. Always 202, whether or not the email is new (US-01). The confirmation email goes to Mailpit (http://localhost:8025); its link carries the token EP-02 needs.
+}

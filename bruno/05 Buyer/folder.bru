@@ -1,0 +1,10 @@
+meta {
+  name: 05 Buyer
+  seq: 5
+}
+
+docs {
+  Order, payment, library, download and refund request (EP-30 to EP-34, EP-50, EP-51, EP-60, EP-61), buying the listing the seller folder created.
+
+  Payment is completed through EP-99, which only exists when the API runs in Development with Payments:Provider=Fake. The Worker must be running: it turns the payment webhook into a paid order.
+}

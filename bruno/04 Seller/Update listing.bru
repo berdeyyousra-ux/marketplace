@@ -1,0 +1,49 @@
+meta {
+  name: Update listing
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/api/v1/products/{{productId}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  If-Match: {{productEtag}}
+}
+
+auth:bearer {
+  token: {{sellerToken}}
+}
+
+body:json {
+  {
+    "title": "Bruno Field Notes, updated",
+    "description": "A printable notebook made by the Bruno collection.",
+    "price": {
+      "amount": "4.90",
+      "currency": "EUR"
+    },
+    "categoryId": {{categoryId}}
+  }
+}
+
+script:post-response {
+  bru.setVar("productEtag", res.headers.etag);
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.price.amount).to.equal("4.90");
+  });
+}
+
+docs {
+  EP-24. A stale If-Match gets 412, a missing one 428.
+}

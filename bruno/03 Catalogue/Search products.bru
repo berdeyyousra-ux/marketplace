@@ -1,0 +1,35 @@
+meta {
+  name: Search products
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/products
+  body: none
+  auth: none
+}
+
+params:query {
+  q: font
+  sort: Relevance
+  limit: 5
+}
+
+script:post-response {
+  bru.setVar("anyProductId", res.body.items[0].id);
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.items.length).to.be.greaterThan(0);
+  });
+}
+
+docs {
+  EP-21. Full-text search with keyset paging; pass nextCursor back as cursor for the next page. Sort is Newest, PriceAsc, PriceDesc or Relevance (Relevance needs q).
+}

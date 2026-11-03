@@ -1,0 +1,33 @@
+meta {
+  name: My orders
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v1/orders
+  body: none
+  auth: bearer
+}
+
+params:query {
+  limit: 5
+}
+
+auth:bearer {
+  token: {{buyerToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.items[0].id).to.equal(bru.getVar("orderId"));
+  });
+}
+
+docs {
+  EP-31, newest first.
+}

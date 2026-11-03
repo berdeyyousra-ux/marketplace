@@ -1,0 +1,29 @@
+meta {
+  name: Cancelled order
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{baseUrl}}/api/v1/orders/{{cancelOrderId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{buyerToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response", function () {
+    expect(res.body.status).to.equal("Cancelled");
+  });
+}
+
+docs {
+  EP-32 after the cancel.
+}

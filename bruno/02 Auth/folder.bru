@@ -1,0 +1,10 @@
+meta {
+  name: 02 Auth
+  seq: 2
+}
+
+docs {
+  Account endpoints (EP-01 to EP-09). Logs in as the seeded buyer and keeps its tokens for later folders.
+
+  Register, login, forgot-password and reset-password share a limit of 10 requests per minute per IP, and a full run uses six of them: wait a minute between runs or the second run gets 429.
+}

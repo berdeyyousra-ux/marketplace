@@ -1,0 +1,25 @@
+meta {
+  name: Order
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/orders/{{orderId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{buyerToken}}
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  EP-32.
+}

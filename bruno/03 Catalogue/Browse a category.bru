@@ -1,0 +1,27 @@
+meta {
+  name: Browse a category
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/products
+  body: none
+  auth: none
+}
+
+params:query {
+  categorySlug: {{categorySlug}}
+  sort: PriceAsc
+  limit: 5
+}
+
+tests {
+  test("status is 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  EP-21 filtered by category, cheapest first.
+}
