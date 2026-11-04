@@ -14,7 +14,7 @@ export function BuyButton({ productId, signedIn }: { productId: string; signedIn
 
   if (!signedIn) {
     return (
-      <Link href={`/login?next=/products/${productId}`} className="block rounded-control border border-accent bg-accent px-4 py-3 text-center type-label text-accent-contrast hover:bg-accent-hover">
+      <Link href={`/login?next=/products/${productId}`} className="block rounded-control border border-cta bg-cta px-4 py-3 text-center type-label text-cta-contrast hover:bg-cta-hover">
         Sign in to buy
       </Link>
     );

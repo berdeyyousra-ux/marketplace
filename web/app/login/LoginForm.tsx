@@ -55,11 +55,11 @@ export function LoginForm({ next }: { next: string }) {
       <Input label="Email" type="email" autoComplete="email" {...form.field("email")} />
       <div className="flex flex-col gap-1">
         <Input label="Password" type="password" autoComplete="current-password" {...form.field("password")} />
-        <Link href="/forgot-password" className="self-end type-label text-accent hover:underline">Forgot your password?</Link>
+        <Link href="/forgot-password" className="self-end type-label text-accent-strong hover:underline">Forgot your password?</Link>
       </div>
       <Button type="submit" loading={busy} fullWidth>Sign in</Button>
       <p className="m-0 text-center type-label text-muted">
-        New here? <Link href="/register" className="text-accent hover:underline">Create an account</Link>
+        New here? <Link href="/register" className="text-accent-strong hover:underline">Create an account</Link>
       </p>
     </form>
   );

@@ -18,7 +18,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
       <div className="flex flex-1 flex-col gap-1 p-4">
         <span className="type-card-title line-clamp-2">{product.title}</span>
         {product.sellerName && <span className="type-label text-muted">{product.sellerName}</span>}
-        <Money value={product.price} className="type-price mt-auto pt-2" />
+        <Money value={product.price} className="type-price mt-auto pt-2 text-accent-strong" />
       </div>
     </Link>
   );

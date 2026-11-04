@@ -15,7 +15,7 @@ function LinkFailed() {
     <StatusPanel tone="danger">
       <p className="m-0 font-medium">This link can&apos;t be used</p>
       <p className="m-0">It may have expired (reset links last 30 minutes), been used already, or been copied incompletely.</p>
-      <p className="m-0 type-label"><Link href="/forgot-password" className="text-accent hover:underline">Request a new link</Link></p>
+      <p className="m-0 type-label"><Link href="/forgot-password" className="text-accent-strong hover:underline">Request a new link</Link></p>
     </StatusPanel>
   );
 }

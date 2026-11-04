@@ -65,12 +65,12 @@ export default async function CheckoutPage({ params }: { params: Promise<{ order
       ) : data.status === "Paid" || data.status === "PartiallyRefunded" ? (
         <StatusPanel tone="success">
           <p className="m-0">Paid {date(data.paidAt)}{data.payment ? ` with ${data.payment.provider === "Fake" ? "a test payment" : data.payment.provider}` : ""}.</p>
-          <p className="m-0 type-label"><Link href="/library" className="text-accent hover:underline">Go to your library</Link> to download.</p>
+          <p className="m-0 type-label"><Link href="/library" className="text-accent-strong hover:underline">Go to your library</Link> to download.</p>
         </StatusPanel>
       ) : (
         <StatusPanel tone="neutral">
           <p className="m-0">{closedMessages[data.status] ?? "This order can't be paid."}</p>
-          <p className="m-0 type-label"><Link href="/" className="text-accent hover:underline">Browse products</Link> to start a new one.</p>
+          <p className="m-0 type-label"><Link href="/" className="text-accent-strong hover:underline">Browse products</Link> to start a new one.</p>
         </StatusPanel>
       )}
     </div>

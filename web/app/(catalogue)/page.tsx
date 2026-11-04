@@ -49,11 +49,11 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
       <div className="flex flex-col gap-2">
         <h2 className="type-label text-muted">Category</h2>
         <ul className="flex flex-col gap-1">
-          <li><Link href={href({ category: undefined })} className={!search.category ? "type-label text-accent" : "type-label text-text hover:text-accent"}>All categories</Link></li>
+          <li><Link href={href({ category: undefined })} className={!search.category ? "type-label text-accent-strong" : "type-label text-text hover:text-accent-strong"}>All categories</Link></li>
           {categoryList.map((category) => (
             <li key={category.id}>
               <Link href={href({ category: category.slug })} aria-current={category.slug === search.category ? "page" : undefined}
-                className={category.slug === search.category ? "type-label text-accent" : "type-label text-text hover:text-accent"}>
+                className={category.slug === search.category ? "type-label text-accent-strong" : "type-label text-text hover:text-accent-strong"}>
                 {category.name}
               </Link>
             </li>
@@ -78,8 +78,8 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
           className="w-full rounded-control border border-border-strong bg-surface px-2 py-2 type-body text-text">
           {sorts.map(([value, label]) => <option key={value} value={value}>{search.q && value === "" ? "Most relevant" : label}</option>)}
         </select>
-        <button type="submit" className="rounded-control border border-accent bg-accent px-4 py-2 type-label text-accent-contrast hover:bg-accent-hover">Apply</button>
-        {filtered && <Link href="/" className="type-label text-accent">Clear filters</Link>}
+        <button type="submit" className="rounded-control border border-cta bg-cta px-4 py-2 type-label text-cta-contrast hover:bg-cta-hover">Apply</button>
+        {filtered && <Link href="/" className="type-label text-accent-strong">Clear filters</Link>}
       </form>
     </div>
   );
@@ -97,9 +97,9 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
 
         <div className="min-w-0 flex-1">
           {!products.ok ? (
-            <EmptyState message="The catalogue could not be loaded. Try again in a moment." action={<Link href="/" className="type-label text-accent">Reload</Link>} />
+            <EmptyState message="The catalogue could not be loaded. Try again in a moment." action={<Link href="/" className="type-label text-accent-strong">Reload</Link>} />
           ) : products.data.items.length === 0 ? (
-            <EmptyState message="No products match these filters." action={<Link href="/" className="rounded-control border border-border-strong px-4 py-2 type-label text-accent">Clear filters</Link>} />
+            <EmptyState message="No products match these filters." action={<Link href="/" className="rounded-control border border-border-strong px-4 py-2 type-label text-accent-strong">Clear filters</Link>} />
           ) : (
             <>
               <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

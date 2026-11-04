@@ -90,7 +90,7 @@ export function LibraryRow({ item, refund }: { item: LibraryItem; refund: MyRefu
     <li className="flex flex-wrap items-center gap-4 border-b border-border px-4 py-4 last:border-b-0 sm:flex-nowrap">
       <Thumbnail id={item.productId} title={item.title} url={item.coverImageUrl} />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <Link href={`/products/${item.productId}`} className="type-card-title truncate text-text hover:text-accent">{item.title}</Link>
+        <Link href={`/products/${item.productId}`} className="type-card-title truncate text-text hover:text-accent-strong">{item.title}</Link>
         <p className="m-0 type-label text-muted">
           Bought {date(item.purchasedAt)}
           {canDownload && <> · {item.maxDownloads - item.downloadCount} of {item.maxDownloads} downloads left</>}

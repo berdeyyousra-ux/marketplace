@@ -13,7 +13,7 @@ import { AuthShell } from "@/components/AuthShell";
 import { BecomeSellerForm } from "./BecomeSellerForm";
 import { ListingRow } from "./ListingRow";
 
-const primaryLink = "inline-flex items-center rounded-control border border-accent bg-accent px-4 py-2 type-label text-accent-contrast hover:border-accent-hover hover:bg-accent-hover";
+const primaryLink = "inline-flex items-center rounded-control border border-cta bg-cta px-4 py-2 type-label text-cta-contrast hover:border-cta-hover hover:bg-cta-hover";
 const th = "px-4 py-3 type-micro text-muted";
 
 function percent(part: number, whole: number) {
@@ -95,7 +95,7 @@ export default async function SellerPage() {
                 <tbody>
                   {top.data.items.map((product) => (
                     <tr key={product.productId} className="border-b border-border last:border-b-0">
-                      <td className="px-4 py-3 type-label text-text"><Link href={`/products/${product.productId}`} className="text-text hover:text-accent">{product.title}</Link></td>
+                      <td className="px-4 py-3 type-label text-text"><Link href={`/products/${product.productId}`} className="text-text hover:text-accent-strong">{product.title}</Link></td>
                       <td className="px-4 py-3 text-right type-label tabular-nums text-text">{product.units}</td>
                       <td className="px-4 py-3 text-right type-label text-text"><Money value={product.gross} /></td>
                     </tr>

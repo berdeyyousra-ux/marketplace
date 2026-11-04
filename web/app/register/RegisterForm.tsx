@@ -58,7 +58,7 @@ export function RegisterForm() {
       <Input label="Password" type="password" autoComplete="new-password" maxLength={128} hint={passwordHint} {...form.field("password")} />
       <Button type="submit" loading={busy} fullWidth>Create account</Button>
       <p className="m-0 text-center type-label text-muted">
-        Already have an account? <Link href="/login" className="text-accent hover:underline">Sign in</Link>
+        Already have an account? <Link href="/login" className="text-accent-strong hover:underline">Sign in</Link>
       </p>
     </form>
   );

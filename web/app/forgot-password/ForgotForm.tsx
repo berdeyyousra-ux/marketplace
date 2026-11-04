@@ -37,7 +37,7 @@ export function ForgotForm() {
       <StatusPanel tone="success">
         <p className="m-0 font-medium">Check your email</p>
         <p className="m-0">If <strong>{sentTo}</strong> has an account, we sent it a link to set a new password. The link works for 30 minutes.</p>
-        <p className="m-0 type-label"><Link href="/login" className="text-accent hover:underline">Back to sign in</Link></p>
+        <p className="m-0 type-label"><Link href="/login" className="text-accent-strong hover:underline">Back to sign in</Link></p>
       </StatusPanel>
     );
   }
@@ -48,7 +48,7 @@ export function ForgotForm() {
       <Input label="Email" type="email" autoComplete="email" {...form.field("email")} />
       <Button type="submit" loading={busy} fullWidth>Send reset link</Button>
       <p className="m-0 text-center type-label text-muted">
-        Remembered it? <Link href="/login" className="text-accent hover:underline">Sign in</Link>
+        Remembered it? <Link href="/login" className="text-accent-strong hover:underline">Sign in</Link>
       </p>
     </form>
   );
