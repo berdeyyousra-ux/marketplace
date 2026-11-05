@@ -36,20 +36,17 @@ public sealed class DownloadTests(MarketplaceWebFactory factory) : IntegrationTe
     }
 
     [Fact]
-    public async Task FM19_DownloadLimitReached_Returns409WithReasonLimit()
+    public async Task FM19_BeyondTenDownloads_StaysAvailable()
     {
         var (buyer, itemId) = await PaidItemAsync("limit");
         using (buyer)
         {
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < 15; i++)
             {
                 (await buyer.PostAsync($"/api/v1/downloads/{itemId}/link", content: null, CancellationToken)).StatusCode.ShouldBe(HttpStatusCode.OK);
             }
 
-            var refused = await buyer.PostAsync($"/api/v1/downloads/{itemId}/link", content: null, CancellationToken);
-
-            await ShouldBeUnavailableAsync(refused, "limit");
-            (await WithDbAsync(db => db.DownloadGrants.Select(grant => grant.DownloadCount).SingleAsync(CancellationToken))).ShouldBe(10);
+            (await WithDbAsync(db => db.DownloadGrants.Select(grant => grant.DownloadCount).SingleAsync(CancellationToken))).ShouldBe(15);
         }
     }
 
@@ -106,7 +103,6 @@ public sealed class DownloadTests(MarketplaceWebFactory factory) : IntegrationTe
             item.GetProperty("title").GetString().ShouldBe("Notion Budget Template");
             item.GetProperty("fileName").GetString().ShouldBe("product.pdf");
             item.GetProperty("downloadCount").GetInt32().ShouldBe(1);
-            item.GetProperty("maxDownloads").GetInt32().ShouldBe(10);
             item.GetProperty("status").GetString().ShouldBe("Active");
             strangers.GetProperty("items").GetArrayLength().ShouldBe(0);
         }

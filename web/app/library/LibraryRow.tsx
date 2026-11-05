@@ -28,7 +28,6 @@ const refundBadges: Record<string, { label: string; tone: "warning" | "success" 
 const unavailable: Record<string, string> = {
   Revoked: "Access ended with the refund.",
   Expired: "The download period has ended.",
-  Limit: "All downloads used.",
 };
 
 export function LibraryRow({ item, refund }: { item: LibraryItem; refund: MyRefundRequest | null }) {
@@ -93,7 +92,7 @@ export function LibraryRow({ item, refund }: { item: LibraryItem; refund: MyRefu
         <Link href={`/products/${item.productId}`} className="type-card-title truncate text-text hover:text-accent-strong">{item.title}</Link>
         <p className="m-0 type-label text-muted">
           Bought {date(item.purchasedAt)}
-          {canDownload && <> · {item.maxDownloads - item.downloadCount} of {item.maxDownloads} downloads left</>}
+          {canDownload && item.downloadCount > 0 && <> · Downloaded {item.downloadCount} {item.downloadCount === 1 ? "time" : "times"}</>}
           {!canDownload && unavailable[item.status] && <> · {unavailable[item.status]}</>}
         </p>
         {refund?.decisionNote && <p className="m-0 type-label text-muted">Note from the team: {refund.decisionNote}</p>}

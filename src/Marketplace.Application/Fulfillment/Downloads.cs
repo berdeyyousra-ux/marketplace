@@ -16,10 +16,10 @@ public sealed record DownloadLink(Uri Url, DateTimeOffset ExpiresAt);
 
 public sealed record LibraryQuery(int Limit = Paging.DefaultLimit, string? Cursor = null);
 
-// Status is Active, or the reason the grant can no longer be used: Revoked, Expired or Limit.
+// Status is Active, or the reason the grant can no longer be used: Revoked or Expired. Downloads are unlimited otherwise.
 public sealed record LibraryItem(
     Guid OrderItemId, Guid ProductId, string Title, string? FileName, DateTimeOffset PurchasedAt, DateTimeOffset ExpiresAt,
-    int DownloadCount, int MaxDownloads, string Status, Uri? CoverImageUrl);
+    int DownloadCount, string Status, Uri? CoverImageUrl);
 
 public static class DownloadErrors
 {
@@ -31,7 +31,7 @@ public sealed class LibraryQueryValidator : AbstractValidator<LibraryQuery>
     public LibraryQueryValidator() => RuleFor(query => query.Limit).ValidLimit();
 }
 
-// Section 9.7. The count is taken by one conditional UPDATE, so concurrent requests can never exceed the limit.
+// Section 9.7. The count is taken by one conditional UPDATE, guarding only against a revoked or expired grant.
 public sealed class CreateDownloadLinkCommandHandler(
     IAppDbContext db, ICurrentUser currentUser, IFileStorage storage, AuditTrail audit, TimeProvider timeProvider)
     : ICommandHandler<CreateDownloadLinkCommand, DownloadLink>
@@ -55,12 +55,14 @@ public sealed class CreateDownloadLinkCommandHandler(
         var now = timeProvider.GetUtcNow();
         await using var transaction = await db.BeginTransactionAsync(cancellationToken);
         var updated = await db.DownloadGrants
-            .Where(grant => grant.Id == grantId && grant.RevokedAt == null && grant.ExpiresAt > now && grant.DownloadCount < grant.MaxDownloads)
+            .Where(grant => grant.Id == grantId && grant.RevokedAt == null && grant.ExpiresAt > now)
             .ExecuteUpdateAsync(setters => setters.SetProperty(grant => grant.DownloadCount, grant => grant.DownloadCount + 1), cancellationToken);
         if (updated == 0)
         {
             var current = await db.DownloadGrants.AsNoTracking().SingleAsync(grant => grant.Id == grantId, cancellationToken);
-            return DownloadGrant.Unavailable(current.GetUnavailableReason(now) ?? DownloadUnavailableReason.Limit);
+            var reason = current.GetUnavailableReason(now)
+                ?? throw new InvalidOperationException($"Download grant {grantId} failed to update but is neither revoked nor expired.");
+            return DownloadGrant.Unavailable(reason);
         }
 
         // The buyer always receives the product's current file.
@@ -110,7 +112,7 @@ public sealed class LibraryQueryHandler(IAppDbContext db, ICurrentUser currentUs
         var now = timeProvider.GetUtcNow();
         var items = rows.ConvertAll(row => new LibraryItem(
             row.Grant.OrderItemId, row.Grant.ProductId, row.Title, row.File?.Name, row.Grant.CreatedAt, row.Grant.ExpiresAt,
-            row.Grant.DownloadCount, row.Grant.MaxDownloads, row.Grant.GetUnavailableReason(now)?.ToString() ?? "Active",
+            row.Grant.DownloadCount, row.Grant.GetUnavailableReason(now)?.ToString() ?? "Active",
             CoverUrls.For(images, row.CoverImageKey, row.CoverImageUpdatedAt)));
         return Paging.ToPage(items, query.Limit, item => new CreatedCursor(item.PurchasedAt, item.OrderItemId));
     }
