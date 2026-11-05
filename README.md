@@ -18,7 +18,10 @@ Built to production engineering standards:
 - an evaluated LLM feature
 - security scanning in CI
 
-> **Live demo:** the Azure staging deployment is next (T-061 to T-063). Its URL will go here.
+> **Live demo:** not running right now. The Azure infrastructure (Bicep, OIDC sign-in) and the staging deployment
+> pipeline are built and have deployed green; the staging resource group was then deleted to stop the charges.
+> The [spec changelog](docs/spec-changelog.md) records what survived the teardown and how to bring it back. The URL
+> will go here once staging is up again.
 
 ## What it does
 
@@ -29,7 +32,7 @@ Built to production engineering standards:
   - idempotent order creation
   - payment through a provider (Stripe, or a fake provider for development) confirmed by signed webhooks
   - receipts by email
-  - downloads through five-minute signed URLs, with a download limit
+  - downloads through five-minute signed URLs, re-downloadable until the grant expires or a refund revokes it
 - **Refunds:** the buyer requests one, a policy verdict is computed, and an LLM suggests an action. An admin approves or rejects it, and the Worker executes the refund against the provider.
 - **Reporting:** a seller dashboard and admin reports from hand-written SQL (monthly revenue, cohorts, refund rates, percentiles), backed by covering indexes and a materialized view.
 - **Web client:** a Next.js app for every role. It keeps tokens in httpOnly cookies and never exposes them to browser code.
@@ -96,6 +99,24 @@ Then:
 - **AI suggestions:** these come from a deterministic fake client unless `Ai:Provider` is set to `Anthropic` or `OpenAi` with a key ([spec changelog](docs/spec-changelog.md)).
 - **Containers:** `docker compose --profile app up -d` runs the Api and the Worker as containers instead, built from the production Dockerfiles.
 
+### Configuration
+
+Settings come from `appsettings.json`, environment variables (`Section__Key`) and, in Azure, Key Vault. Every section
+below is checked while the process starts: a missing or unsafe value is logged at Fatal and the process exits, instead
+of failing later on the first request that needs it.
+
+| Section | Checked at startup |
+| --- | --- |
+| `ConnectionStrings` | `Database` and `BlobStorage` are both present |
+| `Jwt` | signing keys are base64 and at least 32 bytes, and never the published development key outside Development |
+| `Cors` | outside Development, at least one allowed origin and never `*` |
+| `Payments` | provider is `Fake` or `Stripe`; `Stripe` in Production; Stripe's secret and webhook keys whenever it is the provider |
+| `Storage` | both container names set, the public cover container differs from the private file container, positive signed-link lifetime |
+| `Email` | SMTP host, port and sender set; a password whenever a user is set; `LinkBaseUrl` is an absolute http(s) URL |
+| `Ai` | provider is `Fake`, `Anthropic` or `OpenAi`; model and key for a real provider; positive token and quota limits |
+| `Marketplace` | commission between 0 and 10000 basis points |
+| `Refunds` | a positive refund window |
+
 ## Test it
 
 The integration tests start PostgreSQL and Azurite in containers (Testcontainers), so Docker must be running.
@@ -129,22 +150,27 @@ CI runs all of the above except the Bruno collection, together with these checks
 - gitleaks secret scanning
 - CodeQL
 
-## Where to look
+## Skill map
 
-| Topic | Where |
+What this repository sets out to demonstrate, and where to read the evidence.
+
+| Skill | Where it shows up |
 | --- | --- |
-| Domain model and state machines | `src/Marketplace.Domain` (orders, payments, refunds, ledger) |
-| Transactional outbox and retries | `src/Marketplace.Infrastructure/Outbox`, `src/Marketplace.Worker` |
+| Domain modelling and explicit state machines | `src/Marketplace.Domain` (orders, payments, refunds, ledger) |
+| Transactional outbox, retries and dead-lettering | `src/Marketplace.Infrastructure/Outbox`, `src/Marketplace.Worker` |
 | Idempotent writes | `src/Marketplace.Api/Infrastructure/IdempotentAttribute.cs` |
-| Payment webhooks and reconciliation | `src/Marketplace.Application/Payments`, `src/Marketplace.Infrastructure/Payments` |
+| Payment webhooks, signature checks and reconciliation | `src/Marketplace.Application/Payments`, `src/Marketplace.Infrastructure/Payments` |
 | Auth: rotating refresh tokens with reuse detection | `src/Marketplace.Application/Identity`, `src/Marketplace.Infrastructure/Identity` |
-| Advanced SQL reporting | [`docs/sql`](docs/sql) (queries and their plans), [ADR 0003](docs/adr/0003-reporting-indexes.md) |
+| Fail-fast configuration validation | `src/Marketplace.Infrastructure/DependencyInjection.cs`, `tests/Marketplace.IntegrationTests/Auth/StartupValidationTests.cs` |
+| Advanced SQL and query tuning | [`docs/sql`](docs/sql) (queries and their plans), [ADR 0003](docs/adr/0003-reporting-indexes.md) |
 | LLM feature with structured output, injection handling and evals | `src/Marketplace.Application/Refunds`, [`docs/ai-eval-report.md`](docs/ai-eval-report.md) |
 | File handling: magic bytes, metadata stripping, signed URLs | `src/Marketplace.Application/Catalog/ProductFiles.cs`, `CoverImages.cs`, `src/Marketplace.Infrastructure/Storage` |
 | Testing strategy | `tests/` (architecture, unit, integration with Testcontainers, AI evals) |
 | CI and supply-chain security | [`.github/workflows`](.github/workflows), [`.github/dependabot.yml`](.github/dependabot.yml) |
+| Infrastructure as code and deployment | [`deploy/bicep`](deploy/bicep), [`deploy/docker`](deploy/docker), [`cd-staging.yml`](.github/workflows/cd-staging.yml) |
 | Web client: backend-for-frontend auth, single-flight token refresh | `web/lib/refresh.ts`, `web/proxy.ts`, [`web/README.md`](web/README.md) |
-| Design system and data visualization | `web/app/globals.css`, `web/components/ui`, `web/components/RevenueChart.tsx` |
+| Design system, theming and contrast budgets | `web/app/globals.css`, `web/components/ui`, [`docs/frontend-design-plan.md`](docs/frontend-design-plan.md) |
+| Data visualization | `web/components/RevenueChart.tsx` |
 
 ## Documentation
 
@@ -152,6 +178,7 @@ CI runs all of the above except the Bruno collection, together with these checks
   - [0001 Modular monolith](docs/adr/0001-modular-monolith.md)
   - [0002 Technology stack and banned libraries](docs/adr/0002-stack-and-banned-libraries.md)
   - [0003 Covering indexes for the report queries](docs/adr/0003-reporting-indexes.md)
+- [Changelog](CHANGELOG.md): what shipped in each release.
 - [Spec changelog](docs/spec-changelog.md): every deviation from the build specification, with its reason.
 - [AI eval report](docs/ai-eval-report.md): accuracy, schema validity and injection recall of the refund advisor.
 - [Seeding](docs/seeding.md): demo data and the one-million-order load data set.
@@ -159,7 +186,9 @@ CI runs all of the above except the Bruno collection, together with these checks
 
 ## Limitations
 
-- **No live deployment yet.** The Azure infrastructure, staging and production pipelines are the next tasks.
+- **No live deployment right now.** The Bicep infrastructure and the staging pipeline work and have deployed green, but
+  the staging resource group was deleted to stop the charges, so there is nothing to visit. The production pipeline
+  (T-063) is deferred.
 - **Stripe test payments:** the API and Worker support Stripe, but the web client has no Stripe payment form yet (T-064). Locally, checkout uses the fake provider.
 - **Scope:**
   - payments in euros only, and no VAT calculation

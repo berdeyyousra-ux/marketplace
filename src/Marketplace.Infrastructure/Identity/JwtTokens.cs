@@ -33,6 +33,14 @@ public sealed class JwtOptions
 
     public static bool IsValidKey(string? base64) => TryDecode(base64, out var bytes) && bytes.Length >= MinimumKeyBytes;
 
+    // SHA-256 of the decoded development key committed in docker-compose.override.yml. The hash, not the key, is kept
+    // here, so the key stays in the one file the secret scan allows it in.
+    private static readonly byte[] _developmentKeyHash = Convert.FromHexString("bc84f0ef0d3229c4306586743c99af904bf040b2f6de9d772ffec5b3b34339a8");
+
+    // Section 16: outside Development the signing key must not be the published development default.
+    public static bool IsDevelopmentKey(string? base64) =>
+        TryDecode(base64, out var bytes) && CryptographicOperations.FixedTimeEquals(SHA256.HashData(bytes), _developmentKeyHash);
+
     internal static bool TryDecode(string? base64, out byte[] bytes)
     {
         bytes = [];

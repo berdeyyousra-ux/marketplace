@@ -6,6 +6,8 @@ using Marketplace.Infrastructure.Outbox;
 using Marketplace.IntegrationTests.Fixtures;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Internal;
 using Shouldly;
 
 namespace Marketplace.IntegrationTests.Workers;
@@ -26,6 +28,9 @@ public sealed class WorkerCompositionTests(MarketplaceWebFactory factory) : Inte
             })
             .Build());
         services.AddLogging();
+
+        // Every real host registers one, and the section 16 rule "Stripe in Production" is validated against it.
+        services.AddSingleton<IHostEnvironment>(new HostingEnvironment { EnvironmentName = Environments.Development, ApplicationName = "Marketplace.Worker" });
         services.AddApplicationBackground();
         services.AddInfrastructure();
 
