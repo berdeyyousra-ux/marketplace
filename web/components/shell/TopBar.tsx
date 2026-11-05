@@ -25,13 +25,13 @@ function Links({ me, restoring }: { me: Me | null; restoring: boolean }) {
     <>
       <Link href="/library" className={link}>Library</Link>
       <Link href="/seller" className={link}>{me.roles.includes("Seller") ? "Seller dashboard" : "Sell"}</Link>
-      {me.roles.includes("Admin") && <Link href="/admin/refunds" className={link}>Refund queue</Link>}
       <details className="relative">
         <summary className="cursor-pointer list-none type-label text-text hover:text-accent-strong">{me.displayName} ▾</summary>
         <div className="absolute right-0 z-40 mt-2 flex min-w-44 flex-col gap-3 rounded-card border border-border bg-surface p-4 shadow-raised">
           <span className="type-label text-muted">{me.email}</span>
           <Link href="/orders" className={link}>Orders</Link>
           <Link href="/library" className={link}>Library</Link>
+          {me.roles.includes("Admin") && <Link href="/admin/refunds" className={link}>Refund queue</Link>}
           <LogoutButton />
         </div>
       </details>

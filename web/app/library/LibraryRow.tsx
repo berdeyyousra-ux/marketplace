@@ -100,13 +100,15 @@ export function LibraryRow({ item, refund }: { item: LibraryItem; refund: MyRefu
       </div>
       <div className="flex w-full items-center justify-end gap-4 sm:w-auto">
         {badge ? <Badge tone={badge.tone}>{badge.label}</Badge> : !canDownload && <StatusBadge status={item.status} />}
-        {canRequestRefund && (
+        {canDownload && <Button onClick={download} loading={downloading}>Download</Button>}
+      </div>
+      {canRequestRefund && (
+        <div className="flex w-full justify-end">
           <button type="button" onClick={() => { setDialogOpen(true); setSendError(null); }} className="cursor-pointer border-0 bg-transparent p-0 type-label text-muted underline-offset-2 hover:text-text hover:underline">
             Request refund
           </button>
-        )}
-        {canDownload && <Button onClick={download} loading={downloading}>Download</Button>}
-      </div>
+        </div>
+      )}
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} title={`Request a refund for ${item.title}`}>
         <form className="flex flex-col gap-4" onSubmit={requestRefund} noValidate>

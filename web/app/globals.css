@@ -1,34 +1,90 @@
 @import "tailwindcss";
 
 /*
- * Design tokens (T-086, docs/frontend-design-plan.md). The only place colour values are written: components use
- * these through Tailwind utilities (bg-surface, text-muted, border-strong, ...) or var(--token). Light by default;
- * dark follows the operating system, and data-theme forces either on a subtree (the design-system page shows both).
+ * Design tokens (T-086, docs/frontend-design-plan.md; dark-default pass on design/orange-accent). The only place
+ * colour values are written: components use these through Tailwind utilities (bg-surface, text-muted,
+ * border-strong, ...) or var(--token). Dark by default now; light stays fully supported, either via an explicit OS
+ * light preference or a data-theme override on a subtree (the design-system page shows both).
  *
- * Accent (orange). Ratios are WCAG 2 contrast, checked against white text and each mode's --bg and --surface:
- *   --accent:          borders, focus ring, icons, large headline keywords. Not body-size text in light mode: #F2541B
- *                      is 3.47:1 on --surface and 3.32:1 on --bg, enough for 3:1 UI and large text, not 4.5:1.
- *   --accent-strong:   orange button fills and any body-size orange text (links, prices). Light #C2410C: white on it
- *                      5.18:1, as text 5.18:1 on --surface and 4.96:1 on --bg. Dark #F2541B: as text 5.05:1 / 5.70:1.
- *   --accent-hover:    hover on --accent-strong fills, and the text colour on --accent-muted (light 6.22:1, dark 5.75:1).
- *   --accent-muted:    badge and active-pill fills. Close to --surface (1.17:1), so anything that must read as a
- *                      control boundary on it keeps an --accent border.
- *   --accent-contrast: text on --accent-strong. White in light mode (5.18:1). Near-black in dark mode: white on the
- *                      dark --accent-strong #F2541B is 3.47:1 and fails AA; #0C0A09 on it is 5.70:1.
- * White text never sits on plain --accent.
+ * Accent (orange). #FF5A1F is the one canonical raw accent in both modes now (previously light and dark used two
+ * different raw hues). Ratios are WCAG 2 contrast, checked against each mode's --bg and --surface:
+ *   --accent:          borders, focus ring, icons, large headline keywords. Not body-size text. Light #FF5A1F is
+ *                      3.14:1 on --surface and 3.01:1 on --bg (meets the 3:1 floor for UI/large text, not 4.5:1).
+ *                      Dark uses a lightened #FF7B4C (7.57:1 on --bg, 6.84:1 on --surface, so it would even carry
+ *                      body text, but stays reserved for the same highlight roles for consistency with light mode).
+ *   --accent-strong:   orange button fills and any body-size orange text (links, prices). Light #C24418: white on
+ *                      it 5.08:1, as text 4.87:1 on --bg / 5.08:1 on --surface. Dark keeps the raw #FF5A1F itself:
+ *                      white text on it is only 3.14:1 and fails AA, so (as before) it pairs with near-black text
+ *                      --accent-contrast instead, which hits 6.19:1 on --bg / 5.59:1 on --surface as plain text.
+ *   --accent-hover:    hover on --accent-strong fills, and the text colour on --accent-muted (light 6.22:1 vs the
+ *                      original design, dark 5.92:1).
+ *   --accent-muted:    badge and active-pill fills. Close to --surface, so anything that must read as a control
+ *                      boundary on it keeps an --accent border.
+ *   --accent-contrast: text on --accent-strong. White in light mode (5.08:1). Near-black in dark mode, matching
+ *                      --bg (#0D0D0F): white on the dark --accent-strong #FF5A1F is 3.14:1 and fails AA; #0D0D0F on
+ *                      it is 6.19:1.
+ * White text never sits on plain --accent, and never on the dark --accent-strong fill.
  *
- * Primary actions are near-black, not orange (--cta): the inverse of the page in each mode, so it stays the strongest
- * element. Light: white on #1C1917 17.49:1, hover #44403C 10.27:1. Dark: #0C0A09 on #FAFAF9 18.92:1, hover 15.73:1.
+ * Primary actions are near-black/near-white, not orange (--cta): the inverse of the page in each mode, so it stays
+ * the strongest element. Light: white on #1C1917 17.49:1, hover #44403C 10.27:1. Dark: #0D0D0F on #F5F5F5 17.81:1.
  *
- * --border-strong: form-control borders. --border is 1.26:1 (light) and 1.15:1 (dark) against the surface, fine for
- * decorative edges but below the 3:1 a control's boundary needs (WCAG 1.4.11).
- * In dark mode success and warning are toned down (they inform); danger stays at full strength (it must pull the eye).
+ * --border-strong: form-control borders, below the 3:1 a control's boundary needs (WCAG 1.4.11) but fine for the
+ * decorative --border edges. In dark mode success and warning are toned down (they inform); danger stays at full
+ * strength (it must pull the eye).
  *
  * --chart-1 is the data-series colour (T-089), unchanged by the orange accent: an orange series would sit next to
  * --danger red in the same chart vocabulary. These are teal steps checked with the dataviz validator against each
  * mode's surface.
  */
 :root,
+[data-theme="dark"] {
+  --bg: #0d0d0f;
+  --surface: #19191c;
+  --border: #2a2a2e;
+  --border-strong: #71717a;
+  --text: #f5f5f5;
+  --text-muted: #a1a1aa;
+  --accent: #ff7b4c;
+  --accent-strong: #ff5a1f;
+  --accent-hover: #ff7b4c;
+  --accent-muted: #3a1f12;
+  --accent-contrast: #0d0d0f;
+  --cta: #f5f5f5;
+  --cta-hover: #d4d4d8;
+  --cta-contrast: #0d0d0f;
+  --danger: #f87171;
+  --success: #5db384;
+  --warning: #d4a24c;
+  --shadow-raised: 0 4px 16px rgb(0 0 0 / 0.4);
+  --chart-1: #14a394;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --border: #e7e5e4;
+    --border-strong: #78716c;
+    --text: #1c1917;
+    --text-muted: #78716c;
+    --accent: #ff5a1f;
+    --accent-strong: #c24418;
+    --accent-hover: #9a3412;
+    --accent-muted: #fde9dd;
+    --accent-contrast: #ffffff;
+    --cta: #1c1917;
+    --cta-hover: #44403c;
+    --cta-contrast: #ffffff;
+    --danger: #b91c1c;
+    --success: #15803d;
+    --warning: #a16207;
+    --shadow-raised: 0 4px 16px rgb(0 0 0 / 0.08);
+    --chart-1: #0d9488;
+    color-scheme: light;
+  }
+}
+
 [data-theme="light"] {
   --bg: #fafaf9;
   --surface: #ffffff;
@@ -36,8 +92,8 @@
   --border-strong: #78716c;
   --text: #1c1917;
   --text-muted: #78716c;
-  --accent: #f2541b;
-  --accent-strong: #c2410c;
+  --accent: #ff5a1f;
+  --accent-strong: #c24418;
   --accent-hover: #9a3412;
   --accent-muted: #fde9dd;
   --accent-contrast: #ffffff;
@@ -49,56 +105,7 @@
   --warning: #a16207;
   --shadow-raised: 0 4px 16px rgb(0 0 0 / 0.08);
   --chart-1: #0d9488;
-  --cover-letter: rgb(255 255 255 / 0.82);
   color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0c0a09;
-    --surface: #1c1917;
-    --border: #292524;
-    --border-strong: #78716c;
-    --text: #fafaf9;
-    --text-muted: #a8a29e;
-    --accent: #fb7a42;
-    --accent-strong: #f2541b;
-    --accent-hover: #fb7a42;
-    --accent-muted: #3a1f12;
-    --accent-contrast: #0c0a09;
-    --cta: #fafaf9;
-    --cta-hover: #e7e5e4;
-    --cta-contrast: #0c0a09;
-    --danger: #f87171;
-    --success: #5db384;
-    --warning: #d4a24c;
-    --shadow-raised: 0 4px 16px rgb(0 0 0 / 0.4);
-    --chart-1: #14a394;
-    color-scheme: dark;
-  }
-}
-
-[data-theme="dark"] {
-  --bg: #0c0a09;
-  --surface: #1c1917;
-  --border: #292524;
-  --border-strong: #78716c;
-  --text: #fafaf9;
-  --text-muted: #a8a29e;
-  --accent: #fb7a42;
-  --accent-strong: #f2541b;
-  --accent-hover: #fb7a42;
-  --accent-muted: #3a1f12;
-  --accent-contrast: #0c0a09;
-  --cta: #fafaf9;
-  --cta-hover: #e7e5e4;
-  --cta-contrast: #0c0a09;
-  --danger: #f87171;
-  --success: #5db384;
-  --warning: #d4a24c;
-  --shadow-raised: 0 4px 16px rgb(0 0 0 / 0.4);
-  --chart-1: #14a394;
-  color-scheme: dark;
 }
 
 /*
@@ -108,6 +115,7 @@
  * Both modes use them; covers are artwork, not interface.
  */
 :root {
+  --cover-letter: rgb(255 255 255 / 0.82);
   --cover-1-from: oklch(0.66 0.11 150);
   --cover-1-to: oklch(0.5 0.11 170);
   --cover-2-from: oklch(0.66 0.11 183);
