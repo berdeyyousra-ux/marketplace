@@ -148,6 +148,8 @@ public sealed class ApiHostTests : IAsyncLifetime
                 .UseEnvironment("Testing")
                 .UseSetting("Ai:Provider", "Fake")
                 .UseSetting("ConnectionStrings:Database", connectionString)
+                // Section 16 requires it at startup; nothing in these tests reaches blob storage.
+                .UseSetting("ConnectionStrings:BlobStorage", "UseDevelopmentStorage=true")
                 .UseSetting("Jwt:SigningKey", Marketplace.IntegrationTests.Fixtures.MarketplaceWebFactory.TestSigningKey);
     }
 }

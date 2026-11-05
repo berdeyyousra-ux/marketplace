@@ -19,6 +19,9 @@ public static class AuthenticationSetup
             .ValidateDataAnnotations()
             .Validate(options => JwtOptions.IsValidKey(options.SigningKey), "Jwt:SigningKey must be base64 and at least 32 bytes.")
             .Validate(options => options.PreviousSigningKeys.All(JwtOptions.IsValidKey), "Every Jwt:PreviousSigningKeys entry must be base64 and at least 32 bytes.")
+            .Validate(
+                options => environment.IsDevelopment() || !options.PreviousSigningKeys.Prepend(options.SigningKey).Any(JwtOptions.IsDevelopmentKey),
+                "Jwt:SigningKey and Jwt:PreviousSigningKeys must not be the development key outside Development.")
             .ValidateOnStart();
 
         // No signing key is committed for local development: without one, Development uses a random key per process.
