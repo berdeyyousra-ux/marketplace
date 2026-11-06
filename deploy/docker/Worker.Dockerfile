@@ -12,8 +12,11 @@ RUN dotnet publish src/Marketplace.Worker/Marketplace.Worker.csproj \
 
 # The ASP.NET Core runtime image is Ubuntu 24.04 with ICU, which string normalization needs (InvariantGlobalization is
 # off). It ships without curl, so the health check installs it.
+# The upgrade applies Ubuntu security updates published since the base tag was last rebased. Without it the image
+# inherits whatever fixed advisories are outstanding against :10.0, and the Trivy gate in CI fails on them.
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 RUN apt-get update \
+    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --system appgroup \
