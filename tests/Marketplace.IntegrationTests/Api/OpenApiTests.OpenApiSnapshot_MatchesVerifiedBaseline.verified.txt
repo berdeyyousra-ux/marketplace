@@ -3273,7 +3273,6 @@ Sets the product's cover image from multipart field "file": JPEG, PNG or WebP, a
           purchasedAt,
           expiresAt,
           downloadCount,
-          maxDownloads,
           status,
           coverImageUrl
         ],
@@ -3305,14 +3304,6 @@ Sets the product's cover image from multipart field "file": JPEG, PNG or WebP, a
             format: date-time
           },
           downloadCount: {
-            pattern: ^-?(?:0|[1-9]\d*)$,
-            type: [
-              integer,
-              string
-            ],
-            format: int32
-          },
-          maxDownloads: {
             pattern: ^-?(?:0|[1-9]\d*)$,
             type: [
               integer,

@@ -43,7 +43,7 @@ export default async function RefundDetailPage({ params }: { params: Promise<{ i
   return (
     <div className="container-page flex flex-col gap-8 py-8">
       <header className="flex flex-col gap-2">
-        <Link href="/admin/refunds" className="type-label text-accent hover:underline">← Refund requests</Link>
+        <Link href="/admin/refunds" className="type-label text-accent-strong hover:underline">← Refund requests</Link>
         <h1 className="type-page-title m-0 text-text">{data.productTitle}</h1>
         <p className="m-0 flex flex-wrap items-center gap-2 type-label text-muted">
           <StatusBadge status={data.status} />
@@ -79,7 +79,7 @@ export default async function RefundDetailPage({ params }: { params: Promise<{ i
               <ul className="m-0 flex list-none flex-col gap-2 p-0">
                 {data.buyer.otherRequests.map((other) => (
                   <li key={other.id} className="flex flex-wrap items-center justify-between gap-2 type-label">
-                    <Link href={`/admin/refunds/${other.id}`} className="text-accent hover:underline">{other.productTitle}</Link>
+                    <Link href={`/admin/refunds/${other.id}`} className="text-accent-strong hover:underline">{other.productTitle}</Link>
                     <span className="flex items-center gap-2 text-muted">{date(other.createdAt)} <StatusBadge status={other.status} /></span>
                   </li>
                 ))}

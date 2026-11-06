@@ -26,7 +26,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       ) : orders.data.items.length === 0 ? (
         <EmptyState
           message="No orders yet."
-          action={<Link href="/" className="rounded-control bg-accent px-4 py-2 type-label text-accent-contrast hover:bg-accent-hover">Browse products</Link>}
+          action={<Link href="/" className="rounded-control bg-cta px-4 py-2 type-label text-cta-contrast hover:bg-cta-hover">Browse products</Link>}
         />
       ) : (
         <>
@@ -51,7 +51,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                     <td className="px-4 py-3 text-right type-label text-text"><Money value={order.total} /></td>
                     <td className="px-4 py-3"><StatusBadge status={order.status} /></td>
                     <td className="px-4 py-3 text-right">
-                      <Link href={`/checkout/${order.id}`} className="type-label text-accent hover:underline" aria-label={`${actionLabel(order.status)} order ${shortId(order.id)}`}>
+                      <Link href={`/checkout/${order.id}`} className="type-label text-accent-strong hover:underline" aria-label={`${actionLabel(order.status)} order ${shortId(order.id)}`}>
                         {actionLabel(order.status)}
                       </Link>
                     </td>

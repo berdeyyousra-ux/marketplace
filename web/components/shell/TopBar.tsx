@@ -4,7 +4,7 @@ import type { Me } from "@/lib/types";
 import { LogoutButton } from "@/components/LogoutButton";
 import { SearchField } from "./SearchField";
 
-const link = "type-label text-text hover:text-accent";
+const link = "type-label text-text hover:text-accent-strong";
 
 function Links({ me, restoring }: { me: Me | null; restoring: boolean }) {
   // While the session is being restored, a quiet placeholder: neither "Sign in" nor the account, so nothing flips.
@@ -16,7 +16,7 @@ function Links({ me, restoring }: { me: Me | null; restoring: boolean }) {
     return (
       <>
         <Link href="/login" className={link}>Sign in</Link>
-        <Link href="/register" className="rounded-control bg-accent px-3 py-2 type-label text-accent-contrast hover:bg-accent-hover">Create account</Link>
+        <Link href="/register" className="rounded-control bg-accent-strong px-3 py-2 type-label text-accent-contrast hover:bg-accent-hover">Create account</Link>
       </>
     );
   }
@@ -25,13 +25,13 @@ function Links({ me, restoring }: { me: Me | null; restoring: boolean }) {
     <>
       <Link href="/library" className={link}>Library</Link>
       <Link href="/seller" className={link}>{me.roles.includes("Seller") ? "Seller dashboard" : "Sell"}</Link>
-      {me.roles.includes("Admin") && <Link href="/admin/refunds" className={link}>Refund queue</Link>}
       <details className="relative">
-        <summary className="cursor-pointer list-none type-label text-text hover:text-accent">{me.displayName} ▾</summary>
+        <summary className="cursor-pointer list-none type-label text-text hover:text-accent-strong">{me.displayName} ▾</summary>
         <div className="absolute right-0 z-40 mt-2 flex min-w-44 flex-col gap-3 rounded-card border border-border bg-surface p-4 shadow-raised">
           <span className="type-label text-muted">{me.email}</span>
           <Link href="/orders" className={link}>Orders</Link>
           <Link href="/library" className={link}>Library</Link>
+          {me.roles.includes("Admin") && <Link href="/admin/refunds" className={link}>Refund queue</Link>}
           <LogoutButton />
         </div>
       </details>
@@ -69,7 +69,7 @@ export function Footer() {
     <footer className="border-t border-border">
       <div className="container-page flex h-14 items-center justify-between type-label text-muted">
         <span>Marketplace</span>
-        <a href="https://github.com/berdeyyousra-ux/marketplace" className="text-muted hover:text-accent">Source on GitHub</a>
+        <a href="https://github.com/berdeyyousra-ux/marketplace" className="text-muted hover:text-accent-strong">Source on GitHub</a>
       </div>
     </footer>
   );

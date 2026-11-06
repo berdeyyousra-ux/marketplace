@@ -57,11 +57,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           <h1 className="type-page-title m-0 text-text">{data.title}</h1>
           {data.sellerName && <p className="type-label text-muted">by {data.sellerName}</p>}
         </div>
-        <Money value={data.price} className="type-price text-[24px] text-text" />
+        <Money value={data.price} className="type-price text-[24px] text-accent-strong" />
         {isSeller ? (
-          <Link href={`/seller/products/${data.id}`} className="block rounded-control border border-border-strong px-4 py-3 text-center type-label text-accent hover:border-accent">Edit listing</Link>
+          <Link href={`/seller/products/${data.id}`} className="block rounded-control border border-border-strong px-4 py-3 text-center type-label text-accent-strong hover:border-accent">Edit listing</Link>
         ) : data.viewerOwns ? (
-          <Link href="/library" className="block rounded-control border border-accent bg-accent px-4 py-3 text-center type-label text-accent-contrast hover:bg-accent-hover">Go to library</Link>
+          <Link href="/library" className="block rounded-control border border-cta bg-cta px-4 py-3 text-center type-label text-cta-contrast hover:bg-cta-hover">Go to library</Link>
         ) : (
           <BuyButton productId={data.id} signedIn={me !== null} />
         )}

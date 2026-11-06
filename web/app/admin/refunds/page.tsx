@@ -46,7 +46,7 @@ export default async function RefundQueuePage({ searchParams }: { searchParams: 
             aria-current={option.value === status ? "page" : undefined}
             className={cn(
               "rounded-full border px-3 py-1 type-label",
-              option.value === status ? "border-accent bg-accent text-accent-contrast" : "border-border-strong bg-surface text-text hover:border-accent",
+              option.value === status ? "border-accent bg-accent-muted text-accent-hover" : "border-border-strong bg-surface text-text hover:border-accent",
             )}
           >
             {option.label}
@@ -78,7 +78,7 @@ export default async function RefundQueuePage({ searchParams }: { searchParams: 
                     <td className="px-4 py-3 type-label whitespace-nowrap text-text">{date(request.createdAt)}</td>
                     <td className="px-4 py-3 type-label text-text">{request.buyerName ?? <span className="text-muted">Deleted account</span>}</td>
                     <td className="px-4 py-3 type-label">
-                      <Link href={`/admin/refunds/${request.id}`} className="font-medium text-accent hover:underline">{request.productTitle}</Link>
+                      <Link href={`/admin/refunds/${request.id}`} className="font-medium text-accent-strong hover:underline">{request.productTitle}</Link>
                       {request.policyVerdict !== "Eligible" && <span className="block text-muted">{label(request.policyVerdict)}</span>}
                     </td>
                     <td className="px-4 py-3 text-right type-label text-text"><Money value={request.amount} /></td>

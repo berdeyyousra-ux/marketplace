@@ -26,7 +26,7 @@ export default async function EditListingPage({ params, searchParams }: { params
 
   return (
     <div className="container-page py-8">
-      <Link href="/seller" className="type-label text-accent hover:underline">← Your shop</Link>
+      <Link href="/seller" className="type-label text-accent-strong hover:underline">← Your shop</Link>
       <PageHeader title={product.data.title} />
       {created && (
         <div className="-mt-4 mb-6">

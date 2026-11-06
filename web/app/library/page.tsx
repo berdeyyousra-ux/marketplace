@@ -30,7 +30,7 @@ export default async function LibraryPage() {
       ) : library.data.items.length === 0 ? (
         <EmptyState
           message="Nothing here yet. Products you buy appear here once they're paid."
-          action={<Link href="/" className="rounded-control bg-accent px-4 py-2 type-label text-accent-contrast hover:bg-accent-hover">Browse products</Link>}
+          action={<Link href="/" className="rounded-control bg-cta px-4 py-2 type-label text-cta-contrast hover:bg-cta-hover">Browse products</Link>}
         />
       ) : (
         <ul className="m-0 flex list-none flex-col rounded-card border border-border bg-surface p-0">

@@ -10,7 +10,7 @@ export default async function NewListingPage() {
   const categories = await publicGet<Category[]>("/categories");
   return (
     <div className="container-page py-8">
-      <Link href="/seller" className="type-label text-accent hover:underline">← Your shop</Link>
+      <Link href="/seller" className="type-label text-accent-strong hover:underline">← Your shop</Link>
       <PageHeader title="New listing" description="Start with the details. It stays a private draft until you publish it." />
       <ListingEditor product={null} etag={null} categories={categories.ok ? categories.data : []} />
     </div>

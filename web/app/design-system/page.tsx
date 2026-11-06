@@ -19,8 +19,9 @@ export const metadata: Metadata = { title: "Design system · Marketplace", robot
 // reviewing the tokens; it calls no API.
 const tokens = [
   ["--bg", "Page background"], ["--surface", "Cards, panels"], ["--border", "Dividers, card edges"], ["--border-strong", "Form-control borders"],
-  ["--text", "Primary text"], ["--text-muted", "Labels, metadata"], ["--accent", "Actions, links, focus"], ["--accent-hover", "Hover on accent"],
-  ["--accent-contrast", "Text on accent"], ["--danger", "Errors, destructive"], ["--success", "Paid, completed"], ["--warning", "Pending, executing"],
+  ["--text", "Primary text"], ["--text-muted", "Labels, metadata"], ["--accent", "Borders, focus, headline keyword"],
+  ["--accent-strong", "Orange fills, links, prices"], ["--accent-hover", "Hover on accent-strong"], ["--accent-muted", "Badge, active-pill fill"],
+  ["--accent-contrast", "Text on accent-strong"], ["--cta", "Primary action fill"], ["--cta-hover", "Hover on primary"], ["--cta-contrast", "Text on primary"], ["--danger", "Errors, destructive"], ["--success", "Paid, completed"], ["--warning", "Pending, executing"],
 ] as const;
 
 const statuses = ["Paid", "Completed", "Published", "Pending", "Executing", "RequiresPayment", "Draft", "Cancelled", "Expired", "Failed", "Rejected", "SomethingNew"];
@@ -63,7 +64,7 @@ function Gallery() {
       </Section>
 
       <Section title="Buttons">
-        {(["primary", "secondary", "ghost", "danger"] as const).map((variant) => (
+        {(["primary", "accent", "secondary", "ghost", "danger"] as const).map((variant) => (
           <div key={variant} className="flex flex-wrap items-center gap-3">
             <Button variant={variant}>{variant}</Button>
             <Button variant={variant} loading>{variant} loading</Button>
