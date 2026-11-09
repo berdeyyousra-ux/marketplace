@@ -8,7 +8,7 @@ const tones: Record<string, Tone> = {
   Pending: "warning", Executing: "warning", RequiresPayment: "warning", RefundRequested: "warning", Draft: "warning",
   Submitted: "warning", PartiallyRefunded: "warning", EligibleDownloaded: "warning", InvalidOutput: "warning", Skipped: "warning",
   Cancelled: "danger", Expired: "danger", Failed: "danger", DeadLettered: "danger", Rejected: "danger",
-  Revoked: "danger", Limit: "danger", Refunded: "danger", IneligibleOutsideWindow: "danger", ProviderError: "danger",
+  Revoked: "danger", Refunded: "danger", IneligibleOutsideWindow: "danger", ProviderError: "danger",
   Unpublished: "neutral", Removed: "danger",
 };
 

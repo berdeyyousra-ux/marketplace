@@ -119,7 +119,7 @@ export function RevenueChart({ months }: { months: MonthlyRevenue[] }) {
           type="button"
           onClick={() => setView(view === "chart" ? "table" : "chart")}
           aria-pressed={view === "table"}
-          className="cursor-pointer rounded-control border border-border-strong bg-surface px-3 py-1 type-label text-accent hover:border-accent"
+          className="cursor-pointer rounded-control border border-border-strong bg-surface px-3 py-1 type-label text-accent-strong hover:border-accent"
         >
           {view === "chart" ? "Show table" : "Show chart"}
         </button>

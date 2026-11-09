@@ -1,10 +1,13 @@
 import { cn } from "@/lib/cn";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
+type Variant = "primary" | "accent" | "secondary" | "ghost" | "danger";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-accent text-accent-contrast border-accent hover:bg-accent-hover hover:border-accent-hover",
-  secondary: "bg-surface text-accent border-border-strong hover:border-accent",
+  // Near-black in light mode, near-white in dark: the strongest element on the page, kept for the main action.
+  primary: "bg-cta text-cta-contrast border-cta hover:bg-cta-hover hover:border-cta-hover",
+  // Orange fill for a deliberate secondary action beside a primary one; not a default.
+  accent: "bg-accent-strong text-accent-contrast border-accent-strong hover:bg-accent-hover hover:border-accent-hover",
+  secondary: "bg-surface text-accent-strong border-border-strong hover:border-accent",
   ghost: "bg-transparent text-text border-transparent hover:bg-border",
   danger: "bg-surface text-danger border-danger hover:bg-danger hover:text-surface",
 };

@@ -44,7 +44,7 @@ export function ListingRow({ product }: { product: SellerProductSummary }) {
       <Thumbnail id={product.id} title={product.title} url={product.coverImageUrl} />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="flex flex-wrap items-center gap-2">
-          <Link href={`/seller/products/${product.id}`} className="type-card-title truncate text-text hover:text-accent">{product.title}</Link>
+          <Link href={`/seller/products/${product.id}`} className="type-card-title truncate text-text hover:text-accent-strong">{product.title}</Link>
           <StatusBadge status={product.status} />
         </span>
         <span className="type-label text-muted">
@@ -54,7 +54,7 @@ export function ListingRow({ product }: { product: SellerProductSummary }) {
       <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
         {canPublish && <Button variant="secondary" loading={busy} onClick={toggle}>Publish</Button>}
         {canUnpublish && <Button variant="ghost" loading={busy} onClick={toggle}>Unpublish</Button>}
-        <Link href={`/seller/products/${product.id}`} className="rounded-control border border-border-strong px-4 py-2 type-label text-accent hover:border-accent">Edit</Link>
+        <Link href={`/seller/products/${product.id}`} className="rounded-control border border-border-strong px-4 py-2 type-label text-accent-strong hover:border-accent">Edit</Link>
       </div>
     </li>
   );

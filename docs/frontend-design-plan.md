@@ -22,12 +22,12 @@ What good looks like: a visitor lands on the catalogue, sees a grid of product c
 
 ## Visual direction
 
-**Restrained and editorial: the product art carries the colour, the interface stays quiet.** Warm neutral greys, one accent colour reserved for actions, generous whitespace, strong typographic hierarchy.
+**Restrained and editorial: the product art carries the colour, the interface stays quiet.** Warm neutral greys, near-black primary actions, one orange accent for highlights, generous whitespace, strong typographic hierarchy.
 
 This is the right call for three specific reasons, not just taste:
 
 1. **Seller-uploaded images are unpredictable.** Cover art will arrive in every colour and style. A loud brand palette fights it; a neutral frame flatters whatever is dropped into it. This is why Gumroad, Creative Market and Itch.io all sit on near-white or near-black neutrals.
-2. **One accent colour makes actions unmissable.** If only Buy, Approve and Submit carry the accent, the user never has to hunt for the next step. Spending the accent on decoration destroys that.
+2. **A clear button hierarchy makes the next step unmissable.** The main action on each screen (Buy, Pay, Approve, Submit) is near-black, the strongest element on a light page. Orange is the accent: prices, badges, links, active filters, a headline keyword and the occasional deliberate secondary action. Putting orange on every button would make it noise.
 3. **It is implementable fast.** Neutral scale plus one accent maps directly onto Tailwind's defaults with a thin token layer, so this is a styling pass, not a rewrite.
 
 **Explicitly avoid:** gradient hero sections, glassmorphism, drop shadows on everything, more than one accent colour, and icon-only buttons without labels. Each reads as decoration standing in for hierarchy.
@@ -47,13 +47,36 @@ Define these once as CSS custom properties on `:root` in `web/app/globals.css`, 
 | `--border` | `#E7E5E4` | `#292524` | Dividers, card edges, input borders |
 | `--text` | `#1C1917` | `#FAFAF9` | Primary text |
 | `--text-muted` | `#78716C` | `#A8A29E` | Labels, metadata, placeholders |
-| `--accent` | `#0F766E` | `#14B8A6` | Buttons, links, focus rings, active states |
-| `--accent-hover` | `#115E59` | `#2DD4BF` | Hover on accent surfaces |
+| `--accent` | `#F2541B` | `#FB7A42` | Borders, focus rings, icon highlights, large headline keyword. Never under white text, never body-size text in light mode |
+| `--accent-strong` | `#C2410C` | `#F2541B` | Orange button fills, links, prices and any other body-size orange text |
+| `--accent-hover` | `#9A3412` | `#FB7A42` | Hover on `--accent-strong` fills; text on `--accent-muted` |
+| `--accent-muted` | `#FDE9DD` | `#3A1F12` | Badge fills ("New"), active filter pill fill |
+| `--accent-contrast` | `#FFFFFF` | `#0C0A09` | Text on `--accent-strong` |
+| `--cta` | `#1C1917` | `#FAFAF9` | Primary action fill (near-black; inverts in dark mode) |
+| `--cta-hover` | `#44403C` | `#E7E5E4` | Hover on primary |
+| `--cta-contrast` | `#FFFFFF` | `#0C0A09` | Text on primary |
 | `--danger` | `#B91C1C` | `#F87171` | Destructive actions, error text |
 | `--success` | `#15803D` | `#4ADE80` | Paid, Completed, Fulfilled states |
 | `--warning` | `#A16207` | `#FBBF24` | Pending, Executing, awaiting-review states |
 
-The accent is a deep teal rather than the default blue or indigo, which read as generic SaaS. Teal also stays clearly distinct from the success green used in status badges.
+The accent is orange, replacing the original teal. It is split into steps because the bright orange cannot carry text: white on `#F2541B` is 3.47:1, and `#F2541B` as text is 3.47:1 on `--surface` and 3.32:1 on `--bg`, below the 4.5:1 AA needs for body text. So `--accent` is used only where 3:1 is enough (borders, focus rings, icons, text at 24px+ or 18.66px+ bold), and everything that carries or is body-size text uses `--accent-strong`.
+
+Dark mode differs from light in one way: white on the dark `--accent-strong` (`#F2541B`) fails at 3.47:1, so `--accent-contrast` is near-black there (5.70:1), the same approach the teal accent used.
+
+Measured ratios (WCAG 2), all passing:
+
+| Pair | Light | Dark | Needs |
+| --- | --- | --- | --- |
+| `--accent-contrast` on `--accent-strong` | 5.18 | 5.70 | 4.5 |
+| `--accent-contrast` on `--accent-hover` | 7.31 | 7.49 | 4.5 |
+| `--cta-contrast` on `--cta` / `--cta-hover` | 17.49 / 10.27 | 18.92 / 15.73 | 4.5 |
+| `--accent-strong` text on `--surface` / `--bg` | 5.18 / 4.96 | 5.05 / 5.70 | 4.5 |
+| `--accent-hover` text on `--accent-muted` | 6.22 | 5.75 | 4.5 |
+| `--accent` on `--surface` / `--bg` (non-text) | 3.47 / 3.32 | 6.63 / 7.49 | 3 |
+
+`--accent-muted` is only 1.17:1 against the light `--surface`, so an active pill or anything else that must read as a control keeps an `--accent` border.
+
+`--chart-1` stays teal. An orange data series would sit too close to `--danger` red.
 
 **Contrast:** every pairing above meets WCAG AA for its use (4.5:1 for body text, 3:1 for large text and UI borders). Verify `--text-muted` on `--surface` specifically, as it is the tightest pair.
 
@@ -156,11 +179,11 @@ Build these in `web/components/ui/` before touching any screen. Every screen the
 
 | Component | Variants / states | Notes |
 | --- | --- | --- |
-| `Button` | primary, secondary, ghost, danger; loading, disabled | Loading shows a spinner and keeps its width so the layout does not jump |
+| `Button` | primary (`--cta`, near-black), accent (`--accent-strong` fill, deliberate secondary actions only), secondary (outlined), ghost, danger; loading, disabled | Loading shows a spinner and keeps its width so the layout does not jump |
 | `Input`, `Textarea`, `Select` | default, focused, error, disabled | Error renders a message below, tied by `aria-describedby` |
 | `Card` | plain, interactive (hover state) | `1px` border, `10px` radius, no shadow |
-| `ProductCard` | with cover, with generated placeholder | Fixed 4:3 cover, `object-cover`, title clamped to two lines, price bottom-left |
-| `Badge` | neutral, success, warning, danger | Used for every order, payment and refund status; micro type, uppercase |
+| `ProductCard` | with cover, with generated placeholder, with "New" badge | White card; cover on a near-white/light-grey backdrop (not pure white); fixed 4:3, `object-cover`; title and price in one row, price in `--accent-strong`; optional "New" badge top-left |
+| `Badge` | neutral, success, warning, danger, new (`--accent-muted` fill, `--accent-hover` text) | Used for every order, payment and refund status; micro type, uppercase |
 | `Money` | — | Formats from amount + currency, tabular-nums; never hand-format a price inline |
 | `EmptyState` | — | Icon, one line of explanation, one action. Used for empty library, no listings, empty queue |
 | `Skeleton` | card, row, text | Shown while loading; matches the real content's dimensions to avoid layout shift |
@@ -200,8 +223,10 @@ Sticky top bar, `64px`: wordmark left; search field centre on catalogue pages; r
 
 This is the first impression and the one that currently fails hardest.
 
+- Hero above the grid: a large, bold, two-line headline with one key phrase in `--accent` (allowed at this size: 3:1 is enough for large text). No gradient, no image behind it
+- Filter pills above the grid: rounded-full, outlined in `--border-strong` when inactive; active has an `--accent-muted` fill, `--accent` border and `--accent-hover` text
 - Product grid: 1 to 4 columns by breakpoint, `24px` gap
-- Each `ProductCard`: 4:3 cover, title (two-line clamp), seller name in muted type, price bottom-left in tabular numerals
+- Each `ProductCard`: white card, 4:3 cover on a near-white/light-grey backdrop, title and price in one row (price in `--accent-strong`, tabular numerals), seller name in muted type, "New" badge top-left where it applies
 - Hover: border shifts to `--accent`, nothing moves or scales
 - Filters in a left rail at `1024px` and above, collapsing to a sheet below: category, price range, sort
 - Search sits in the top bar, submits on Enter, keeps its term visible in the field after navigation
@@ -213,7 +238,8 @@ This is the first impression and the one that currently fails hardest.
 Two columns at `1024px` and above, stacking below.
 
 - Left: cover at 4:3, `10px` radius
-- Right: title at page-title size, seller line, price, Buy button (primary, full width of the column), then description
+- Left: thumbnail strip under the cover once a product has more than one image; the active thumbnail is marked by a dashed `--accent` outline (2px, offset), which also meets the 3:1 non-text minimum
+- Right: title at page-title size, seller line, price in `--accent-strong`, Buy button (primary: near-black, full width of the column), an optional secondary action as an `accent` button (`--accent-strong` fill), then description
 - Description renders as prose with real paragraph spacing, not a single wall of text
 - Metadata (category, file type, size) in a definition list under the fold, label in muted type
 - If the viewer already owns it, the Buy button is replaced by Go to library — do not show a buy action for something already purchased
@@ -310,4 +336,4 @@ Stop and ask before T-087 if anything in the token set looks wrong once rendered
 
 ### One decision worth making after T-087
 
-The direction above is light-first with a teal accent. Once the catalogue is rendered with real covers, look at it and decide whether to keep it or invert to a dark base — same tokens, same structure, different values. That judgement is much easier with a real screen in front of you than in the abstract, and switching costs an hour at that point rather than a rebuild.
+The direction above is light-first with an orange accent (originally teal; changed after T-089). Once the catalogue is rendered with real covers, look at it and decide whether to keep it or invert to a dark base — same tokens, same structure, different values. That judgement is much easier with a real screen in front of you than in the abstract, and switching costs an hour at that point rather than a rebuild.

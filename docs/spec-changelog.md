@@ -2,6 +2,22 @@
 
 Changes to, and resolved contradictions in, the build specification.
 
+## 2026-11-04
+
+### Design plan: orange accent and a near-black primary action
+
+**Plan:** `docs/frontend-design-plan.md` used a teal accent for buttons, links, focus rings and active states.
+
+**Change (repo owner):** the accent becomes orange, and the main action on a screen becomes near-black (`--cta`, inverted to near-white in dark mode). Orange is used for prices, links, badges, active filters, the focus ring and deliberate secondary actions.
+
+**Corrections from the WCAG checks** (the requested palette was adjusted where it failed AA):
+
+1. **White on the dark-mode `--accent-strong` (`#f2541b`) is 3.47:1.** `--accent-contrast` stays near-black in dark mode (5.70:1), as it was for teal.
+2. **`#f2541b` as body-size text is 3.47:1 on the light surface and 3.32:1 on the page.** The request put prices in that colour. Prices, links and other body-size orange text use `--accent-strong` (`#c2410c`, 5.18:1 and 4.96:1). `--accent` is kept for borders, the focus ring, icons and large text, which need 3:1.
+3. **Orange text on `--accent-muted` is 2.95:1.** Badge and active-pill text uses `--accent-hover` (6.22:1 light, 5.75:1 dark).
+
+`--chart-1` stays teal, since an orange series would sit close to `--danger`. The plan records the full token table and measured ratios. The layout notes in the plan (hero headline, catalogue filter pills, "New" badge, thumbnail strip) are not built yet.
+
 ## 2026-11-03
 
 ### Operations: staging paused, and its resource group deleted (2026-11-03)

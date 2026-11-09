@@ -5,14 +5,9 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Pagination } from "@/components/ui/Pagination";
 import { ProductCard } from "@/components/ui/ProductCard";
+import { FilterForm } from "./FilterForm";
 
 type Search = { q?: string; category?: string; sort?: string; min?: string; max?: string; cursor?: string };
-
-const sorts = [
-  ["", "Newest"],
-  ["PriceAsc", "Price, low to high"],
-  ["PriceDesc", "Price, high to low"],
-] as const;
 
 // EP-20 and EP-21: the catalogue. Filters in a left rail from 1024px, in a sheet below; search lives in the top bar.
 export default async function CataloguePage({ searchParams }: { searchParams: Promise<Search> }) {
@@ -30,7 +25,6 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
     publicGet<Category[]>("/categories"),
   ]);
   const categoryList = categories.ok ? categories.data : [];
-  const activeCategory = categoryList.find((category) => category.slug === search.category);
   const filtered = Boolean(search.q || search.category || search.min || search.max);
 
   // Links keep every current filter except the ones being changed, and always return to the first page.
@@ -45,49 +39,50 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
   };
 
   const filters = (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <h2 className="type-label text-muted">Category</h2>
-        <ul className="flex flex-col gap-1">
-          <li><Link href={href({ category: undefined })} className={!search.category ? "type-label text-accent" : "type-label text-text hover:text-accent"}>All categories</Link></li>
-          {categoryList.map((category) => (
-            <li key={category.id}>
-              <Link href={href({ category: category.slug })} aria-current={category.slug === search.category ? "page" : undefined}
-                className={category.slug === search.category ? "type-label text-accent" : "type-label text-text hover:text-accent"}>
-                {category.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <form action="/" className="flex flex-col gap-3">
-        {search.q && <input type="hidden" name="q" value={search.q} />}
-        {search.category && <input type="hidden" name="category" value={search.category} />}
-        <h2 className="type-label text-muted">Price, EUR</h2>
-        <div className="flex items-center gap-2">
-          <label className="sr-only" htmlFor="min">Minimum price</label>
-          <input id="min" name="min" type="number" min="0" step="1" placeholder="Min" defaultValue={search.min}
-            className="w-full rounded-control border border-border-strong bg-surface px-2 py-2 type-body text-text" />
-          <span className="text-muted">–</span>
-          <label className="sr-only" htmlFor="max">Maximum price</label>
-          <input id="max" name="max" type="number" min="0" step="1" placeholder="Max" defaultValue={search.max}
-            className="w-full rounded-control border border-border-strong bg-surface px-2 py-2 type-body text-text" />
-        </div>
-        <label htmlFor="sort" className="type-label text-muted">Sort</label>
-        <select id="sort" name="sort" defaultValue={search.sort ?? ""}
-          className="w-full rounded-control border border-border-strong bg-surface px-2 py-2 type-body text-text">
-          {sorts.map(([value, label]) => <option key={value} value={value}>{search.q && value === "" ? "Most relevant" : label}</option>)}
-        </select>
-        <button type="submit" className="rounded-control border border-accent bg-accent px-4 py-2 type-label text-accent-contrast hover:bg-accent-hover">Apply</button>
-        {filtered && <Link href="/" className="type-label text-accent">Clear filters</Link>}
-      </form>
-    </div>
+    <FilterForm q={search.q} category={search.category} min={search.min} max={search.max} sort={search.sort} filtered={filtered} />
   );
 
-  const title = search.q ? `Results for “${search.q}”` : activeCategory?.name ?? "Browse";
   return (
     <div className="container-page flex flex-col py-8">
-      <PageHeader title={title} description={search.q ? undefined : "Digital products from independent sellers."} />
+      {search.q ? (
+        <PageHeader title={`Results for “${search.q}”`} />
+      ) : (
+        <div className="flex flex-col gap-3 pb-8">
+          <h1 className="max-w-2xl type-page-title text-[40px] leading-[1.1] sm:text-[48px]">
+            Digital products, made by independent creators.
+          </h1>
+          <p className="max-w-lg type-body text-muted">
+            Templates, ebooks, graphics, software and more. Browse the full catalogue below, or jump straight to a category.
+          </p>
+        </div>
+      )}
+      {categoryList.length > 0 && (
+        <ul aria-label="Categories" className="mb-8 flex flex-wrap gap-2 border-b border-border pb-8">
+          <li>
+            <Link
+              href={href({ category: undefined })}
+              aria-current={!search.category ? "page" : undefined}
+              className={!search.category ? "inline-flex items-center rounded-full border border-accent bg-accent-muted px-4 py-2 type-label text-accent-hover" : "inline-flex items-center rounded-full border border-border-strong bg-surface px-4 py-2 type-label text-text hover:border-accent hover:text-accent-strong"}
+            >
+              All categories
+            </Link>
+          </li>
+          {categoryList.map((category) => {
+            const active = category.slug === search.category;
+            return (
+              <li key={category.id}>
+                <Link
+                  href={href({ category: category.slug })}
+                  aria-current={active ? "page" : undefined}
+                  className={active ? "inline-flex items-center rounded-full border border-accent bg-accent-muted px-4 py-2 type-label text-accent-hover" : "inline-flex items-center rounded-full border border-border-strong bg-surface px-4 py-2 type-label text-text hover:border-accent hover:text-accent-strong"}
+                >
+                  {category.name}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
       <div className="flex flex-col gap-8 lg:flex-row">
         <aside className="hidden w-60 shrink-0 lg:block" aria-label="Filters">{filters}</aside>
         <details className="rounded-card border border-border bg-surface p-4 lg:hidden">
@@ -97,12 +92,12 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
 
         <div className="min-w-0 flex-1">
           {!products.ok ? (
-            <EmptyState message="The catalogue could not be loaded. Try again in a moment." action={<Link href="/" className="type-label text-accent">Reload</Link>} />
+            <EmptyState message="The catalogue could not be loaded. Try again in a moment." action={<Link href="/" className="type-label text-accent-strong">Reload</Link>} />
           ) : products.data.items.length === 0 ? (
-            <EmptyState message="No products match these filters." action={<Link href="/" className="rounded-control border border-border-strong px-4 py-2 type-label text-accent">Clear filters</Link>} />
+            <EmptyState message="No products match these filters." action={<Link href="/" className="rounded-control border border-border-strong px-4 py-2 type-label text-accent-strong">Clear filters</Link>} />
           ) : (
             <>
-              <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {products.data.items.map((product) => (
                   <li key={product.id}>
                     <ProductCard product={product} />

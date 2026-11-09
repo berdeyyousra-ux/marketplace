@@ -30,19 +30,16 @@ public sealed class DownloadGrantTests
     }
 
     [Fact]
-    public void RecordDownload_TenthAndEleventh_LimitReached()
+    public void RecordDownload_BeyondTenth_StaysAvailable()
     {
         var grant = NewGrant();
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < 25; i++)
         {
             grant.RecordDownload(_paidAt).IsSuccess.ShouldBeTrue();
         }
 
-        var result = grant.RecordDownload(_paidAt);
-
-        result.Error.Code.ShouldBe("download_unavailable");
-        grant.GetUnavailableReason(_paidAt).ShouldBe(DownloadUnavailableReason.Limit);
-        grant.DownloadCount.ShouldBe(10);
+        grant.CanDownload(_paidAt).ShouldBeTrue();
+        grant.DownloadCount.ShouldBe(25);
     }
 
     [Fact]

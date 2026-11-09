@@ -6,7 +6,7 @@ export function Pagination({ nextHref, firstHref, onFirstPage }: { nextHref: str
     return null;
   }
 
-  const link = "rounded-control border border-border-strong bg-surface px-4 py-2 type-label text-accent hover:border-accent";
+  const link = "rounded-control border border-border-strong bg-surface px-4 py-2 type-label text-accent-strong hover:border-accent";
   return (
     <nav aria-label="Pages" className="flex items-center justify-between gap-4 py-6">
       {onFirstPage ? <span /> : <Link href={firstHref} className={link}>Back to the start</Link>}

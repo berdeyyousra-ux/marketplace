@@ -205,7 +205,7 @@ export function ListingEditor({ product: initial, etag: initialEtag, categories 
                 </>
               ) : product.status === "Published" ? (
                 <>
-                  <Link href={`/products/${product.id}`} className="type-label text-accent hover:underline">View in the catalogue</Link>
+                  <Link href={`/products/${product.id}`} className="type-label text-accent-strong hover:underline">View in the catalogue</Link>
                   <Button variant="secondary" loading={statusBusy} onClick={() => changeStatus(false)} fullWidth>Unpublish</Button>
                   <p className="m-0 type-label text-muted">Unpublishing hides it from the catalogue. People who bought it keep their downloads.</p>
                 </>

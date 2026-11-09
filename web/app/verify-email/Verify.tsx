@@ -32,8 +32,8 @@ export function Verify({ token }: { token: string | null }) {
       <p className="m-0 font-medium">This link can&apos;t be used</p>
       <p className="m-0">It may have expired (links last 24 hours), been used already, or been copied incompletely.</p>
       <p className="m-0 type-label">
-        Already confirmed? <Link href="/login" className="text-accent hover:underline">Sign in</Link>. Otherwise{" "}
-        <Link href="/register" className="text-accent hover:underline">register again</Link> to get a new link.
+        Already confirmed? <Link href="/login" className="text-accent-strong hover:underline">Sign in</Link>. Otherwise{" "}
+        <Link href="/register" className="text-accent-strong hover:underline">register again</Link> to get a new link.
       </p>
     </StatusPanel>
   );

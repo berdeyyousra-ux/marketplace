@@ -28,7 +28,6 @@ const refundBadges: Record<string, { label: string; tone: "warning" | "success" 
 const unavailable: Record<string, string> = {
   Revoked: "Access ended with the refund.",
   Expired: "The download period has ended.",
-  Limit: "All downloads used.",
 };
 
 export function LibraryRow({ item, refund }: { item: LibraryItem; refund: MyRefundRequest | null }) {
@@ -90,23 +89,25 @@ export function LibraryRow({ item, refund }: { item: LibraryItem; refund: MyRefu
     <li className="flex flex-wrap items-center gap-4 border-b border-border px-4 py-4 last:border-b-0 sm:flex-nowrap">
       <Thumbnail id={item.productId} title={item.title} url={item.coverImageUrl} />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <Link href={`/products/${item.productId}`} className="type-card-title truncate text-text hover:text-accent">{item.title}</Link>
+        <Link href={`/products/${item.productId}`} className="type-card-title truncate text-text hover:text-accent-strong">{item.title}</Link>
         <p className="m-0 type-label text-muted">
           Bought {date(item.purchasedAt)}
-          {canDownload && <> · {item.maxDownloads - item.downloadCount} of {item.maxDownloads} downloads left</>}
+          {canDownload && item.downloadCount > 0 && <> · Downloaded {item.downloadCount} {item.downloadCount === 1 ? "time" : "times"}</>}
           {!canDownload && unavailable[item.status] && <> · {unavailable[item.status]}</>}
         </p>
         {refund?.decisionNote && <p className="m-0 type-label text-muted">Note from the team: {refund.decisionNote}</p>}
       </div>
       <div className="flex w-full items-center justify-end gap-4 sm:w-auto">
         {badge ? <Badge tone={badge.tone}>{badge.label}</Badge> : !canDownload && <StatusBadge status={item.status} />}
-        {canRequestRefund && (
+        {canDownload && <Button onClick={download} loading={downloading}>Download</Button>}
+      </div>
+      {canRequestRefund && (
+        <div className="flex w-full justify-end">
           <button type="button" onClick={() => { setDialogOpen(true); setSendError(null); }} className="cursor-pointer border-0 bg-transparent p-0 type-label text-muted underline-offset-2 hover:text-text hover:underline">
             Request refund
           </button>
-        )}
-        {canDownload && <Button onClick={download} loading={downloading}>Download</Button>}
-      </div>
+        </div>
+      )}
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} title={`Request a refund for ${item.title}`}>
         <form className="flex flex-col gap-4" onSubmit={requestRefund} noValidate>

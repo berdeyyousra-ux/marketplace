@@ -63,7 +63,6 @@ export type LibraryItem = {
   purchasedAt: string;
   expiresAt: string;
   downloadCount: number;
-  maxDownloads: number;
   status: string;
   coverImageUrl: string | null;
 };

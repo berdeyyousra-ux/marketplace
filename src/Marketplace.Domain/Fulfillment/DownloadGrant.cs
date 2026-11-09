@@ -6,7 +6,6 @@ public enum DownloadUnavailableReason
 {
     Revoked,
     Expired,
-    Limit,
 }
 
 public sealed class DownloadGrant : AggregateRoot
@@ -53,7 +52,7 @@ public sealed class DownloadGrant : AggregateRoot
         new("download_unavailable", $"This download is unavailable: {reason}.", ErrorType.Conflict,
             Extensions: new Dictionary<string, string> { ["reason"] = reason.ToString().ToLowerInvariant() });
 
-    // Same conditions as the section 9.7 update: not revoked, expires_at > now, download_count < max_downloads.
+    // Same conditions as the section 9.7 update: not revoked, expires_at > now. Downloads are unlimited otherwise.
     public DownloadUnavailableReason? GetUnavailableReason(DateTimeOffset now)
     {
         if (RevokedAt is not null)
@@ -66,7 +65,7 @@ public sealed class DownloadGrant : AggregateRoot
             return DownloadUnavailableReason.Expired;
         }
 
-        return DownloadCount >= MaxDownloads ? DownloadUnavailableReason.Limit : null;
+        return null;
     }
 
     public bool CanDownload(DateTimeOffset now) => GetUnavailableReason(now) is null;
