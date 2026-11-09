@@ -8,7 +8,7 @@ for them, are recorded separately in the [spec changelog](docs/spec-changelog.md
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-11-05
+## [1.0.0] - 2026-11-09
 
 First release: a complete marketplace for downloadable digital products, from registration through payment,
 download, refund and reporting, with a web client and a deployment pipeline.
