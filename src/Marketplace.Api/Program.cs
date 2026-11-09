@@ -4,6 +4,7 @@ using Marketplace.Api.Infrastructure;
 using Marketplace.Api.Middleware;
 using Marketplace.Application;
 using Marketplace.Infrastructure;
+using Marketplace.Infrastructure.Configuration;
 using Marketplace.Infrastructure.Identity;
 using Marketplace.Infrastructure.Logging;
 using Marketplace.Infrastructure.Persistence;
@@ -13,7 +14,6 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
 
-const string CorsPolicyName = "Default";
 const string ReadinessTag = "ready";
 
 var builder = WebApplication.CreateBuilder(args);
@@ -59,11 +59,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     }
 });
 
-builder.Services.AddCors(options => options.AddPolicy(CorsPolicyName, policy => policy
-    .WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [])
-    .AllowAnyMethod()
-    .WithHeaders("Authorization", "Content-Type", "Idempotency-Key", "If-Match", "X-Correlation-Id")
-    .WithExposedHeaders("ETag", "Retry-After", "Location", "X-Correlation-Id", "Idempotent-Replayed")));
+builder.Services.AddMarketplaceCors(builder.Environment);
 
 var app = builder.Build();
 
@@ -88,7 +84,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseCors(CorsPolicyName);
+app.UseCors(CorsSetup.PolicyName);
 app.UseAuthentication();
 
 // Section 4.5 places the rate limiter before authentication, but section 11.4's per-user limits need the
@@ -101,6 +97,9 @@ app.MapMarketplaceDocs();
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false }).DisableRateLimiting();
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains(ReadinessTag) }).DisableRateLimiting();
 
+// Section 16: check the configuration before seeding touches the database. A failure is logged at Fatal (Critical
+// maps to Fatal in Serilog) and stops the process; RunAsync would only have caught it after the seed.
+app.Services.ValidateConfigurationOrLogFatal(app.Logger);
 await app.Services.SeedAdminAsync(app.Configuration);
 await app.RunAsync();
 

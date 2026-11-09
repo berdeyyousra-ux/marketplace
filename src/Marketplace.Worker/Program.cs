@@ -1,5 +1,6 @@
 using Marketplace.Application;
 using Marketplace.Infrastructure;
+using Marketplace.Infrastructure.Configuration;
 using Marketplace.Infrastructure.Jobs;
 using Marketplace.Infrastructure.Logging;
 using Marketplace.Infrastructure.Persistence;
@@ -53,6 +54,7 @@ public static class WorkerProgram
         var app = builder.Build();
         app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
         app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains(_readinessTag) });
+        app.Services.ValidateConfigurationOrLogFatal(app.Logger);
         await app.RunAsync();
     }
 }
