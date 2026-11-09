@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 
 namespace Marketplace.Infrastructure;
 
@@ -20,6 +21,13 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
+        // Section 16: both connection strings are required. Read lazily they would fail on first use, not at startup.
+        services.AddOptions<RequiredConnectionStrings>()
+            .BindConfiguration("ConnectionStrings")
+            .Validate(
+                strings => !string.IsNullOrWhiteSpace(strings.Database) && !string.IsNullOrWhiteSpace(strings.BlobStorage),
+                "ConnectionStrings:Database and ConnectionStrings:BlobStorage are required.")
+            .ValidateOnStart();
         services.AddSingleton<Cloud.ManagedIdentityDatabase>();
         services.AddDbContext<AppDbContext>((provider, options) =>
         {
@@ -42,21 +50,73 @@ public static class DependencyInjection
         services.AddScoped<IOutbox, Outbox.Outbox>();
         services.AddSingleton<OutboxProcessor>();
         services.AddMarketplaceIdentity();
-        services.AddOptions<EmailOptions>().BindConfiguration(EmailOptions.SectionName);
-        services.AddOptions<AccountLinkOptions>().BindConfiguration(EmailOptions.SectionName);
+        services.AddOptions<EmailOptions>()
+            .BindConfiguration(EmailOptions.SectionName)
+            .Validate(
+                email => !string.IsNullOrWhiteSpace(email.SmtpHost) && email.SmtpPort is > 0 and <= 65535 && !string.IsNullOrWhiteSpace(email.FromAddress),
+                "Email:SmtpHost, Email:SmtpPort and Email:FromAddress are required.")
+            .Validate(
+                email => string.IsNullOrWhiteSpace(email.SmtpUser) || !string.IsNullOrWhiteSpace(email.SmtpPassword),
+                "Email:SmtpPassword is required when Email:SmtpUser is set.")
+            .ValidateOnStart();
+        // Section 16: links in account emails are built from this, so a relative or malformed value would send
+        // every verification and reset mail to a dead address.
+        services.AddOptions<AccountLinkOptions>()
+            .BindConfiguration(EmailOptions.SectionName)
+            .Validate(
+                links => Uri.TryCreate(links.LinkBaseUrl, UriKind.Absolute, out var url) && url.Scheme is "http" or "https",
+                "Email:LinkBaseUrl must be an absolute http or https URL.")
+            .ValidateOnStart();
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
-        services.AddOptions<StorageOptions>().BindConfiguration(StorageOptions.SectionName);
+
+        // Section 16: the two containers must differ. CoverContainerName is public-read (T-085), so sharing a name
+        // with the private ContainerName would publish every paid file.
+        services.AddOptions<StorageOptions>()
+            .BindConfiguration(StorageOptions.SectionName)
+            .Validate(
+                storage => !string.IsNullOrWhiteSpace(storage.ContainerName) && !string.IsNullOrWhiteSpace(storage.CoverContainerName),
+                "Storage:ContainerName and Storage:CoverContainerName are required.")
+            .Validate(
+                storage => !string.Equals(storage.ContainerName, storage.CoverContainerName, StringComparison.OrdinalIgnoreCase),
+                "Storage:CoverContainerName must differ from Storage:ContainerName: covers are public-read and product files are not.")
+            .Validate(storage => storage.DownloadUrlMinutes > 0, "Storage:DownloadUrlMinutes must be positive.")
+            .ValidateOnStart();
         services.AddSingleton<IFileStorage, AzureBlobFileStorage>();
         services.AddSingleton<IPublicImageStorage, AzureBlobPublicImageStorage>();
         services.AddSingleton<IFileScanner, NoopFileScanner>();
         services.AddScoped<IProductSearch, ProductSearch>();
         services.AddScoped<IIdempotencyStore, Idempotency.IdempotencyStore>();
-        services.AddOptions<Application.Orders.MarketplaceOptions>().BindConfiguration(Application.Orders.MarketplaceOptions.SectionName);
-        services.AddOptions<Application.Refunds.RefundOptions>().BindConfiguration(Application.Refunds.RefundOptions.SectionName);
+        // Section 16 and D-38: the commission is withheld from every order, so a value outside 0 to 100 percent
+        // would pay a seller more than the buyer paid, or nothing at all.
+        services.AddOptions<Application.Orders.MarketplaceOptions>()
+            .BindConfiguration(Application.Orders.MarketplaceOptions.SectionName)
+            .Validate(
+                marketplace => marketplace.CommissionBasisPoints is >= 0 and <= 10_000,
+                "Marketplace:CommissionBasisPoints must be between 0 and 10000.")
+            .ValidateOnStart();
+
+        // Section 16 and D-39: a zero or negative window would make every refund request ineligible on arrival.
+        services.AddOptions<Application.Refunds.RefundOptions>()
+            .BindConfiguration(Application.Refunds.RefundOptions.SectionName)
+            .Validate(refunds => refunds.WindowDays > 0, "Refunds:WindowDays must be positive.")
+            .ValidateOnStart();
         services.AddOptions<Application.Refunds.AiQuotaOptions>().BindConfiguration(Application.Refunds.AiQuotaOptions.SectionName);
 
         // D-25: the provider comes from Payments:Provider. Fake is the default for development and tests.
-        services.AddOptions<PaymentOptions>().BindConfiguration(PaymentOptions.SectionName);
+        // Section 16: Stripe in Production, and Stripe's keys whenever it is the provider.
+        services.AddOptions<PaymentOptions>()
+            .BindConfiguration(PaymentOptions.SectionName)
+            .Validate(
+                payments => payments.Provider is PaymentOptions.FakeName or PaymentOptions.StripeName,
+                "Payments:Provider must be Fake or Stripe.")
+            .Validate<IHostEnvironment>(
+                (payments, environment) => !environment.IsProduction() || payments.Provider == PaymentOptions.StripeName,
+                "Payments:Provider must be Stripe in Production.")
+            .Validate(
+                payments => payments.Provider != PaymentOptions.StripeName
+                    || (!string.IsNullOrWhiteSpace(payments.Stripe.SecretKey) && !string.IsNullOrWhiteSpace(payments.Stripe.WebhookSecret)),
+                "Payments:Stripe:SecretKey and Payments:Stripe:WebhookSecret are required when Payments:Provider is Stripe.")
+            .ValidateOnStart();
         services.AddSingleton<FakePaymentProvider>();
         services.AddHttpClient(PaymentOptions.StripeName);
         services.AddSingleton<Stripe.IStripeClient>(provider =>
@@ -135,4 +195,11 @@ public static class DependencyInjection
                 settings.TotalTimeout = defaults.TotalTimeout;
             })
             .BindConfiguration($"{ResilienceSettings.SectionName}:{name}");
+}
+
+internal sealed class RequiredConnectionStrings
+{
+    public string? Database { get; set; }
+
+    public string? BlobStorage { get; set; }
 }
