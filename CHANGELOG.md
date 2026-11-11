@@ -8,6 +8,13 @@ for them, are recorded separately in the [spec changelog](docs/spec-changelog.md
 
 ## [Unreleased]
 
+### Added
+
+- Staging sends email through Resend, over SMTP, so nothing in the application is provider-specific: the host, port,
+  user and from-address are deployment parameters and the API key is the existing `SmtpPassword` vault secret. Until
+  a domain is verified, the from-address is Resend's testing one and only delivers to the Resend account's own
+  address (`deploy/bicep/README.md`).
+
 ### Fixed
 
 - Staging could not start the Api or the Worker: the Bicep `smtpHost` parameter defaulted to an empty string, which
