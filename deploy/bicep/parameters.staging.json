@@ -16,6 +16,18 @@
     },
     "budgetAmount": {
       "value": 20
+    },
+    "smtpHost": {
+      "value": "smtp.resend.com"
+    },
+    "smtpPort": {
+      "value": 587
+    },
+    "smtpUser": {
+      "value": "resend"
+    },
+    "emailFromAddress": {
+      "value": "onboarding@resend.dev"
     }
   }
 }

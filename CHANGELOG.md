@@ -15,6 +15,10 @@ for them, are recorded separately in the [spec changelog](docs/spec-changelog.md
   provider's webhook, not by the browser.
 - `publishableKey` on the EP-33 payment response, so the client gets the key for the provider the API actually uses
   (see the [spec changelog](docs/spec-changelog.md)).
+- Staging sends email through Resend, over SMTP, so nothing in the application is provider-specific: the host, port,
+  user and from-address are deployment parameters and the API key is the existing `SmtpPassword` vault secret. Until
+  a domain is verified, the from-address is Resend's testing one and only delivers to the Resend account's own
+  address (`deploy/bicep/README.md`).
 
 ### Changed
 
