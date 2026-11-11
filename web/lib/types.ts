@@ -53,7 +53,8 @@ export type OrderDetail = {
   items: OrderItem[];
   payment: { id: string; provider: string; status: string; amount: Money; createdAt: string } | null;
 };
-export type PaymentStart = { paymentId: string; provider: string; clientSecret: string; amount: Money };
+// publishableKey is the provider's public key for its payment form (T-064); null for a provider without one.
+export type PaymentStart = { paymentId: string; provider: string; clientSecret: string; amount: Money; publishableKey: string | null };
 
 export type LibraryItem = {
   orderItemId: string;

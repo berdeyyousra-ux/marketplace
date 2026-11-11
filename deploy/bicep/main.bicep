@@ -38,6 +38,9 @@ param migrateImage string = 'mcr.microsoft.com/k8se/quickstart:latest'
 param aiProvider string = 'OpenAi'
 param aiModel string = 'gpt-4o-mini'
 
+@description('Stripe publishable key (pk_test_* in staging). Public by design: the browser needs it to mount the payment form (T-064). From the STRIPE_PUBLISHABLE_KEY GitHub variable, not the vault.')
+param stripePublishableKey string = ''
+
 param smtpHost string = ''
 param smtpPort int = 587
 param smtpUser string = ''
@@ -368,6 +371,7 @@ var sharedSettings = [
   { name: 'Payments__Provider', value: 'Stripe' }
   { name: 'Payments__Stripe__SecretKey', secretRef: 'stripesecretkey' }
   { name: 'Payments__Stripe__WebhookSecret', secretRef: 'stripewebhooksecret' }
+  { name: 'Payments__Stripe__PublishableKey', value: stripePublishableKey }
   { name: 'Ai__Provider', value: aiProvider }
   { name: 'Ai__Model', value: aiModel }
   { name: 'Ai__ApiKey', secretRef: 'aiapikey' }

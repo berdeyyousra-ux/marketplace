@@ -189,7 +189,9 @@ What this repository sets out to demonstrate, and where to read the evidence.
 - **No live deployment right now.** The Bicep infrastructure and the staging pipeline work and have deployed green, but
   the staging resource group was deleted to stop the charges, so there is nothing to visit. The production pipeline
   (T-063) is deferred.
-- **Stripe test payments:** the API and Worker support Stripe, but the web client has no Stripe payment form yet (T-064). Locally, checkout uses the fake provider.
+- **Stripe test payments:** checkout mounts Stripe's Payment Element where Stripe is the configured provider (T-064),
+  and test mode is the only mode it has been run in. Locally the fake provider is used instead, so checkout shows a
+  "Complete test payment" button rather than card fields.
 - **Scope:**
   - payments in euros only, and no VAT calculation
   - refunds cover a whole order item; partial refunds are out of scope
