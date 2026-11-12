@@ -41,7 +41,8 @@ param aiModel string = 'gpt-4o-mini'
 @description('Stripe publishable key (pk_test_* in staging). Public by design: the browser needs it to mount the payment form (T-064). From the STRIPE_PUBLISHABLE_KEY GitHub variable, not the vault.')
 param stripePublishableKey string = ''
 
-param smtpHost string = ''
+@description('SMTP host. Startup validation requires a non-empty value (section 16), and an empty container setting overrides the code default, so this must never be blank. There is no provider yet, so it defaults to a placeholder that cannot resolve: email then fails and waits in the outbox dead letters, as deploy/bicep/README.md describes. Point it at a real provider in parameters.staging.json once there is one.')
+param smtpHost string = 'smtp.invalid'
 param smtpPort int = 587
 param smtpUser string = ''
 param emailFromAddress string = 'noreply@marketplace.dev'

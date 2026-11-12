@@ -22,6 +22,13 @@ for them, are recorded separately in the [spec changelog](docs/spec-changelog.md
   could not take a card payment fails before it goes live. In Azure it comes from the `STRIPE_PUBLISHABLE_KEY`
   GitHub environment variable.
 
+### Fixed
+
+- Staging could not start the Api or the Worker: the Bicep `smtpHost` parameter defaulted to an empty string, which
+  set `Email__SmtpHost` to empty on both container apps, and an empty setting overrides the code default rather than
+  falling back to it. The startup validation added with T-066 then failed them both. It now defaults to a
+  placeholder that cannot resolve, keeping the documented "no SMTP provider yet" state working.
+
 ## [1.0.0] - 2026-11-09
 
 First release: a complete marketplace for downloadable digital products, from registration through payment,
