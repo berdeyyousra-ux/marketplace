@@ -7,6 +7,10 @@ public interface IPaymentProvider
 {
     string Name { get; }
 
+    // T-064: the key the browser needs to mount this provider's payment form. It is public by design (Stripe's
+    // pk_*), travels to the client in the EP-33 response, and is null for a provider that has no such form.
+    string? PublishableKey => null;
+
     Task<ProviderPayment> CreatePaymentAsync(CreateProviderPayment request, CancellationToken cancellationToken);
 
     Task<ProviderPayment> GetPaymentAsync(string providerPaymentId, CancellationToken cancellationToken);

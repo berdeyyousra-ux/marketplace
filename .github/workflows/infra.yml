@@ -4,7 +4,8 @@
 # deployment happens only when someone starts it.
 #
 # Sign-in is GitHub OIDC (section 15.5): a federated credential on the staging GitHub environment, no stored secrets.
-# The AZURE_* values and BUDGET_ALERT_EMAIL are environment variables, not secrets.
+# The AZURE_* values, BUDGET_ALERT_EMAIL and STRIPE_PUBLISHABLE_KEY are environment variables, not secrets: a
+# Stripe publishable key is meant to reach the browser (T-064).
 name: Infrastructure
 
 on:
@@ -64,7 +65,7 @@ jobs:
             --name "marketplace-${{ github.run_id }}" \
             --template-file deploy/bicep/main.bicep \
             --parameters "@$PARAMETERS" \
-            --parameters budgetContactEmail="${{ vars.BUDGET_ALERT_EMAIL }}" \
+            --parameters budgetContactEmail="${{ vars.BUDGET_ALERT_EMAIL }}" stripePublishableKey="${{ vars.STRIPE_PUBLISHABLE_KEY }}" \
             --result-format FullResourcePayloads --no-pretty-print --output json > what-if.json
           python3 - <<'PY' | tee what-if.txt
           import json
@@ -92,7 +93,7 @@ jobs:
             --resource-group "$RESOURCE_GROUP" \
             --template-file deploy/bicep/main.bicep \
             --parameters "@$PARAMETERS" \
-            --parameters budgetContactEmail="${{ vars.BUDGET_ALERT_EMAIL }}" \
+            --parameters budgetContactEmail="${{ vars.BUDGET_ALERT_EMAIL }}" stripePublishableKey="${{ vars.STRIPE_PUBLISHABLE_KEY }}" \
             --output json 2>&1 | grep -o '"message": "[^"]*"' | sort -u || true
           # Resource-provider registration is not checked by validate or what-if; a failed apply's operations are.
           az deployment operation group list --resource-group "$RESOURCE_GROUP" --name "marketplace-${{ github.run_id }}" \
@@ -113,5 +114,5 @@ jobs:
             --name "marketplace-${{ github.run_id }}" \
             --template-file deploy/bicep/main.bicep \
             --parameters "@$PARAMETERS" \
-            --parameters budgetContactEmail="${{ vars.BUDGET_ALERT_EMAIL }}" \
+            --parameters budgetContactEmail="${{ vars.BUDGET_ALERT_EMAIL }}" stripePublishableKey="${{ vars.STRIPE_PUBLISHABLE_KEY }}" \
             --query properties.outputs --output json | tee outputs.json

@@ -3967,7 +3967,8 @@ Sets the product's cover image from multipart field "file": JPEG, PNG or WebP, a
           paymentId,
           provider,
           clientSecret,
-          amount
+          amount,
+          publishableKey
         ],
         type: object,
         properties: {
@@ -3983,6 +3984,12 @@ Sets the product's cover image from multipart field "file": JPEG, PNG or WebP, a
           },
           amount: {
             $ref: #/components/schemas/MoneyDto
+          },
+          publishableKey: {
+            type: [
+              null,
+              string
+            ]
           }
         }
       },

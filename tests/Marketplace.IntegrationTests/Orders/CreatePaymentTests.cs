@@ -27,6 +27,8 @@ public sealed class CreatePaymentTests(MarketplaceWebFactory factory) : Integrat
         body.GetProperty("provider").GetString().ShouldBe("Fake");
         body.GetProperty("clientSecret").GetString().ShouldNotBeNullOrEmpty();
         body.GetProperty("amount").GetProperty("amount").GetString().ShouldBe("19.99");
+        // T-064: the fake provider has no payment form, so there is no key for the client to mount one with.
+        body.GetProperty("publishableKey").ValueKind.ShouldBe(JsonValueKind.Null);
         var payment = await WithDbAsync(db => db.Payments.SingleAsync(CancellationToken));
         payment.Id.ShouldBe(body.GetProperty("paymentId").GetGuid());
         payment.Status.ShouldBe(PaymentStatus.RequiresPayment);

@@ -8,6 +8,20 @@ for them, are recorded separately in the [spec changelog](docs/spec-changelog.md
 
 ## [Unreleased]
 
+### Added
+
+- Stripe's Payment Element in the web client's checkout, where Stripe is the configured provider (T-064). Card
+  details go straight to Stripe and never reach the app's own servers, and the order is only ever confirmed by the
+  provider's webhook, not by the browser.
+- `publishableKey` on the EP-33 payment response, so the client gets the key for the provider the API actually uses
+  (see the [spec changelog](docs/spec-changelog.md)).
+
+### Changed
+
+- `Payments:Stripe:PublishableKey` is now required at startup wherever Stripe is the provider, so a deployment that
+  could not take a card payment fails before it goes live. In Azure it comes from the `STRIPE_PUBLISHABLE_KEY`
+  GitHub environment variable.
+
 ### Fixed
 
 - Staging could not start the Api or the Worker: the Bicep `smtpHost` parameter defaulted to an empty string, which

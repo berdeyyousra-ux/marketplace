@@ -116,6 +116,12 @@ public static class DependencyInjection
                 payments => payments.Provider != PaymentOptions.StripeName
                     || (!string.IsNullOrWhiteSpace(payments.Stripe.SecretKey) && !string.IsNullOrWhiteSpace(payments.Stripe.WebhookSecret)),
                 "Payments:Stripe:SecretKey and Payments:Stripe:WebhookSecret are required when Payments:Provider is Stripe.")
+            // T-064: without the publishable key the client cannot mount Stripe's payment form, so checkout would
+            // be dead on arrival. It is public, not a secret, and comes from configuration rather than the vault.
+            .Validate(
+                payments => payments.Provider != PaymentOptions.StripeName
+                    || !string.IsNullOrWhiteSpace(payments.Stripe.PublishableKey),
+                "Payments:Stripe:PublishableKey is required when Payments:Provider is Stripe.")
             .ValidateOnStart();
         services.AddSingleton<FakePaymentProvider>();
         services.AddHttpClient(PaymentOptions.StripeName);

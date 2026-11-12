@@ -73,6 +73,7 @@ az keyvault secret set --vault-name $VAULT --name SeedAdminPassword   --value "$
 
 Notes:
 - **Stripe webhook secret:** in Azure this comes from a webhook endpoint registered in the Stripe dashboard, pointing at `https://<apiUrl>/api/v1/webhooks/payments`. The Stripe CLI's local value only works for local testing.
+- **Stripe publishable key:** not here. It is public by design (the browser needs it to mount the payment form, T-064), so it is the `STRIPE_PUBLISHABLE_KEY` GitHub environment variable, passed as the `stripePublishableKey` parameter. Both .NET processes refuse to start without it when the provider is Stripe, so set it before the first apply.
 - **No SMTP provider yet:** if there isn't one, set `SmtpPassword` to any placeholder so the reference resolves. Emails will then fail and wait in the outbox's dead letters until a provider is configured.
   - The `smtpHost` parameter defaults to `smtp.invalid`, a name that cannot resolve, for the same reason. It must never be blank: startup validation requires a non-empty `Email:SmtpHost` (section 16), and a container setting with an empty value overrides the code's own default rather than falling back to it. Point `smtpHost` at a real provider in `parameters.staging.json` once there is one.
 

@@ -2,6 +2,44 @@
 
 Changes to, and resolved contradictions in, the build specification.
 
+## 2026-11-11
+
+### Section 9.4 (EP-33): the payment response carries the provider's publishable key (T-064)
+
+**Spec:** EP-33 answers with the payment's id, the provider, the provider's client secret and the amount.
+
+**Change:** the response gains `publishableKey`, the provider's public key. It is the Stripe `pk_*` key where Stripe
+is the provider, and null for a provider that has no payment form of its own, such as Fake. `IPaymentProvider` gains
+a `PublishableKey` member, defaulting to null, which `StripePaymentProvider` answers from configuration.
+
+**Why:** the client has to mount Stripe's Payment Element, and that needs the publishable key. The alternatives were
+both worse:
+
+- **A `NEXT_PUBLIC_*` build argument.** Next.js inlines those when the image is built, and the web image is built
+  once in CD and could be deployed to any environment, so the key would be frozen at build time.
+- **A second endpoint for client configuration.** EP-33 already tells the client which provider to use; the key that
+  goes with it belongs in the same answer, and that keeps one source of truth for the pair.
+
+The key is public by design: it only identifies the account to Stripe.js, and it is already in every page that takes
+a card. The secret key and the webhook secret stay in the vault.
+
+### Section 16: Payments:Stripe:PublishableKey is required when the provider is Stripe
+
+**Change:** startup validation now also requires `Payments:Stripe:PublishableKey` wherever
+`Payments:Provider` is `Stripe`, alongside the secret key and the webhook secret it already required.
+
+**Why:** without it the client cannot mount the payment form, so checkout would come up unable to take a payment.
+Failing at startup turns that into a deployment that never goes live, rather than a broken checkout.
+
+**Where it comes from:** the `STRIPE_PUBLISHABLE_KEY` GitHub environment variable, passed to Bicep as
+`stripePublishableKey` and set on both container apps. It is configuration, not a vault secret, because it is public
+(`deploy/bicep/README.md`).
+
+### Operations: staging resumed (2026-11-11)
+
+The resource group, the role assignments and the soft-deleted Key Vault were restored by the checklist in the
+2026-11-03 entry, with all six secrets recovered intact. The pause entry below stays as the record of how it is done.
+
 ## 2026-11-04
 
 ### Design plan: orange accent and a near-black primary action
