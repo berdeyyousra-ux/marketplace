@@ -28,6 +28,11 @@ for them, are recorded separately in the [spec changelog](docs/spec-changelog.md
 
 ### Fixed
 
+- The library row's "Request refund" link sat beside the Download button on desktop instead of below it. The row
+  stops wrapping from the `sm` breakpoint up, and the link's wrapper was a second full-width group with no width
+  override, so it was forced onto the same line. Both now live in one trailing column, as the seller's listing row
+  already does.
+
 - Staging could not start the Api or the Worker: the Bicep `smtpHost` parameter defaulted to an empty string, which
   set `Email__SmtpHost` to empty on both container apps, and an empty setting overrides the code default rather than
   falling back to it. The startup validation added with T-066 then failed them both. It now defaults to a

@@ -97,17 +97,20 @@ export function LibraryRow({ item, refund }: { item: LibraryItem; refund: MyRefu
         </p>
         {refund?.decisionNote && <p className="m-0 type-label text-muted">Note from the team: {refund.decisionNote}</p>}
       </div>
-      <div className="flex w-full items-center justify-end gap-4 sm:w-auto">
-        {badge ? <Badge tone={badge.tone}>{badge.label}</Badge> : !canDownload && <StatusBadge status={item.status} />}
-        {canDownload && <Button onClick={download} loading={downloading}>Download</Button>}
-      </div>
-      {canRequestRefund && (
-        <div className="flex w-full justify-end">
+      {/* One trailing action group, as the seller's listing row has: the row stays on a single line from sm up
+          (sm:flex-nowrap), so a second w-full group would be forced onto that same line beside the Download
+          button instead of under it. The refund link belongs below the button, so it goes inside this column. */}
+      <div className="flex w-full flex-col items-end gap-2 sm:w-auto">
+        <div className="flex items-center gap-4">
+          {badge ? <Badge tone={badge.tone}>{badge.label}</Badge> : !canDownload && <StatusBadge status={item.status} />}
+          {canDownload && <Button onClick={download} loading={downloading}>Download</Button>}
+        </div>
+        {canRequestRefund && (
           <button type="button" onClick={() => { setDialogOpen(true); setSendError(null); }} className="cursor-pointer border-0 bg-transparent p-0 type-label text-muted underline-offset-2 hover:text-text hover:underline">
             Request refund
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} title={`Request a refund for ${item.title}`}>
         <form className="flex flex-col gap-4" onSubmit={requestRefund} noValidate>
