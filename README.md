@@ -33,7 +33,7 @@ Built to production engineering standards:
   - payment through a provider (Stripe, or a fake provider for development) confirmed by signed webhooks
   - receipts by email
   - downloads through five-minute signed URLs, re-downloadable until the grant expires or a refund revokes it
-- **Refunds:** the buyer requests one, a policy verdict is computed, and an LLM suggests an action. An admin approves or rejects it, and the Worker executes the refund against the provider.
+- **Refunds:** the buyer requests one, a policy verdict is computed, and an LLM suggests an action. An admin approves or rejects it, and the Worker executes the refund against the provider. A buyer can withdraw a request while it is still undecided, which frees the item to be requested again inside the refund window.
 - **Reporting:** a seller dashboard and admin reports from hand-written SQL (monthly revenue, cohorts, refund rates, percentiles), backed by covering indexes and a materialized view.
 - **Web client:** a Next.js app for every role. It keeps tokens in httpOnly cookies and never exposes them to browser code.
 
