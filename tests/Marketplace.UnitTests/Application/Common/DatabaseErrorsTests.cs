@@ -10,7 +10,7 @@ public sealed class DatabaseErrorsTests
     [Theory]
     [InlineData("ux_seller_profiles_user_id", "already_seller")]
     [InlineData("ux_download_grants_active_buyer_product", "already_owned")]
-    [InlineData("ux_refund_requests_order_item_id", "refund_not_allowed")]
+    [InlineData("ux_refund_requests_live_order_item", "refund_not_allowed")]
     [InlineData("ux_some_other_constraint", "concurrency_conflict")]
     [InlineData(null, "concurrency_conflict")]
     public void FromPostgres_UniqueViolation_MapsToConflict(string? constraint, string expectedCode)

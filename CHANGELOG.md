@@ -10,6 +10,11 @@ for them, are recorded separately in the [spec changelog](docs/spec-changelog.md
 
 ### Added
 
+- Buyers can cancel their own refund request while it is still awaiting a decision, from the library row. The order
+  item is then free to be requested again inside the refund window; cancelling does not extend it. A withdrawn
+  request leaves the admin queue, and the AI advisor skips it. This needed the one-request-per-item constraint to
+  become one *live* request per item; see the [spec changelog](docs/spec-changelog.md).
+
 - Stripe's Payment Element in the web client's checkout, where Stripe is the configured provider (T-064). Card
   details go straight to Stripe and never reach the app's own servers, and the order is only ever confirmed by the
   provider's webhook, not by the browser.

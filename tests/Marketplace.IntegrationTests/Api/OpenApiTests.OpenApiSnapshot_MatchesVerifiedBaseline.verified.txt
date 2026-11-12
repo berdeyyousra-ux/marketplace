@@ -2128,6 +2128,54 @@ Sets the product's cover image from multipart field "file": JPEG, PNG or WebP, a
         ]
       }
     },
+    /api/v1/refund-requests/{id}/cancel: {
+      post: {
+        tags: [
+          RefundRequests
+        ],
+        summary: Cancels the caller's own refund request while it is still awaiting a decision. The order item is free to be requested again (US-28).,
+        parameters: [
+          {
+            name: id,
+            in: path,
+            required: true,
+            schema: {
+              type: string,
+              format: uuid
+            }
+          }
+        ],
+        responses: {
+          204: {
+            description: No Content,
+            content: {}
+          },
+          404: {
+            description: Not Found,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          409: {
+            description: Conflict,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        },
+        security: [
+          {}
+        ]
+      }
+    },
     /api/v1/refund-requests/mine: {
       get: {
         tags: [

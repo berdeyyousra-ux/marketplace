@@ -188,6 +188,101 @@ public sealed class RefundRequestTests(MarketplaceWebFactory factory) : Integrat
         await handler.HandleAsync(JsonSerializer.Serialize(new RefundRequestMessage(requestId), _json), CancellationToken);
     }
 
+    // US-28 extension: the buyer withdraws a request, and the order item is free to be requested again. The point
+    // of cancelling is to undo, so the second request must succeed where it was refused before.
+    [Fact]
+    public async Task US28_Cancel_FreesTheItemForANewRequest()
+    {
+        var (buyer, itemId) = await PaidItemAsync("cancel");
+        using (buyer)
+        {
+            var first = await (await RequestAsync(buyer, itemId, "Asked by mistake, I meant another file.")).Content.ReadFromJsonAsync<JsonElement>(CancellationToken);
+            var requestId = first.GetProperty("id").GetGuid();
+            await ShouldBeNotAllowedAsync(await RequestAsync(buyer, itemId, "A second request while the first is live."));
+
+            (await CancelAsync(buyer, requestId)).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+            (await WithDbAsync(db => db.RefundRequests.AsNoTracking().SingleAsync(r => r.Id == requestId, CancellationToken))).Status
+                .ShouldBe(RefundRequestStatus.Cancelled);
+            (await RequestAsync(buyer, itemId, "Asking again now that the first is withdrawn.")).StatusCode.ShouldBe(HttpStatusCode.Created);
+            (await WithDbAsync(db => db.RefundRequests.CountAsync(r => r.OrderItemId == itemId, CancellationToken))).ShouldBe(2);
+            (await WithDbAsync(db => db.AuditLog.CountAsync(entry => entry.Action == "refund.cancelled", CancellationToken))).ShouldBe(1);
+
+            // The withdrawn request is not shown as a state the buyer is in, but it is still on the record.
+            var mine = await buyer.GetFromJsonAsync<JsonElement>("/api/v1/refund-requests/mine", CancellationToken);
+            mine.GetProperty("items").EnumerateArray().Select(row => row.GetProperty("status").GetString())
+                .ShouldBe(["Submitted", "Cancelled"], ignoreOrder: true);
+        }
+    }
+
+    [Fact]
+    public async Task US28_CancelRules_AreEnforced()
+    {
+        var (buyer, itemId) = await PaidItemAsync("cancel-rules");
+        using (buyer)
+        {
+            using var stranger = await AsBuyerAsync("cancel-rules-stranger@example.test");
+            var created = await (await RequestAsync(buyer, itemId, "The download is the wrong edition.")).Content.ReadFromJsonAsync<JsonElement>(CancellationToken);
+            var requestId = created.GetProperty("id").GetGuid();
+
+            // Someone else's request reads as missing rather than forbidden, so its existence is not disclosed.
+            (await CancelAsync(stranger, requestId)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+            (await CancelAsync(buyer, Guid.CreateVersion7())).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+            (await CancelAsync(buyer, requestId)).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+            // Already withdrawn, so there is nothing left to cancel.
+            var again = await CancelAsync(buyer, requestId);
+            again.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+            (await again.Content.ReadFromJsonAsync<JsonElement>(CancellationToken)).GetProperty("code").GetString().ShouldBe("refund_not_cancellable");
+        }
+    }
+
+    // A withdrawn request needs no advice: the analyze handler must not spend a model call on it.
+    [Fact]
+    public async Task US28_CancelBeforeAnalysis_SkipsTheModel()
+    {
+        var (buyer, itemId) = await PaidItemAsync("cancel-before-ai");
+        using (buyer)
+        {
+            Llm.Enqueue(_approve);
+            var created = await (await RequestAsync(buyer, itemId, "Withdrawing this before the worker runs.")).Content.ReadFromJsonAsync<JsonElement>(CancellationToken);
+
+            (await CancelAsync(buyer, created.GetProperty("id").GetGuid())).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+            await ProcessOutboxAsync();
+
+            (await WithDbAsync(db => db.AiSuggestions.CountAsync(CancellationToken))).ShouldBe(0);
+        }
+    }
+
+    // The admin queue is work to be done, so a withdrawn request is not in it unless asked for by name.
+    [Fact]
+    public async Task US28_CancelledRequest_LeavesTheAdminQueue()
+    {
+        var (buyer, itemId) = await PaidItemAsync("cancel-queue");
+        using (buyer)
+        {
+            using var admin = await AsAdminAsync();
+            var created = await (await RequestAsync(buyer, itemId, "Withdrawing this one shortly.")).Content.ReadFromJsonAsync<JsonElement>(CancellationToken);
+            var requestId = created.GetProperty("id").GetGuid();
+
+            var before = await admin.GetFromJsonAsync<JsonElement>("/api/v1/admin/refund-requests", CancellationToken);
+            before.GetProperty("items").EnumerateArray().Count().ShouldBe(1);
+
+            (await CancelAsync(buyer, requestId)).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+            var after = await admin.GetFromJsonAsync<JsonElement>("/api/v1/admin/refund-requests", CancellationToken);
+            after.GetProperty("items").EnumerateArray().ShouldBeEmpty();
+
+            // Still reachable when asked for by name, so nothing is hidden outright.
+            var cancelled = await admin.GetFromJsonAsync<JsonElement>("/api/v1/admin/refund-requests?status=Cancelled", CancellationToken);
+            cancelled.GetProperty("items").EnumerateArray().ShouldHaveSingleItem()
+                .GetProperty("id").GetGuid().ShouldBe(requestId);
+        }
+    }
+
+    private static Task<HttpResponseMessage> CancelAsync(HttpClient buyer, Guid requestId) =>
+        buyer.PostAsync($"/api/v1/refund-requests/{requestId}/cancel", null, CancellationToken);
+
     private static async Task ShouldBeNotAllowedAsync(HttpResponseMessage response)
     {
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);

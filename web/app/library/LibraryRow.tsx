@@ -24,6 +24,11 @@ const refundBadges: Record<string, { label: string; tone: "warning" | "success" 
   Failed: { label: "Refund delayed", tone: "warning" },
 };
 
+// The row's quiet text actions: a link's weight, not a button's, so they sit under the Download button without
+// competing with it.
+const _quietLink =
+  "cursor-pointer border-0 bg-transparent p-0 type-label text-muted underline-offset-2 hover:text-text hover:underline disabled:cursor-not-allowed disabled:opacity-55";
+
 // Why a grant can no longer be downloaded (EP-51 status).
 const unavailable: Record<string, string> = {
   Revoked: "Access ended with the refund.",
@@ -39,6 +44,7 @@ export function LibraryRow({ item, refund }: { item: LibraryItem; refund: MyRefu
   const [reasonError, setReasonError] = useState<string | undefined>();
   const [sendError, setSendError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   async function download() {
     setDownloading(true);
@@ -52,6 +58,23 @@ export function LibraryRow({ item, refund }: { item: LibraryItem; refund: MyRefu
     window.location.href = result.data.url;
     // The count changes server-side; show it once the browser has started the download.
     setTimeout(() => router.refresh(), 1500);
+  }
+
+  // Withdrawing the request frees the order item, so the row goes back to offering "Request refund" after the
+  // refresh. No confirmation step: it is undoable by asking again, and the dialog spells that out.
+  async function cancelRefund() {
+    if (!refund) return;
+
+    setCancelling(true);
+    const result = await call(`/refund-requests/${refund.id}/cancel`, { method: "POST" });
+    setCancelling(false);
+    if (!result.ok) {
+      toast("error", describe(result.problem));
+      return;
+    }
+
+    toast("success", "Refund request cancelled. You can ask again while the refund window is open.");
+    router.refresh();
   }
 
   function checkReason(value: string) {
@@ -81,9 +104,13 @@ export function LibraryRow({ item, refund }: { item: LibraryItem; refund: MyRefu
     router.refresh();
   }
 
-  const badge = refund ? refundBadges[refund.status] : null;
+  // A cancelled request leaves nothing behind for the buyer to see: the order item is free again, so the row goes
+  // back to offering "Request refund". That is why refundBadges has no Cancelled entry.
+  const active = refund && refund.status !== "Cancelled" ? refund : null;
+  const badge = active ? refundBadges[active.status] : null;
   const canDownload = item.status === "Active";
-  const canRequestRefund = !refund && item.status !== "Revoked";
+  const canRequestRefund = !active && item.status !== "Revoked";
+  const canCancelRefund = active?.status === "Submitted";
 
   return (
     <li className="flex flex-wrap items-center gap-4 border-b border-border px-4 py-4 last:border-b-0 sm:flex-nowrap">
@@ -95,7 +122,7 @@ export function LibraryRow({ item, refund }: { item: LibraryItem; refund: MyRefu
           {canDownload && item.downloadCount > 0 && <> · Downloaded {item.downloadCount} {item.downloadCount === 1 ? "time" : "times"}</>}
           {!canDownload && unavailable[item.status] && <> · {unavailable[item.status]}</>}
         </p>
-        {refund?.decisionNote && <p className="m-0 type-label text-muted">Note from the team: {refund.decisionNote}</p>}
+        {active?.decisionNote && <p className="m-0 type-label text-muted">Note from the team: {active.decisionNote}</p>}
       </div>
       {/* One trailing action group, as the seller's listing row has: the row stays on a single line from sm up
           (sm:flex-nowrap), so a second w-full group would be forced onto that same line beside the Download
@@ -106,8 +133,13 @@ export function LibraryRow({ item, refund }: { item: LibraryItem; refund: MyRefu
           {canDownload && <Button onClick={download} loading={downloading}>Download</Button>}
         </div>
         {canRequestRefund && (
-          <button type="button" onClick={() => { setDialogOpen(true); setSendError(null); }} className="cursor-pointer border-0 bg-transparent p-0 type-label text-muted underline-offset-2 hover:text-text hover:underline">
+          <button type="button" onClick={() => { setDialogOpen(true); setSendError(null); }} className={_quietLink}>
             Request refund
+          </button>
+        )}
+        {canCancelRefund && (
+          <button type="button" onClick={cancelRefund} disabled={cancelling} className={_quietLink}>
+            {cancelling ? "Cancelling…" : "Cancel request"}
           </button>
         )}
       </div>
