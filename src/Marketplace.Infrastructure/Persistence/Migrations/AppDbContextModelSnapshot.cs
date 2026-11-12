@@ -1100,8 +1100,10 @@ namespace Marketplace.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_refund_requests");
 
-                    b.HasAlternateKey("OrderItemId")
-                        .HasName("ux_refund_requests_order_item_id");
+                    b.HasIndex("OrderItemId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_refund_requests_live_order_item")
+                        .HasFilter("status <> 'Cancelled'");
 
                     b.HasIndex("Status", "CreatedAt")
                         .HasDatabaseName("ix_refund_requests_status_created_at");
@@ -1112,7 +1114,7 @@ namespace Marketplace.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_refund_requests_decision", "decision IS NULL OR decision IN ('Approved','Rejected')");
 
-                            t.HasCheckConstraint("ck_refund_requests_status", "status IN ('Submitted','Approved','Rejected','Executing','Completed','Failed')");
+                            t.HasCheckConstraint("ck_refund_requests_status", "status IN ('Submitted','Approved','Rejected','Executing','Completed','Failed','Cancelled')");
 
                             t.HasCheckConstraint("ck_refund_requests_verdict", "policy_verdict IN ('Eligible','EligibleDownloaded','IneligibleOutsideWindow')");
                         });
