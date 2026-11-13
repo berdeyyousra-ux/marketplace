@@ -59,6 +59,8 @@ public sealed class AuthorizationMatrixTests(MarketplaceWebFactory factory) : In
         { "POST", "/api/v1/admin/outbox/{order}/retry", [401, 403, 403, 403, 404, 403] },
         { "POST", "/api/v1/refund-requests", [401, 404, 404, 404, 404, 404] },
         { "GET", "/api/v1/refund-requests/mine", [401, 200, 200, 200, 200, 200] },
+        // Scoped to the caller's own request, so an id nobody owns is 404 for every signed-in role, admins too.
+        { "POST", "/api/v1/refund-requests/{order}/cancel", [401, 404, 404, 404, 404, 404] },
         { "GET", "/api/v1/admin/refund-requests", [401, 403, 403, 403, 200, 403] },
         { "GET", "/api/v1/admin/refund-requests/{order}", [401, 403, 403, 403, 404, 403] },
         { "POST", "/api/v1/admin/refund-requests/{order}/decision", [401, 403, 403, 403, 404, 403] },
