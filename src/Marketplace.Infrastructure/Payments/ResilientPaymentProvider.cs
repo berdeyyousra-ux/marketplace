@@ -63,6 +63,8 @@ public sealed class ResilientPaymentProvider : IPaymentProvider
 
     public string Name => _inner.Name;
 
+    public string? PublishableKey => _inner.PublishableKey;
+
     public IPaymentProvider Inner => _inner;
 
     public Task<ProviderPayment> CreatePaymentAsync(CreateProviderPayment request, CancellationToken cancellationToken) =>

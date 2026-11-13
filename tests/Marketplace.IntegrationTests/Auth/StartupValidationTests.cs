@@ -31,7 +31,8 @@ public sealed class StartupValidationTests
     public async Task Startup_DevelopmentSigningKey_FailsFast(string environment)
     {
         await using var factory = new ConfigFactory(environment, ("Jwt:SigningKey", _developmentKey), ("Payments:Provider", "Stripe"),
-            ("Payments:Stripe:SecretKey", "sk_test_x"), ("Payments:Stripe:WebhookSecret", "whsec_x"));
+            ("Payments:Stripe:SecretKey", "sk_test_x"), ("Payments:Stripe:WebhookSecret", "whsec_x"),
+            ("Payments:Stripe:PublishableKey", "pk_test_x"));
 
         StartupFailure(factory).ShouldContain("development key");
     }
@@ -58,6 +59,20 @@ public sealed class StartupValidationTests
         await using var factory = new ConfigFactory("Staging", ("Payments:Provider", "Stripe"));
 
         StartupFailure(factory).ShouldContain("Payments:Stripe:SecretKey");
+    }
+
+    // T-064: the client mounts Stripe's payment form with this key, so Stripe without it is a checkout that cannot
+    // take a payment. It is public, so it is configuration rather than a vault secret, and still required.
+    [Fact]
+    public async Task Startup_StripeWithoutPublishableKey_FailsFast()
+    {
+        await using var factory = new ConfigFactory(
+            "Staging",
+            ("Payments:Provider", "Stripe"),
+            ("Payments:Stripe:SecretKey", "sk_test_x"),
+            ("Payments:Stripe:WebhookSecret", "whsec_x"));
+
+        StartupFailure(factory).ShouldContain("Payments:Stripe:PublishableKey");
     }
 
     [Fact]

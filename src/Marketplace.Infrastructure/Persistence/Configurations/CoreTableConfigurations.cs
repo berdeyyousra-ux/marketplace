@@ -166,7 +166,8 @@ internal sealed class RefundRequestConfiguration : IEntityTypeConfiguration<Refu
         builder.ToTable("refund_requests", table =>
         {
             table.HasCheckConstraint(
-                "ck_refund_requests_status", "status IN ('Submitted','Approved','Rejected','Executing','Completed','Failed')");
+                "ck_refund_requests_status",
+                "status IN ('Submitted','Approved','Rejected','Executing','Completed','Failed','Cancelled')");
             table.HasCheckConstraint(
                 "ck_refund_requests_verdict", "policy_verdict IN ('Eligible','EligibleDownloaded','IneligibleOutsideWindow')");
             table.HasCheckConstraint("ck_refund_requests_decision", "decision IS NULL OR decision IN ('Approved','Rejected')");
@@ -184,7 +185,12 @@ internal sealed class RefundRequestConfiguration : IEntityTypeConfiguration<Refu
         builder.HasOne<OrderItem>().WithMany().HasForeignKey(r => r.OrderItemId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<AppUser>().WithMany().HasForeignKey(r => r.RequestedBy).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<AppUser>().WithMany().HasForeignKey(r => r.DecidedBy).OnDelete(DeleteBehavior.Restrict);
-        builder.HasAlternateKey(r => r.OrderItemId).HasName("ux_refund_requests_order_item_id");
+        // One live request per order item. A cancelled request no longer holds the item, so the buyer can ask
+        // again within the refund window; a plain unique key would make cancelling forfeit the refund for good.
+        builder.HasIndex(r => r.OrderItemId)
+            .IsUnique()
+            .HasFilter("status <> 'Cancelled'")
+            .HasDatabaseName("ux_refund_requests_live_order_item");
         builder.HasIndex(r => new { r.Status, r.CreatedAt }).HasDatabaseName("ix_refund_requests_status_created_at");
     }
 }

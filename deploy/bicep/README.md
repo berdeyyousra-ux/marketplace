@@ -67,13 +67,25 @@ az keyvault secret set --vault-name $VAULT --name JwtSigningKey       --value "$
 az keyvault secret set --vault-name $VAULT --name StripeSecretKey     --value "sk_test_..."
 az keyvault secret set --vault-name $VAULT --name StripeWebhookSecret --value "whsec_..."
 az keyvault secret set --vault-name $VAULT --name AiApiKey            --value "..."
-az keyvault secret set --vault-name $VAULT --name SmtpPassword        --value "..."
+az keyvault secret set --vault-name $VAULT --name SmtpPassword        --value "re_..."   # the Resend API key
 az keyvault secret set --vault-name $VAULT --name SeedAdminPassword   --value "$(openssl rand -base64 24)"
 ```
 
 Notes:
 - **Stripe webhook secret:** in Azure this comes from a webhook endpoint registered in the Stripe dashboard, pointing at `https://<apiUrl>/api/v1/webhooks/payments`. The Stripe CLI's local value only works for local testing.
-- **No SMTP provider yet:** if there isn't one, set `SmtpPassword` to any placeholder so the reference resolves. Emails will then fail and wait in the outbox's dead letters until a provider is configured.
+- **Stripe publishable key:** not here. It is public by design (the browser needs it to mount the payment form, T-064), so it is the `STRIPE_PUBLISHABLE_KEY` GitHub environment variable, passed as the `stripePublishableKey` parameter. Both .NET processes refuse to start without it when the provider is Stripe, so set it before the first apply.
+- **SMTP is Resend** in staging, over SMTP rather than its REST API, so no application code is provider-specific. `parameters.staging.json` sets the host, port, user and from-address; `SmtpPassword` is the Resend API key (`re_...`).
+
+  | Setting | Value |
+  | --- | --- |
+  | `smtpHost` | `smtp.resend.com` |
+  | `smtpPort` | `587` (STARTTLS, which `SmtpEmailSender` negotiates) |
+  | `smtpUser` | `resend` — literally that word for every account; the key is the password |
+  | `SmtpPassword` | the Resend API key, in the vault |
+
+  **The from-address is a testing one until a domain is verified.** With `onboarding@resend.dev`, Resend only delivers to the email address of the Resend account itself and answers 403 for any other recipient ("You can only send testing emails to your own email address"). So on staging, account confirmation only arrives for a registration using that address. To send to anyone, verify a domain at `resend.com/domains` and set `emailFromAddress` to an address on it; the from-domain must match the verified domain exactly, subdomains included. Never point it at `marketplace.dev`, the code's own default, which is not ours.
+
+- **Without a provider:** `smtpHost` defaults to `smtp.invalid`, a name that cannot resolve, so email fails and waits in the outbox's dead letters. It must never be blank: startup validation requires a non-empty `Email:SmtpHost` (section 16), and a container setting with an empty value overrides the code's own default rather than falling back to it.
 
 ## Monthly cost
 

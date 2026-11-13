@@ -116,6 +116,12 @@ public sealed class AdminRefundRequestsQueryHandler(IAppDbContext db, IIdentityS
             var status = Enum.Parse<RefundRequestStatus>(query.Status);
             requests = requests.Where(request => request.Status == status);
         }
+        else
+        {
+            // The queue is work to be done, and a request the buyer withdrew needs none. Asking for them by name
+            // (?status=Cancelled) still lists them, so nothing is hidden outright.
+            requests = requests.Where(request => request.Status != RefundRequestStatus.Cancelled);
+        }
 
         if (cursor is not null)
         {
