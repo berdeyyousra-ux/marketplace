@@ -10,6 +10,8 @@ for them, are recorded separately in the [spec changelog](docs/spec-changelog.md
 
 ### Added
 
+- T-065: GitHub secret scanning and push protection alongside the gitleaks check, and a CI step that fails on an open secret scanning alert.
+
 - Buyers can cancel their own refund request while it is still awaiting a decision, from the library row. The order
   item is then free to be requested again inside the refund window; cancelling does not extend it. A withdrawn
   request leaves the admin queue, and the AI advisor skips it. This needed the one-request-per-item constraint to

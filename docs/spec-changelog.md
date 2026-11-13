@@ -2,6 +2,50 @@
 
 Changes to, and resolved contradictions in, the build specification.
 
+## 2026-11-13
+
+### Section 11.7 (T-065): GitHub secret scanning is added alongside gitleaks, not in place of it
+
+**Resolves:** T-065, and the note left at T-006 that "T-065 still adds GitHub secret scanning (section 11.7)".
+
+**Deviation, pending the repo owner's confirmation:** T-065 was asked for as replacing the gitleaks stopgap with
+GitHub's native secret scanning. This change adds native scanning and keeps gitleaks, because the two turned out not
+to be interchangeable, for the three reasons below. Removing gitleaks is still available as a follow-up and needs an
+edit to branch protection as well as to CI; the reasons it was not done unilaterally are recorded here.
+
+**Why gitleaks is not removed:**
+
+1. **It is a required status check, and native scanning has none.** `secret-scan` is in the branch protection
+   contexts for `main`, with `enforce_admins: true`. GitHub secret scanning reports to the Security tab and to push
+   protection; it never reports a check back to a pull request. Deleting the job without also editing branch
+   protection would leave a required context that nothing ever reports, which blocks every pull request
+   permanently. Deleting it *with* that edit removes the merge gate that agent merges depend on.
+2. **On this plan native scanning matches provider patterns only.** `secret_scanning_non_provider_patterns` and
+   `secret_scanning_validity_checks` are both `disabled` and cannot be turned on: validity checks require an
+   organisation on Team or Enterprise with GitHub Secret Protection, and this repository belongs to a user account.
+   The API accepts a `PATCH` enabling them and returns `200` with the value still `disabled`. So the generic rules
+   gitleaks applies have no native equivalent here.
+3. **The allowlist has no native equivalent.** `.gitleaks.toml` permits the published Azurite emulator key and the
+   development JWT signing key in `docker-compose.override.yml` and nowhere else. Native scanning offers no
+   comparable scoped exception without custom patterns, which also need Secret Protection.
+
+**What changed:**
+
+- Confirmed `secret_scanning` and `secret_scanning_push_protection` are `enabled` on the repository. Push protection
+  is the part that genuinely improves on gitleaks: it rejects a recognised provider token at push time, before the
+  commit reaches the remote, where gitleaks can only fail a build after the fact.
+- The `secret-scan` job gains a step that fails on any open secret scanning alert, so native findings surface where
+  merges are already gated instead of only in the Security tab. It prints the alert number and secret type, never
+  the secret. If the alerts API cannot be read it warns and passes, leaving gitleaks as the gate rather than
+  failing closed on an unrelated permissions problem.
+- The job declares `security-events: read`, the first job in CI to need a permission beyond `contents: read`.
+- `README.md` gains a Secrets section covering both layers, the plan limitation, and what to do when push
+  protection blocks a push: rotate first, then rewrite the commit.
+
+**Known limit (unchanged from T-006):** both layers detect known shapes. Neither flagged a random base64 string
+assigned to `Jwt__SigningKey` in testing, so R-06 still applies and passing these checks does not prove a change has
+no secrets.
+
 ## 2026-11-12
 
 ### Section 9.8 (US-28): a buyer can cancel their own refund request, and one order item may have several
