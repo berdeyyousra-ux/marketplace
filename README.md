@@ -165,8 +165,10 @@ covers the generic rules GitHub does not look for on this plan, and `.gitleaks.t
 values: the published Azurite emulator key and the development JWT signing key, and only in
 `docker-compose.override.yml`.
 
-The same job also fails if the repository has an open secret scanning alert, since those are reported to the Security
-tab rather than to a pull request and would otherwise go unseen.
+The same job can also fail on an open secret scanning alert, since those are reported to the Security tab rather
+than to a pull request and would otherwise go unseen. That check is off unless `SECURITY_ALERTS_TOKEN` is set: the
+alerts API needs a token with the `security_events` scope, and the Actions `GITHUB_TOKEN` cannot carry it. Add a
+fine-grained token with read access to *Secret scanning alerts* as that repository secret to turn it on.
 
 Neither layer proves a change is free of secrets. Both detect known shapes, and in testing gitleaks did not flag a
 random base64 string assigned to `Jwt__SigningKey`, so review still matters.

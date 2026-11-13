@@ -179,15 +179,27 @@ jobs:
         run: '"$RUNNER_TEMP/gitleaks" git . --config .gitleaks.toml --redact --verbose --no-banner --exit-code 1'
 
       # GitHub secret scanning reports to the Security tab, not to a pull request, so an alert raised on main can sit
-      # unnoticed. This makes it visible where merges are already gated. It never prints the secret: only the type,
-      # the state and the alert number, which is all that is needed to go and look at it.
+      # unnoticed. This surfaces it where merges are already gated. It never prints the secret: only the alert
+      # number and the secret type, which is all that is needed to go and look at it.
+      #
+      # It needs SECURITY_ALERTS_TOKEN, because the secret scanning alerts API is not reachable with GITHUB_TOKEN.
+      # That API wants a token carrying the `security_events` scope (or `repo`), and the Actions token cannot hold
+      # it: `security-events: read` above grants code scanning, not secret scanning. Verified on CI run
+      # 43417741490, where the call failed and this step passed without checking anything. Without the secret the
+      # step says so rather than reporting a pass it did not establish; gitleaks above is the gate either way.
       - name: Fail on open GitHub secret scanning alerts
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.SECURITY_ALERTS_TOKEN }}
         run: |
-          if ! alerts=$(gh api "repos/$GITHUB_REPOSITORY/secret-scanning/alerts?state=open&per_page=100" 2>/dev/null); then
-            echo "::warning::Could not read secret scanning alerts; gitleaks above remains the gate."
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::notice::SECURITY_ALERTS_TOKEN is not set, so open secret scanning alerts were not checked."
+            echo "To turn this on, add a fine-grained token with read access to 'Secret scanning alerts' as the"
+            echo "SECURITY_ALERTS_TOKEN repository secret. Push protection and gitleaks are unaffected."
             exit 0
+          fi
+          if ! alerts=$(gh api "repos/$GITHUB_REPOSITORY/secret-scanning/alerts?state=open&per_page=100"); then
+            echo "::error::SECURITY_ALERTS_TOKEN is set but the alerts API rejected it; check its scope and expiry."
+            exit 1
           fi
           count=$(echo "$alerts" | jq 'length')
           if [ "$count" -gt 0 ]; then

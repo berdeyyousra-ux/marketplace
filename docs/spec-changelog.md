@@ -36,9 +36,14 @@ edit to branch protection as well as to CI; the reasons it was not done unilater
   commit reaches the remote, where gitleaks can only fail a build after the fact.
 - The `secret-scan` job gains a step that fails on any open secret scanning alert, so native findings surface where
   merges are already gated instead of only in the Security tab. It prints the alert number and secret type, never
-  the secret. If the alerts API cannot be read it warns and passes, leaving gitleaks as the gate rather than
-  failing closed on an unrelated permissions problem.
-- The job declares `security-events: read`, the first job in CI to need a permission beyond `contents: read`.
+  the secret.
+- **That step is opt-in and currently inactive.** The secret scanning alerts API cannot be read with the Actions
+  `GITHUB_TOKEN`: it wants the `security_events` scope, and `security-events: read` grants code scanning, not
+  secret scanning. This was found by shipping the step with `GITHUB_TOKEN` and reading the job log on CI run
+  43417741490, where the call failed and the step passed without having checked anything. It now runs only when a
+  `SECURITY_ALERTS_TOKEN` repository secret is present, and otherwise says that it did not check, rather than
+  reporting a pass it did not establish. Adding that token is a separate decision for the repo owner, since it
+  means a long-lived credential in repository secrets.
 - `README.md` gains a Secrets section covering both layers, the plan limitation, and what to do when push
   protection blocks a push: rotate first, then rewrite the commit.
 
