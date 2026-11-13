@@ -147,8 +147,34 @@ CI runs all of the above except the Bruno collection, together with these checks
 - migration bundle idempotency
 - Docker builds scanned by Trivy
 - vulnerable-package checks
-- gitleaks secret scanning
+- secret scanning: GitHub's own, plus gitleaks over the full history (see [Secrets](#secrets))
 - CodeQL
+
+### Secrets
+
+Two layers, because neither catches what the other does.
+
+**GitHub secret scanning** runs on the repository itself, continuously and over the whole history. Its push
+protection rejects a push containing a recognised provider token before the commit reaches the remote, which is
+earlier than any CI check can act. On this plan it matches provider patterns only: the two settings that would widen
+it, non-provider (generic) patterns and validity checks, need an organisation plan with GitHub Secret Protection, so
+they are off here.
+
+**gitleaks** runs in the `secret-scan` CI job, a required check, over the full history on every pull request. It
+covers the generic rules GitHub does not look for on this plan, and `.gitleaks.toml` holds the only two allowed
+values: the published Azurite emulator key and the development JWT signing key, and only in
+`docker-compose.override.yml`.
+
+The same job can also fail on an open secret scanning alert, since those are reported to the Security tab rather
+than to a pull request and would otherwise go unseen. That check is off unless `SECURITY_ALERTS_TOKEN` is set: the
+alerts API needs a token with the `security_events` scope, and the Actions `GITHUB_TOKEN` cannot carry it. Add a
+fine-grained token with read access to *Secret scanning alerts* as that repository secret to turn it on.
+
+Neither layer proves a change is free of secrets. Both detect known shapes, and in testing gitleaks did not flag a
+random base64 string assigned to `Jwt__SigningKey`, so review still matters.
+
+If push protection blocks a push, do not work around it: rotate the exposed credential first, then remove it from the
+commit. A value that reached the remote must be treated as compromised even after the commit is rewritten.
 
 ## Skill map
 

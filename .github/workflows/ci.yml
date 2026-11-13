@@ -148,9 +148,18 @@ jobs:
       - name: Check packages for known vulnerabilities
         run: npm audit --omit=dev --audit-level=high
 
+  # T-065 (section 11.7): two layers, because neither one is sufficient on its own.
+  #   1. GitHub secret scanning runs outside this workflow, continuously and over the whole history, and its push
+  #      protection rejects a known provider token before the commit ever reaches the remote. It has no status check
+  #      of its own, so the step below turns its open alerts into one.
+  #   2. gitleaks stays as the gate on the diff itself. On this plan GitHub matches provider patterns only, so the
+  #      generic rules and the `.gitleaks.toml` allowlist still carry the cases GitHub does not look for.
   secret-scan:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: read
+      security-events: read
     env:
       GITLEAKS_VERSION: 8.30.1
       GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
@@ -170,3 +179,35 @@ jobs:
 
       - name: Scan repository history
         run: '"$RUNNER_TEMP/gitleaks" git . --config .gitleaks.toml --redact --verbose --no-banner --exit-code 1'
+
+      # GitHub secret scanning reports to the Security tab, not to a pull request, so an alert raised on main can sit
+      # unnoticed. This surfaces it where merges are already gated. It never prints the secret: only the alert
+      # number and the secret type, which is all that is needed to go and look at it.
+      #
+      # It needs SECURITY_ALERTS_TOKEN, because the secret scanning alerts API is not reachable with GITHUB_TOKEN.
+      # That API wants a token carrying the `security_events` scope (or `repo`), and the Actions token cannot hold
+      # it: `security-events: read` above grants code scanning, not secret scanning. Verified on CI run
+      # 43417741490, where the call failed and this step passed without checking anything. Without the secret the
+      # step says so rather than reporting a pass it did not establish; gitleaks above is the gate either way.
+      - name: Fail on open GitHub secret scanning alerts
+        env:
+          GH_TOKEN: ${{ secrets.SECURITY_ALERTS_TOKEN }}
+        run: |
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::notice::SECURITY_ALERTS_TOKEN is not set, so open secret scanning alerts were not checked."
+            echo "To turn this on, add a fine-grained token with read access to 'Secret scanning alerts' as the"
+            echo "SECURITY_ALERTS_TOKEN repository secret. Push protection and gitleaks are unaffected."
+            exit 0
+          fi
+          if ! alerts=$(gh api "repos/$GITHUB_REPOSITORY/secret-scanning/alerts?state=open&per_page=100"); then
+            echo "::error::SECURITY_ALERTS_TOKEN is set but the alerts API rejected it; check its scope and expiry."
+            exit 1
+          fi
+          count=$(echo "$alerts" | jq 'length')
+          if [ "$count" -gt 0 ]; then
+            echo "$alerts" | jq -r '.[] | "::error::Open secret scanning alert #\(.number): \(.secret_type_display_name)"'
+            echo "Resolve or dismiss these at https://github.com/$GITHUB_REPOSITORY/security/secret-scanning"
+            exit 1
+          fi
+          echo "No open GitHub secret scanning alerts."
+
