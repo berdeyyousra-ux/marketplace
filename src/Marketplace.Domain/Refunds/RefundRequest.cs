@@ -10,6 +10,7 @@ public enum RefundRequestStatus
     Executing,
     Completed,
     Failed,
+    Cancelled,
 }
 
 public enum RefundDecision
@@ -30,6 +31,11 @@ public sealed class RefundRequest : AggregateRoot
 
     public static readonly Error AlreadyDecided =
         new("refund_already_decided", "A decision has already been made on this refund request.", ErrorType.Conflict);
+
+    // US-28 extension: a buyer withdraws their own request while it is still waiting for a decision. Once an admin
+    // has decided, or the refund is executing or done, the money is in play and only an admin can act.
+    public static readonly Error NotCancellable =
+        new("refund_not_cancellable", "Only a refund request that is still awaiting a decision can be cancelled.", ErrorType.Conflict);
 
     public static readonly Error OverrideReasonRequired =
         new("override_reason_required", "Approving a request outside the refund window needs an override reason.", ErrorType.Validation);
@@ -106,6 +112,25 @@ public sealed class RefundRequest : AggregateRoot
 
         ArgumentOutOfRangeException.ThrowIfNegative(downloadCount);
         return new RefundRequest(orderItemId, requestedBy, reasonText, verdict, downloadCount, now);
+    }
+
+    // The buyer withdraws their own request. Only from Submitted: an Approved, Executing, Completed, Rejected or
+    // Failed request has already been decided or touched the money, so cancelling it is an admin matter.
+    public Result Cancel(Guid buyerId, DateTimeOffset now)
+    {
+        if (buyerId == Guid.Empty || buyerId != RequestedBy)
+        {
+            return DomainErrors.Validation("Only the buyer who made the request can cancel it.");
+        }
+
+        if (Status != RefundRequestStatus.Submitted)
+        {
+            return NotCancellable;
+        }
+
+        Status = RefundRequestStatus.Cancelled;
+        UpdatedAt = now;
+        return Result.Success();
     }
 
     public Result Approve(Guid adminId, string note, string? overrideReason, DateTimeOffset now)

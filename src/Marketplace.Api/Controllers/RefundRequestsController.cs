@@ -27,6 +27,19 @@ public sealed class RefundRequestsController : ControllerBase
         return this.ToActionResult(await handler.HandleAsync(command, cancellationToken), request => Created("/api/v1/refund-requests/mine", request));
     }
 
+    /// <summary>Cancels the caller's own refund request while it is still awaiting a decision. The order item is free to be requested again (US-28).</summary>
+    [HttpPost("{id:guid}/cancel")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> CancelAsync(
+        Guid id, [FromServices] ICommandHandler<CancelRefundRequestCommand, Unit> handler, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return this.ToActionResult(await handler.HandleAsync(new CancelRefundRequestCommand(id), cancellationToken), _ => NoContent());
+    }
+
     /// <summary>Lists the caller's refund requests and their status, newest first. Keyset paginated (US-28).</summary>
     [HttpGet("mine")]
     [Authorize]

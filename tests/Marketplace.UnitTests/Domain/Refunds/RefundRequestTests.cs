@@ -96,7 +96,8 @@ public sealed class RefundRequestTests
             or (RefundRequestStatus.Approved, RefundRequestStatus.Executing)
             or (RefundRequestStatus.Executing, RefundRequestStatus.Completed)
             or (RefundRequestStatus.Executing, RefundRequestStatus.Failed)
-            or (RefundRequestStatus.Failed, RefundRequestStatus.Executing);
+            or (RefundRequestStatus.Failed, RefundRequestStatus.Executing)
+            or (RefundRequestStatus.Submitted, RefundRequestStatus.Cancelled);
 
         var result = Apply(request, to);
 
@@ -104,9 +105,63 @@ public sealed class RefundRequestTests
         request.Status.ShouldBe(legal ? to : from);
         if (!legal)
         {
-            var isDecision = to is RefundRequestStatus.Approved or RefundRequestStatus.Rejected;
-            result.Error.Code.ShouldBe(isDecision ? "refund_already_decided" : "invalid_state_transition");
+            var expected = to switch
+            {
+                // Only the buyer cancels, and only from Submitted.
+                RefundRequestStatus.Cancelled => "refund_not_cancellable",
+                RefundRequestStatus.Approved or RefundRequestStatus.Rejected => "refund_already_decided",
+                _ => "invalid_state_transition",
+            };
+            result.Error.Code.ShouldBe(expected);
         }
+    }
+
+    // US-28 extension: the buyer withdraws their own request, but only while it is still awaiting a decision.
+    [Fact]
+    public void Cancel_WhileSubmitted_ByTheRequester_Succeeds()
+    {
+        var request = Submitted(RefundPolicyVerdict.Eligible);
+
+        var result = request.Cancel(request.RequestedBy, _now);
+
+        result.IsSuccess.ShouldBeTrue();
+        request.Status.ShouldBe(RefundRequestStatus.Cancelled);
+        request.UpdatedAt.ShouldBe(_now);
+    }
+
+    [Theory]
+    [InlineData(RefundRequestStatus.Approved)]
+    [InlineData(RefundRequestStatus.Rejected)]
+    [InlineData(RefundRequestStatus.Executing)]
+    [InlineData(RefundRequestStatus.Completed)]
+    [InlineData(RefundRequestStatus.Failed)]
+    public void Cancel_AfterADecision_IsRefused(RefundRequestStatus status)
+    {
+        var request = InState(status);
+
+        var result = request.Cancel(request.RequestedBy, _now);
+
+        result.Error.ShouldBe(RefundRequest.NotCancellable);
+        request.Status.ShouldBe(status);
+    }
+
+    [Fact]
+    public void Cancel_BySomeoneElse_IsRefused()
+    {
+        var request = Submitted(RefundPolicyVerdict.Eligible);
+
+        request.Cancel(Guid.CreateVersion7(), _now).IsFailure.ShouldBeTrue();
+        request.Cancel(Guid.Empty, _now).IsFailure.ShouldBeTrue();
+        request.Status.ShouldBe(RefundRequestStatus.Submitted);
+    }
+
+    [Fact]
+    public void Cancel_Twice_IsRefusedTheSecondTime()
+    {
+        var request = Submitted(RefundPolicyVerdict.Eligible);
+
+        request.Cancel(request.RequestedBy, _now).IsSuccess.ShouldBeTrue();
+        request.Cancel(request.RequestedBy, _now).Error.ShouldBe(RefundRequest.NotCancellable);
     }
 
     private static Result Apply(RefundRequest request, RefundRequestStatus to) => to switch
@@ -116,6 +171,7 @@ public sealed class RefundRequestTests
         RefundRequestStatus.Executing => request.StartExecution(_now),
         RefundRequestStatus.Completed => request.Complete(_now),
         RefundRequestStatus.Failed => request.Fail("Provider unavailable.", _now),
+        RefundRequestStatus.Cancelled => request.Cancel(request.RequestedBy, _now),
         _ => throw new ArgumentOutOfRangeException(nameof(to)),
     };
 
@@ -133,6 +189,7 @@ public sealed class RefundRequestTests
             RefundRequestStatus.Executing => [RefundRequestStatus.Approved, RefundRequestStatus.Executing],
             RefundRequestStatus.Completed => [RefundRequestStatus.Approved, RefundRequestStatus.Executing, RefundRequestStatus.Completed],
             RefundRequestStatus.Failed => [RefundRequestStatus.Approved, RefundRequestStatus.Executing, RefundRequestStatus.Failed],
+            RefundRequestStatus.Cancelled => [RefundRequestStatus.Cancelled],
             _ => throw new ArgumentOutOfRangeException(nameof(status)),
         };
 

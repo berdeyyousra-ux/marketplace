@@ -156,4 +156,23 @@ public sealed class PaymentProviderTests
         result.Amount.ShouldBe(Money.Eur(19.99m));
         Should.Throw<WebhookSignatureException>(() => stripe.ParseWebhook(headers, Encoding.UTF8.GetBytes(json + " ")));
     }
+
+    // T-064: the publishable key travels to the browser, and the resilience decorator must not swallow it.
+    [Fact]
+    public void Stripe_PublishableKey_IsTheConfiguredOneThroughTheDecorator()
+    {
+        var options = Options.Create(new PaymentOptions
+        {
+            Provider = PaymentOptions.StripeName,
+            Stripe = new() { SecretKey = "sk_test_unused", WebhookSecret = "whsec_test_only", PublishableKey = "pk_test_visible" },
+        });
+        var stripe = new StripePaymentProvider(options, new Stripe.StripeClient("sk_test_unused"), _time);
+
+        stripe.PublishableKey.ShouldBe("pk_test_visible");
+        new ResilientPaymentProvider(stripe, ResilienceSettings.ApiDefaults(), ResilienceSettings.ApiDefaults(), _time)
+            .PublishableKey.ShouldBe("pk_test_visible");
+
+        // The fake provider has no payment form of its own, so it keeps the interface's default of no key.
+        ((IPaymentProvider)new FakePaymentProvider(_options, _time)).PublishableKey.ShouldBeNull();
+    }
 }

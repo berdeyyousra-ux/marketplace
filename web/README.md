@@ -53,7 +53,16 @@ Because every API call comes from the server, the API needs no CORS entry for th
 
 ## Development details
 
-- **Payments.** With the fake payment provider, checkout offers "Complete test payment". It calls the API's development-only EP-99, which sends the signed webhook a real provider would. EP-99 answers 404 unless the API runs in Development with the fake provider. Stripe's payment form comes with T-064.
+- **Payments.** Checkout asks the API to start the payment (EP-33) as soon as it opens, and the provider in that
+  answer decides what it shows.
+  - **Stripe** (T-064): Stripe's Payment Element, mounted on the payment intent's client secret with the publishable
+    key from the same answer. Card details go straight to Stripe's iframe and never reach this app. Confirming the
+    card does not pay the order: Stripe's webhook reaches the API, the Worker turns it into a paid order, and the
+    panel waits for the order to turn Paid. Test cards are in Stripe's docs; `4242 4242 4242 4242` succeeds and
+    `4000 0000 0000 9995` is declined.
+  - **Fake** (the local default): one "Complete test payment" button. It calls the API's development-only EP-99,
+    which sends the signed webhook a real provider would. EP-99 answers 404 unless the API runs in Development with
+    the fake provider.
 - **Email.** Confirmation emails go to Mailpit at http://localhost:8025.
 - **AI suggestions.** These come from whichever `Ai:Provider` the Worker is configured with. That can be `Fake`, `Anthropic` or `OpenAi`; see `docs/spec-changelog.md`.
 

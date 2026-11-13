@@ -11,7 +11,9 @@ namespace Marketplace.Application.Payments;
 // EP-33 and US-23.
 public sealed record CreatePaymentCommand(Guid OrderId);
 
-public sealed record PaymentResponse(Guid PaymentId, string Provider, string ClientSecret, MoneyDto Amount);
+// PublishableKey is the provider's public key, for the client's payment form (T-064). It is null for a provider
+// that has none, such as Fake.
+public sealed record PaymentResponse(Guid PaymentId, string Provider, string ClientSecret, MoneyDto Amount, string? PublishableKey);
 
 public static class PaymentErrors
 {
@@ -92,7 +94,8 @@ public sealed class CreatePaymentCommandHandler(
             return await RespondAsync(winner, cancellationToken);
         }
 
-        return new PaymentResponse(payment.Value.Id, provider.Name, created.ClientSecret ?? string.Empty, MoneyDto.From(order.Total));
+        return new PaymentResponse(
+            payment.Value.Id, provider.Name, created.ClientSecret ?? string.Empty, MoneyDto.From(order.Total), provider.PublishableKey);
     }
 
     private Task<LivePayment?> FindLivePaymentAsync(Guid orderId, CancellationToken cancellationToken) =>
@@ -106,7 +109,8 @@ public sealed class CreatePaymentCommandHandler(
         try
         {
             var current = await provider.GetPaymentAsync(live.ProviderPaymentId, cancellationToken);
-            return new PaymentResponse(live.Id, provider.Name, current.ClientSecret ?? string.Empty, MoneyDto.From(live.Amount));
+            return new PaymentResponse(
+                live.Id, provider.Name, current.ClientSecret ?? string.Empty, MoneyDto.From(live.Amount), provider.PublishableKey);
         }
         catch (PaymentProviderUnavailableException)
         {

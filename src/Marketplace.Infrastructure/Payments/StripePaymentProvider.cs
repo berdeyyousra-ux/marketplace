@@ -15,6 +15,8 @@ public sealed class StripePaymentProvider(IOptions<PaymentOptions> options, IStr
 
     public string Name => PaymentOptions.StripeName;
 
+    public string? PublishableKey => options.Value.Stripe.PublishableKey;
+
     public async Task<ProviderPayment> CreatePaymentAsync(CreateProviderPayment request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);

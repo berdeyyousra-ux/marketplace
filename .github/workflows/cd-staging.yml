@@ -112,7 +112,7 @@ jobs:
             --name "cd-infra-${{ github.run_id }}" \
             --template-file deploy/bicep/main.bicep \
             --parameters "@$PARAMETERS" \
-            --parameters budgetContactEmail="${{ vars.BUDGET_ALERT_EMAIL }}" migrateImage="$REGISTRY/marketplace-migrate:$TAG" \
+            --parameters budgetContactEmail="${{ vars.BUDGET_ALERT_EMAIL }}" stripePublishableKey="${{ vars.STRIPE_PUBLISHABLE_KEY }}" migrateImage="$REGISTRY/marketplace-migrate:$TAG" \
             --output none
 
       - name: Run the migrations
@@ -143,7 +143,7 @@ jobs:
             --name "cd-apps-${{ github.run_id }}" \
             --template-file deploy/bicep/main.bicep \
             --parameters "@$PARAMETERS" \
-            --parameters budgetContactEmail="${{ vars.BUDGET_ALERT_EMAIL }}" deployApps=true \
+            --parameters budgetContactEmail="${{ vars.BUDGET_ALERT_EMAIL }}" stripePublishableKey="${{ vars.STRIPE_PUBLISHABLE_KEY }}" deployApps=true \
               apiImage="$REGISTRY/marketplace-api:$TAG" workerImage="$REGISTRY/marketplace-worker:$TAG" \
               webImage="$REGISTRY/marketplace-web:$TAG" migrateImage="$REGISTRY/marketplace-migrate:$TAG" \
             --query "properties.outputs.{api: apiUrl.value, web: webUrl.value}" --output json > .cd/urls.json

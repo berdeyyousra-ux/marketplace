@@ -8,6 +8,41 @@ for them, are recorded separately in the [spec changelog](docs/spec-changelog.md
 
 ## [Unreleased]
 
+### Added
+
+- Buyers can cancel their own refund request while it is still awaiting a decision, from the library row. The order
+  item is then free to be requested again inside the refund window; cancelling does not extend it. A withdrawn
+  request leaves the admin queue, and the AI advisor skips it. This needed the one-request-per-item constraint to
+  become one *live* request per item; see the [spec changelog](docs/spec-changelog.md).
+
+- Stripe's Payment Element in the web client's checkout, where Stripe is the configured provider (T-064). Card
+  details go straight to Stripe and never reach the app's own servers, and the order is only ever confirmed by the
+  provider's webhook, not by the browser.
+- `publishableKey` on the EP-33 payment response, so the client gets the key for the provider the API actually uses
+  (see the [spec changelog](docs/spec-changelog.md)).
+- Staging sends email through Resend, over SMTP, so nothing in the application is provider-specific: the host, port,
+  user and from-address are deployment parameters and the API key is the existing `SmtpPassword` vault secret. Until
+  a domain is verified, the from-address is Resend's testing one and only delivers to the Resend account's own
+  address (`deploy/bicep/README.md`).
+
+### Changed
+
+- `Payments:Stripe:PublishableKey` is now required at startup wherever Stripe is the provider, so a deployment that
+  could not take a card payment fails before it goes live. In Azure it comes from the `STRIPE_PUBLISHABLE_KEY`
+  GitHub environment variable.
+
+### Fixed
+
+- The library row's "Request refund" link sat beside the Download button on desktop instead of below it. The row
+  stops wrapping from the `sm` breakpoint up, and the link's wrapper was a second full-width group with no width
+  override, so it was forced onto the same line. Both now live in one trailing column, as the seller's listing row
+  already does.
+
+- Staging could not start the Api or the Worker: the Bicep `smtpHost` parameter defaulted to an empty string, which
+  set `Email__SmtpHost` to empty on both container apps, and an empty setting overrides the code default rather than
+  falling back to it. The startup validation added with T-066 then failed them both. It now defaults to a
+  placeholder that cannot resolve, keeping the documented "no SMTP provider yet" state working.
+
 ## [1.0.0] - 2026-11-09
 
 First release: a complete marketplace for downloadable digital products, from registration through payment,
