@@ -17,7 +17,7 @@ public static class DatabaseErrors
     {
         ["ux_seller_profiles_user_id"] = new("already_seller", "You already have a seller profile.", ErrorType.Conflict),
         ["ux_download_grants_active_buyer_product"] = new("already_owned", "You already own this product.", ErrorType.Conflict),
-        ["ux_refund_requests_order_item_id"] = new("refund_not_allowed", "A refund has already been requested for this item.", ErrorType.Conflict),
+        ["ux_refund_requests_live_order_item"] = new("refund_not_allowed", "A refund has already been requested for this item.", ErrorType.Conflict),
     };
 
     // Returns an error for a unique violation, or null for anything else: foreign key and check

@@ -35,6 +35,9 @@ public sealed record CreateRefundRequestCommand(Guid OrderItemId, string Reason)
 
 public sealed record RefundRequestResponse(Guid Id, Guid OrderItemId, string Status, string PolicyVerdict, DateTimeOffset CreatedAt);
 
+// US-28 extension: the buyer withdraws their own request while it is still awaiting a decision.
+public sealed record CancelRefundRequestCommand(Guid RefundRequestId);
+
 public sealed record MyRefundRequestsQuery(int Limit = Paging.DefaultLimit, string? Cursor = null);
 
 public sealed record MyRefundRequest(
@@ -46,6 +49,8 @@ public sealed record RefundRequestMessage(Guid RefundRequestId);
 public static class RefundErrors
 {
     public static readonly Error ItemNotFound = new("not_found", "Order item not found.", ErrorType.NotFound);
+
+    public static readonly Error RequestNotFound = new("not_found", "Refund request not found.", ErrorType.NotFound);
 }
 
 public sealed class CreateRefundRequestCommandValidator : AbstractValidator<CreateRefundRequestCommand>
@@ -60,6 +65,41 @@ public sealed class CreateRefundRequestCommandValidator : AbstractValidator<Crea
 public sealed class MyRefundRequestsQueryValidator : AbstractValidator<MyRefundRequestsQuery>
 {
     public MyRefundRequestsQueryValidator() => RuleFor(query => query.Limit).ValidLimit();
+}
+
+public sealed class CancelRefundRequestCommandValidator : AbstractValidator<CancelRefundRequestCommand>
+{
+    public CancelRefundRequestCommandValidator() => RuleFor(command => command.RefundRequestId).NotEmpty();
+}
+
+// The buyer's own request only: the query is scoped to the caller, so someone else's id reads as not found rather
+// than telling them it exists. Cancelling frees the order item, so a new request can follow within the window.
+public sealed class CancelRefundRequestCommandHandler(
+    IAppDbContext db, ICurrentUser currentUser, AuditTrail audit, TimeProvider timeProvider)
+    : ICommandHandler<CancelRefundRequestCommand, Unit>
+{
+    public async Task<Result<Unit>> HandleAsync(CancelRefundRequestCommand command, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+
+        var buyerId = currentUser.UserId ?? throw new InvalidOperationException("Cancelling a refund request requires an authenticated caller.");
+        var request = await db.RefundRequests.SingleOrDefaultAsync(
+            candidate => candidate.Id == command.RefundRequestId && candidate.RequestedBy == buyerId, cancellationToken);
+        if (request is null)
+        {
+            return RefundErrors.RequestNotFound;
+        }
+
+        var cancelled = request.Cancel(buyerId, timeProvider.GetUtcNow());
+        if (cancelled.IsFailure)
+        {
+            return cancelled.Error;
+        }
+
+        audit.Record("refund.cancelled", AuditActorType.User, buyerId, "RefundRequest", request.Id, new { orderItemId = request.OrderItemId });
+        await db.SaveChangesAsync(cancellationToken);
+        return Unit.Value;
+    }
 }
 
 // Section 9.8 request: the policy decides whether the request is accepted; the model is asked later, in the Worker.
@@ -80,7 +120,8 @@ public sealed class CreateRefundRequestCommandHandler(
         }
 
         var downloads = await db.DownloadGrants.Where(grant => grant.OrderItemId == item.Id).Select(grant => grant.DownloadCount).SingleOrDefaultAsync(cancellationToken);
-        var exists = await db.RefundRequests.AnyAsync(request => request.OrderItemId == item.Id, cancellationToken);
+        var exists = await db.RefundRequests.AnyAsync(
+            request => request.OrderItemId == item.Id && request.Status != RefundRequestStatus.Cancelled, cancellationToken);
         var now = timeProvider.GetUtcNow();
         var verdict = RefundPolicy.Evaluate(item, order, downloads, exists, now, options.Value.WindowDays);
 
@@ -95,7 +136,8 @@ public sealed class CreateRefundRequestCommandHandler(
         audit.Record("refund.requested", AuditActorType.User, buyerId, "RefundRequest", request.Id, new { orderItemId = item.Id, verdict = verdict.ToString() });
         outbox.Enqueue(OutboxMessageTypes.AnalyzeRefundRequest, new RefundRequestMessage(request.Id));
 
-        // ux_refund_requests_order_item_id stops a concurrent duplicate; the translator returns it as a 409.
+        // ux_refund_requests_live_order_item stops a concurrent duplicate; the translator returns it as a 409.
+        // It ignores cancelled rows, so a withdrawn request does not block a new one.
         await db.SaveChangesAsync(cancellationToken);
         return new RefundRequestResponse(request.Id, item.Id, request.Status.ToString(), verdict.ToString(), request.CreatedAt);
     }
@@ -154,8 +196,10 @@ public sealed class AnalyzeRefundRequestHandler(
         var requestId = (JsonSerializer.Deserialize<RefundRequestMessage>(payload, _json) ?? throw new JsonException("Missing refundRequestId.")).RefundRequestId;
         var request = await db.RefundRequests.AsNoTracking().SingleOrDefaultAsync(candidate => candidate.Id == requestId, cancellationToken);
         if (request is null
+            || request.Status == RefundRequestStatus.Cancelled
             || await db.AiSuggestions.AnyAsync(suggestion => suggestion.RefundRequestId == requestId && suggestion.ValidationStatus == AiSuggestionStatus.Valid, cancellationToken))
         {
+            // A withdrawn request needs no advice, and the model costs money per call.
             return;
         }
 

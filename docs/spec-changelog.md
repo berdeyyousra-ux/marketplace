@@ -2,6 +2,36 @@
 
 Changes to, and resolved contradictions in, the build specification.
 
+## 2026-11-12
+
+### Section 9.8 (US-28): a buyer can cancel their own refund request, and one order item may have several
+
+**Spec:** a buyer requests a refund and an admin decides it. There is no way for the buyer to withdraw a request,
+and section 7.2 gives `refund_requests` a unique constraint on `order_item_id`, so an item has at most one request
+ever.
+
+**Change:**
+
+- A new `Cancelled` status and `POST /api/v1/refund-requests/{id}/cancel`, for the buyer who made the request,
+  allowed only while it is still `Submitted`.
+- `ux_refund_requests_order_item_id` becomes the partial unique index `ux_refund_requests_live_order_item`, unique
+  on `order_item_id` **where `status <> 'Cancelled'`**. One live request per item, any number of withdrawn ones.
+
+**Why the constraint had to change:** with a plain unique constraint, cancelling would have been a trap. The row
+still holds the only slot for that order item, so a buyer who withdrew a request could never ask for a refund on
+that item again — the opposite of what cancelling is for. Keeping one *live* request per item preserves the
+invariant that matters (an admin never sees two open requests for the same item) while letting a withdrawn request
+step aside.
+
+**What follows from it:**
+
+- The refund policy no longer counts a cancelled request as "already requested", so a new request is evaluated
+  afresh and is still subject to the refund window. Cancelling does not extend the window.
+- The AI advisor skips a cancelled request rather than spending a model call on advice nobody will read.
+- The admin queue leaves cancelled requests out unless asked for by name (`?status=Cancelled`), because the queue is
+  work to be done.
+- A cancelled request shows the buyer no badge: the library row goes back to offering "Request refund".
+
 ## 2026-11-11
 
 ### Section 9.4 (EP-33): the payment response carries the provider's publishable key (T-064)

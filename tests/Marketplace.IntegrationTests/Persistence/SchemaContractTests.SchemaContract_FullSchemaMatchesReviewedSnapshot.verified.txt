@@ -261,13 +261,12 @@ refresh_tokens pk_refresh_tokens PRIMARY KEY (id)
 refresh_tokens ux_refresh_tokens_token_hash UNIQUE (token_hash)
 refund_requests ck_refund_requests_decided CHECK (((decision IS NULL) = (decided_by IS NULL)))
 refund_requests ck_refund_requests_decision CHECK (((decision IS NULL) OR (decision = ANY (ARRAY['Approved'::text, 'Rejected'::text]))))
-refund_requests ck_refund_requests_status CHECK ((status = ANY (ARRAY['Submitted'::text, 'Approved'::text, 'Rejected'::text, 'Executing'::text, 'Completed'::text, 'Failed'::text])))
+refund_requests ck_refund_requests_status CHECK ((status = ANY (ARRAY['Submitted'::text, 'Approved'::text, 'Rejected'::text, 'Executing'::text, 'Completed'::text, 'Failed'::text, 'Cancelled'::text])))
 refund_requests ck_refund_requests_verdict CHECK ((policy_verdict = ANY (ARRAY['Eligible'::text, 'EligibleDownloaded'::text, 'IneligibleOutsideWindow'::text])))
 refund_requests fk_refund_requests_order_items_order_item_id FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE RESTRICT
 refund_requests fk_refund_requests_users_decided_by FOREIGN KEY (decided_by) REFERENCES users(id) ON DELETE RESTRICT
 refund_requests fk_refund_requests_users_requested_by FOREIGN KEY (requested_by) REFERENCES users(id) ON DELETE RESTRICT
 refund_requests pk_refund_requests PRIMARY KEY (id)
-refund_requests ux_refund_requests_order_item_id UNIQUE (order_item_id)
 report_refreshes pk_report_refreshes PRIMARY KEY (view_name)
 role_claims fk_role_claims_roles_role_id FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
 role_claims pk_role_claims PRIMARY KEY (id)
@@ -354,7 +353,7 @@ CREATE UNIQUE INDEX ux_payment_events_provider_event ON public.payment_events US
 CREATE UNIQUE INDEX ux_payments_one_live_per_order ON public.payments USING btree (order_id) WHERE (status = ANY (ARRAY['RequiresPayment'::text, 'Succeeded'::text]))
 CREATE UNIQUE INDEX ux_payments_provider_payment_id ON public.payments USING btree (provider, provider_payment_id)
 CREATE UNIQUE INDEX ux_refresh_tokens_token_hash ON public.refresh_tokens USING btree (token_hash)
-CREATE UNIQUE INDEX ux_refund_requests_order_item_id ON public.refund_requests USING btree (order_item_id)
+CREATE UNIQUE INDEX ux_refund_requests_live_order_item ON public.refund_requests USING btree (order_item_id) WHERE (status <> 'Cancelled'::text)
 CREATE UNIQUE INDEX ux_roles_normalized_name ON public.roles USING btree (normalized_name)
 CREATE UNIQUE INDEX ux_seller_profiles_user_id ON public.seller_profiles USING btree (user_id)
 CREATE UNIQUE INDEX ux_users_normalized_email ON public.users USING btree (normalized_email)

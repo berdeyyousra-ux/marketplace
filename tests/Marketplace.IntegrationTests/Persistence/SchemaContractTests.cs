@@ -29,7 +29,7 @@ public sealed class SchemaContractTests : IAsyncLifetime
         "ck_orders_paid_at", "ux_order_items_order_id_product_id", "ck_order_items_status", "ck_order_items_unit_price",
         "ck_order_items_amounts", "ux_payments_provider_payment_id", "ck_payments_status", "ck_payments_amount",
         "ux_payment_events_provider_event", "ux_download_grants_order_item_id", "ck_download_grants_counts",
-        "ux_refund_requests_order_item_id", "ck_refund_requests_status", "ck_refund_requests_verdict",
+        "ck_refund_requests_status", "ck_refund_requests_verdict",
         "ck_refund_requests_decision", "ck_refund_requests_decided", "ck_ai_suggestions_status",
         "ck_idempotency_keys_status", "ck_ledger_entry_type", "ck_ledger_amount_sign", "ck_audit_log_actor_type",
     ];
@@ -42,7 +42,8 @@ public sealed class SchemaContractTests : IAsyncLifetime
         "ix_products_search_vector", "ix_orders_buyer_id_created_at", "ix_orders_pending_expires_at", "ix_orders_paid_at",
         "ix_order_items_product_id", "ix_order_items_seller_id_order_id", "ix_payments_order_id",
         "ux_payments_one_live_per_order", "ix_payment_events_unprocessed", "ux_download_grants_active_buyer_product",
-        "ix_refund_requests_status_created_at", "ix_ai_suggestions_refund_request_id", "ix_idempotency_keys_expires_at",
+        "ix_refund_requests_status_created_at", "ux_refund_requests_live_order_item",
+        "ix_ai_suggestions_refund_request_id", "ix_idempotency_keys_expires_at",
         "ix_outbox_messages_pending", "ux_ledger_item_type", "ix_ledger_seller_id_created_at", "ix_audit_log_entity",
         "ix_audit_log_occurred_at", "ux_users_normalized_email", "ux_users_normalized_user_name",
     ];
