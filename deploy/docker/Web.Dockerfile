@@ -3,7 +3,7 @@
 #   docker build -f deploy/docker/Web.Dockerfile --build-arg COVER_IMAGE_BASE_URL=https://<account>.blob.core.windows.net/product-covers/ .
 # COVER_IMAGE_BASE_URL is read when next.config.ts is evaluated at build time (next/image's allowed origin), so it is
 # a build argument. API_BASE_URL is read at run time and comes from the container's environment.
-FROM node:22-bookworm-slim AS build
+FROM node:26-bookworm-slim AS build
 WORKDIR /web
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY web/package.json web/package-lock.json ./
@@ -13,7 +13,7 @@ ARG COVER_IMAGE_BASE_URL
 ENV COVER_IMAGE_BASE_URL=${COVER_IMAGE_BASE_URL}
 RUN npm run build
 
-FROM node:22-bookworm-slim AS runtime
+FROM node:26-bookworm-slim AS runtime
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
