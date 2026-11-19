@@ -19,9 +19,16 @@ RUN dotnet ef migrations bundle --project src/Marketplace.Infrastructure --start
 # The bundle is self-contained, so the runtime-deps image is enough. psql runs the role setup; curl and jq fetch the
 # managed identity's token from the Container Apps identity endpoint.
 # The upgrade applies Ubuntu security updates published since the base tag was last rebased. Without it the image
-# inherits whatever fixed advisories are outstanding against :10.0, and the Trivy gate in CI fails on them.
+# inherits whatever fixed advisories are outstanding against :11.0, and the Trivy gate in CI fails on them.
 FROM mcr.microsoft.com/dotnet/runtime-deps:11.0 AS runtime
-RUN apt-get update \
+# Ubuntu's mirrors intermittently refuse connections from CI runners, and apt treats a failed fetch as fatal, so
+# the build dies on this layer for reasons unrelated to the change under test. Retry each fetch and cap the wait
+# per connection, so an unreachable mirror IP is abandoned quickly and retried against another instead of
+# stalling for minutes. This cannot survive a full archive.ubuntu.com outage; it covers the common case of a
+# single bad mirror or a transient reset.
+RUN printf 'Acquire::Retries "3";\nAcquire::http::Timeout "20";\nAcquire::https::Timeout "20";\n' \
+      > /etc/apt/apt.conf.d/99-retries \
+    && apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends postgresql-client curl jq ca-certificates \
     && rm -rf /var/lib/apt/lists/*
