@@ -2,7 +2,7 @@
 # with the job's managed identity, applies the bundle, and creates the api and worker database roles. It runs as an
 # Azure Container Apps job inside the virtual network, because the database has no public endpoint.
 # Build from the repository root: docker build -f deploy/docker/Migrate.Dockerfile .
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 WORKDIR /src
 COPY .editorconfig Directory.Build.props Directory.Packages.props global.json dotnet-tools.json ./
 COPY src/*/*.csproj ./
