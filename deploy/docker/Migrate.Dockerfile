@@ -20,7 +20,7 @@ RUN dotnet ef migrations bundle --project src/Marketplace.Infrastructure --start
 # managed identity's token from the Container Apps identity endpoint.
 # The upgrade applies Ubuntu security updates published since the base tag was last rebased. Without it the image
 # inherits whatever fixed advisories are outstanding against :10.0, and the Trivy gate in CI fails on them.
-FROM mcr.microsoft.com/dotnet/runtime-deps:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/runtime-deps:11.0 AS runtime
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends postgresql-client curl jq ca-certificates \

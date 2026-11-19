@@ -14,7 +14,7 @@ RUN dotnet publish src/Marketplace.Worker/Marketplace.Worker.csproj \
 # off). It ships without curl, so the health check installs it.
 # The upgrade applies Ubuntu security updates published since the base tag was last rebased. Without it the image
 # inherits whatever fixed advisories are outstanding against :10.0, and the Trivy gate in CI fails on them.
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS runtime
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends curl \
