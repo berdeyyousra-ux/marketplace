@@ -10,7 +10,7 @@
     "check:tokens": "node scripts/check-tokens.mjs"
   },
   "dependencies": {
-    "@stripe/react-stripe-js": "7.0.1",
+    "@stripe/react-stripe-js": "7.1.0",
     "@stripe/stripe-js": "10.3.0",
     "next": "16.4.6",
     "react": "19.3.1",
